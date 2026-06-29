@@ -15,6 +15,7 @@ class Stone;
 class Human;
 class Civilization;
 class Army;
+class Monsters;
 class World
 {
     public:
@@ -97,7 +98,7 @@ class World
 
     bool visited[Config::sizeX * Config::sizeY] = {};
     
-    void writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Human &human, Stone &stone, Food &food, Tree &tree, Army &army);
+    void writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Human &human, Stone &stone, Food &food, Tree &tree, Army &army, Monsters &monsters);
     void init();
     bool isValid(int x, int y);
     bool isValid(int id);

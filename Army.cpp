@@ -3,7 +3,7 @@
 #include "Human.h"
 #include "World.h"
 #include "RendererSFML.h"
-
+#include "Monsters.h"
 
 Army* Army::instance = nullptr;
 
@@ -16,10 +16,21 @@ void Army::armyInit()
     for(int i = 0; i < ArmyProfession::COUNT; i++)
     {
         ArmyProfession profession = ArmyProfession(i);
+        /*
         if(i == 0)
         armyRegistry[profession].armyMainIndex = 500 * Config::sizeX + 900;
         else
         armyRegistry[profession].armyMainIndex = 800 * Config::sizeX + 300;
+        armyRegistry[profession].armyTargetIndex = -1;
+        */
+       if(i == 0)
+       {
+        armyRegistry[profession].armyMainIndex = Config::civSpawnPoint + 200 * Config::sizeX + 200;
+       }
+       if(i == 1)
+       {
+        armyRegistry[profession].armyMainIndex = Config::civSpawnPoint + 100 * Config::sizeX + 200;
+       }
         armyRegistry[profession].armyTargetIndex = -1;
     }
 }
@@ -46,7 +57,7 @@ void Army::addHumanToArmy(RendererSFML &renderer)
     int vecID = armyRegistry[profession].hp.size();
     int logicID = vecID;
     armyRegistry[profession].add(logicID);
-    renderer.addProfToBuffer(profession, logicID);
+    renderer.addProfToBuffer(profession, RendererSFML::Source::armyClass, logicID);
 }
 void Army::addHumansToArmy(World &world, Human &human, Civilization &civilization,RendererSFML &renderer, ArmyProfession profession)
 {
@@ -61,14 +72,13 @@ void Army::addHumansToArmy(World &world, Human &human, Civilization &civilizatio
         humansAddedToArmy++;
     }
 }
-void Army::giveArmyTargetIndex(ArmyProfession profession)
+void Army::giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession)
 {
     //y * size + x
-    int armyIndex = armyRegistry[profession].armyMainIndex;
-    if(armyIndex == 500 * Config::sizeX + 900) armyRegistry[profession].armyTargetIndex = 500 * Config::sizeX + 300; //lewo
-    else if(armyIndex == 500 * Config::sizeX + 300) armyRegistry[profession].armyTargetIndex = 800 * Config::sizeX + 300; //dol
-    else if(armyIndex == 800 * Config::sizeX + 300) armyRegistry[profession].armyTargetIndex = 800 * Config::sizeX + 900; //prawo
-    else if(armyIndex == 800 * Config::sizeX + 900) armyRegistry[profession].armyTargetIndex = 500 * Config::sizeX + 900; //gora
+    int x = 800;
+    int y = 400 - (profession * 100);
+    int start = y * Config::sizeX + x;
+    armyRegistry[profession].armyTargetIndex = start;
 }
 Army::Dirs Army::armyMoveDecision(ArmyProfession profession)
 {
@@ -90,7 +100,7 @@ Army::Dirs Army::armyMoveDecision(ArmyProfession profession)
     return none;
 }
 
-void Army::armyMove(ArmyProfession profession)
+void Army::armyMove(Monsters &monsters, ArmyProfession profession)
 {
     auto dir = armyMoveDecision(profession);
     switch(dir)
@@ -118,7 +128,7 @@ void Army::armyMove(ArmyProfession profession)
         case none:
         default:
         {
-            giveArmyTargetIndex(profession);
+            giveArmyTargetIndex(monsters, profession);
             break;
         }
     }
@@ -167,22 +177,19 @@ void Army::posSpacing(ArmyProfession profession)
 
 void Army::noiseController(ArmyProfession profession)
 {
-    int maxSpacing = std::max(armyRegistry[profession].armyShape.currentSpacingX,  armyRegistry[profession].armyShape.currentSpacingY);
+    int maxSpacing = std::min(armyRegistry[profession].armyShape.currentSpacingX,  armyRegistry[profession].armyShape.currentSpacingY);
     armyRegistry[profession].armyShape.currentNoise = maxSpacing/2;
 }
 
-void Army::widthController(ArmyProfession profession)
+void Army::widthController(Monsters &monsters, ArmyProfession profession)
 {
-    int current = armyRegistry[profession].armyShape.currentWidth;
-
-    if(current == 128)
+    if(monsters.monstersRegistry[0].hp.empty())
     {
-        armyRegistry[profession].armyShape.targetWidth = 4;
+        armyRegistry[profession].armyShape.targetWidth = sqrt(armyRegistry[profession].hp.size());
+        return;
     }
-    else if(current == 4)
-    {
-        armyRegistry[profession].armyShape.targetWidth = 128;
-    }
+    int monstersCurrent = monsters.monstersRegistry[0].monstersShape.currentWidth * monsters.monstersRegistry[0].monstersShape.currentSpacingX -  monsters.monstersRegistry[0].monstersShape.currentSpacingX;
+    armyRegistry[profession].armyShape.targetWidth = (monstersCurrent + armyRegistry[profession].armyShape.currentSpacingX) / armyRegistry[profession].armyShape.currentSpacingX;
 }
 
 void Army::posWidth(ArmyProfession profession)
@@ -199,4 +206,21 @@ void Army::posWidth(ArmyProfession profession)
         current--;
     }
     armyRegistry[profession].armyShape.currentWidth = current;
+}
+
+
+
+void Army::armyController(Monsters &monsters)
+{
+    for(int i = 0; i < ArmyProfession::COUNT; i++)
+    {
+        ArmyProfession profession = ArmyProfession(i);
+        //spacingController(profession);
+        //posSpacing(profession);
+        noiseController(profession);
+        widthController(monsters, profession);
+        posWidth(profession);
+        if(monsters.monstersRegistry[0].hp.size() == 0) continue;
+        armyMove(monsters, profession);
+    }
 }

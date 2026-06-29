@@ -155,8 +155,6 @@ class Civilization
     void assignHumansToFactory(Human &human);
     */
 
-
-
     void buildingDecision(World &world, Human &human, Food &food, Stone &stone, Tree &tree);
     void startConstruction(World &world, int idx, BuildingsType type);
     void endConstruction(World &world, Human &human, Streets &streets, int idx, BuildingsType type, int id);

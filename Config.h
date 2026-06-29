@@ -18,7 +18,7 @@ class Config
     static constexpr int WindowSizeY = sizeY;
 
     //surface configs
-    static constexpr int landPercent = 70;
+    static constexpr int landPercent = 100;
     static constexpr int waterPercentInLand = 5;
     static constexpr int mountainPercent = 3;
     static constexpr int sandPercent = 7;//sand will also appear on the edge of land
@@ -48,6 +48,8 @@ class Config
     static constexpr int StoneHP = 20;
     static constexpr int maxStoneSpawnTries = 10;
 
+
+    static constexpr int civSpawnPoint = 50 * sizeX + 50;
     static constexpr int partOfHumansChangingJobs = 100; // 0.01
     static constexpr int civilizationCount = 1;
     static constexpr int civilizationPlaceX = 7;
@@ -126,4 +128,20 @@ class Config
     static constexpr int maxHumansInArmy = 1000000;
 
     static constexpr int countOfTroopsInOneLine = 20;
+
+
+
+    ///////monsters
+
+    static constexpr int normalMonsterHP = 20;
+    static constexpr int normalMonsterDamage = 1;
+
+    static constexpr int normalMonstersCreated = 5000;
+
+
+    static constexpr int giantMonsterHP = 200;
+    static constexpr int giantMonsterDamage = 5;
+    
+    static constexpr int giantMonstersCreated = 100;
+
 };

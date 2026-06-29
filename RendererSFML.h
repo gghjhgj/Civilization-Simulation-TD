@@ -6,17 +6,25 @@
 #include "Config.h"
 
 class Army;
+class Monsters;
 class RendererSFML
 {
 public:
     Army* army;
+    Monsters* monsters;
     float time = 0;
     RendererSFML(int w, int h, int cellSize);
 
+    enum Source
+    {
+        armyClass,
+        monstersClass
+    };
     bool isOpen();
     void begin();
+    void setArmyColors();
     void render(World& world);
-    void addProfToBuffer(int profession, int logicID);
+    void addProfToBuffer(int profession, Source source, int logicID);
     void reloadArmyBuffer();
     void end();
 
@@ -25,6 +33,14 @@ private:
     {
     std::vector<sf::Vertex> armyVertices;
     sf::VertexBuffer armyLayer{sf::PrimitiveType::Points, sf::VertexBuffer::Usage::Stream};
+    sf::Color color;
+    };
+    enum Profs
+    {
+        soldier,
+        archer,
+        normalMonster,
+        giantMonster
     };
     std::map<int, ArmyLayer> armyLayers;
     sf::Shader armyShader;

@@ -12,6 +12,7 @@ void Civilization::addCivilization(World &world, int index)
 
 void Civilization::createCivilization(World &world)
 {
+    /*
     std::random_device rd;
     std::mt19937 rng(rd());
     std::uniform_int_distribution<int> dist(0, world.lands.size() - 1);
@@ -26,6 +27,12 @@ void Civilization::createCivilization(World &world)
         !world.isValid(id + Config::civilizationPlaceY * Config::sizeX)
         );
         spawn = id;
+        */
+       //
+       int id;
+       id = Config::civSpawnPoint;
+       spawn = id;
+       //
         addTilesToPossibleVillage(world, spawn, Config::civilizationPlaceX);
         for(int i = 0; i < Config::civilizationPlaceX; i++)
         {

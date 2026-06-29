@@ -5,6 +5,8 @@ uniform float spacingY;
 uniform float time;
 uniform float noise;
 uniform float formationWidth;
+uniform vec4 color;
+
 uniform vec2 armyMain;
 
 void main()
@@ -33,6 +35,9 @@ void main()
     
     gl_Position = gl_ModelViewProjectionMatrix * pos;
     
+    /*
     float debug = fract(id * 0.001);
     gl_FrontColor = vec4(debug, 0.0, 0.0, 1.0);
+    */
+    gl_FrontColor = color;
 }

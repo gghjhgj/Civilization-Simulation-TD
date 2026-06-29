@@ -1,5 +1,6 @@
 #include "RendererSFML.h"
 #include "Army.h"
+#include "Monsters.h"
 RendererSFML::RendererSFML(int w, int h, int cellSize)
     : window(sf::VideoMode({(unsigned)(w * cellSize), (unsigned)(h * cellSize)}), "Simulation"),
       cellSize(cellSize),
@@ -41,7 +42,13 @@ void RendererSFML::begin()
         }
     }
 }
-
+void RendererSFML::setArmyColors()
+{
+    armyLayers[Profs::soldier].color = sf::Color::Black;
+    armyLayers[Profs::archer].color = sf::Color::Black;
+    armyLayers[Profs::normalMonster].color = sf::Color::Red;
+    armyLayers[Profs::giantMonster].color = sf::Color::Red;
+}
 void RendererSFML::updateCellPixels(int x, int y, sf::Color color)
 {
     int startX = x * cellSize;
@@ -92,8 +99,9 @@ void RendererSFML::render(World& world)
     }
     world.dirtyCells.clear();
 }
-void RendererSFML::addProfToBuffer(int profession, int logicID) 
+void RendererSFML::addProfToBuffer(int profession, Source source, int logicID) 
 {
+    if(source == Source::monstersClass) profession += 2;
     auto& layer = armyLayers[profession];
     sf::Vertex newVertex;
     newVertex.position = sf::Vector2f(0.f, 0.f);
@@ -149,26 +157,55 @@ void RendererSFML::end()
     armyShader.setUniform("windowSize", sf::Glsl::Vec2(window.getSize().x, window.getSize().y));
     armyShader.setUniform("time", time);
 
-    if(Army::instance != nullptr)
-    {
-        for(auto& [profID, layer] : armyLayers)
-        {
-            if (layer.armyVertices.empty()) continue;
-            auto& reg = Army::instance->armyRegistry[profID];
-            float spacingX = reg.armyShape.currentSpacingX;
-            float spacingY = reg.armyShape.currentSpacingY;
-            float noise = reg.armyShape.currentNoise;
-            float formationWidth = reg.armyShape.currentWidth;
-            float armyMainX = reg.armyMainIndex % Config::sizeX;
-            float armyMainY = reg.armyMainIndex / Config::sizeX;
+for(auto& [profID, layer] : armyLayers)
+{
+    if (layer.armyVertices.empty()) continue;
 
-            armyShader.setUniform("spacingX", spacingX);
-            armyShader.setUniform("spacingY", spacingY);
-            armyShader.setUniform("noise", noise);
-            armyShader.setUniform("formationWidth", formationWidth);
-            armyShader.setUniform("armyMain", sf::Glsl::Vec2(armyMainX, armyMainY));
-            window.draw(layer.armyLayer, states);
+    float spacingX = 0, spacingY = 0, noise = 0, formationWidth = 0;
+    float armyMainX = 0, armyMainY = 0;
+
+    if (profID == Profs::soldier || profID == Profs::archer) 
+    {
+        if (Army::instance != nullptr) 
+        {
+            auto& reg = Army::instance->armyRegistry[profID];
+            spacingX = reg.armyShape.currentSpacingX;
+            spacingY = reg.armyShape.currentSpacingY;
+            noise = reg.armyShape.currentNoise;
+            formationWidth = reg.armyShape.currentWidth;
+            armyMainX = reg.armyMainIndex % Config::sizeX;
+            armyMainY = reg.armyMainIndex / Config::sizeX;
         }
     }
+    else if (profID == Profs::normalMonster || profID == Profs::giantMonster)
+    {
+        if (Monsters::instance != nullptr) 
+        {
+            auto& reg = Monsters::instance->monstersRegistry[profID-2]; 
+            spacingX = reg.monstersShape.currentSpacingX; 
+            spacingY = reg.monstersShape.currentSpacingY;
+            noise = reg.monstersShape.currentNoise;
+            formationWidth = reg.monstersShape.currentWidth;
+            armyMainX = reg.monstersMainIndex % Config::sizeX;
+            armyMainY = reg.monstersMainIndex / Config::sizeX;
+        }
+    }
+    armyShader.setUniform("spacingX", spacingX);
+    armyShader.setUniform("spacingY", spacingY);
+    armyShader.setUniform("noise", noise);
+    armyShader.setUniform("formationWidth", formationWidth);
+    armyShader.setUniform("armyMain", sf::Glsl::Vec2(armyMainX, armyMainY));
+    
+    armyShader.setUniform("color", sf::Glsl::Vec4(
+        layer.color.r / 255.f, 
+        layer.color.g / 255.f, 
+        layer.color.b / 255.f, 
+        layer.color.a / 255.f
+    ));            
+    
+    window.draw(layer.armyLayer, states);
+
+    }
+    
     window.display();
 }

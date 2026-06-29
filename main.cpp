@@ -9,6 +9,7 @@
 #include "Streets.h"
 #include "Walls.h"
 #include "Army.h"
+#include "Monsters.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -32,7 +33,7 @@ int main() {
     Streets streets;
     Walls walls;
     Army army;
-
+    Monsters monsters;
     RendererSFML renderer(Config::WindowSizeX, Config::WindowSizeY, 1);
 
     world.init();
@@ -60,7 +61,7 @@ float fileTimer = 0.f;
 float renderTimer = 0.f;
 
 int ticksCount = 0;
-int framesCount = 0;
+int framesCount = 0; 
 while (renderer.isOpen())
 {
     float deltaTime = clock.restart().asSeconds();
@@ -100,38 +101,62 @@ while (renderer.isOpen())
     }
     if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForBuildingWall == 0)
     {
+        if(monsters.monstersRegistry[0].hp.empty())
+        {
+        monsters.spawnDecision(civilization);
+        monsters.waveInit();
+        monsters.monstersCreate(renderer);
+        }
         walls.buildWalls(world, civilization, Walls::WallsTypes::woodenWall);
     }
     if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForAddingHumansToArmy == 0) //&& army.armyRegistry[Army::ArmyProfession::soldier].index.size() < 5000 && (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
     {
         army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
     }
+    /*
     if(world.allTicksCount%100 == 0)
     {
+        /*
         for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
         {
         Army::ArmyProfession profession = Army::ArmyProfession(i);
-        army.spacingController(profession);
-        army.posSpacing(profession);
+        //army.spacingController(profession);
+        //army.posSpacing(profession);
         army.noiseController(profession);
-        army.widthController(profession);
+        army.widthController(monsters, profession);
         army.posWidth(profession);
         }
+        */
+       /*
+        for(int i = 0; i < Monsters::MonstersTypes::COUNT; i++)
+        {
+        Monsters::MonstersTypes types = Monsters::MonstersTypes(i);
+        //monsters.spacingController(types);
+        //monsters.posSpacing(types);
+        monsters.noiseController(types);
+        monsters.widthController(types);
+        monsters.posWidth(types);
+        }
+        
     }
+    */
     civilization.assignHumansToHouse(human);
     food.foodRespawn(world);
     stone.stoneRespawn(world);
     tree.treeRespawn(world);
     human.humanMove(world, civilization, streets, food, tree, stone, human);
+    army.armyController(monsters);
+    monsters.monstersController(army);
+    /*
     for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
     {
         Army::ArmyProfession profession = Army::ArmyProfession(i);
         army.armyMove(profession);
     }
-    
+    */
     if (fileTimer >= 1.0f)
     {
-        world.writeStatsToTxt(ticksCount, framesCount, civilization, human, stone, food, tree, army);
+        world.writeStatsToTxt(ticksCount, framesCount, civilization, human, stone, food, tree, army, monsters);
         fileTimer = 0.f;
         ticksCount = 0;
         framesCount = 0;
@@ -156,7 +181,12 @@ while (renderer.isOpen())
 
         world.makeAllHumansDirty(human);
     }
-
+    
+    if(world.allTicksCount > Config::ticksForBuildingWall)
+    {
+        Sleep(1);
+    }
+        
     world.allTicksCount++;
 }
 

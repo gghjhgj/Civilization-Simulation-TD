@@ -10,7 +10,7 @@ class Civilization;
 class World;
 class RendererSFML;
 class Human;
-
+class Monsters;
 class Army
 {
     public:
@@ -18,15 +18,15 @@ class Army
     static Army* instance;
     struct ArmyShapeProfile
     {
-        int currentSpacingX = 1;
-        int targetSpacingX = 1;
-        int currentSpacingY = 1;
-        int targetSpacingY = 1;
+        int currentSpacingX = 2;
+        int targetSpacingX = 2;
+        int currentSpacingY = 2;
+        int targetSpacingY = 2;
         int currentNoise = 0;
         int targetNoise = 0;
 
-        int currentWidth = 4;
-        int targetWidth = 4;
+        int currentWidth = 16;
+        int targetWidth = 16;
     };
 
     enum ArmyProfession
@@ -35,6 +35,13 @@ class Army
         archer,
         
         COUNT
+    };
+    struct Corners
+    {
+        int leftTopCorner;
+        int rightTopCorner;
+        int leftBotConrer;
+        int rightBotCorner;
     };
     struct ArmyData
     {
@@ -55,14 +62,10 @@ class Army
         int armyAssignedToProfession;
         int armyTotalDmg;
         ArmyShapeProfile armyShape;
+        Corners corners;
     };
     std::array<ArmyData, ArmyProfession::COUNT> armyRegistry;
 
-    struct XY
-    {
-        int x;
-        int y;
-    };
     enum Dirs
     {
         left,
@@ -75,9 +78,9 @@ class Army
     int assignDecision();
     void addHumanToArmy(RendererSFML &renderer);
     void addHumansToArmy(World &world, Human &human, Civilization & civilization, RendererSFML &renderer, ArmyProfession profession);
-    void giveArmyTargetIndex(ArmyProfession profession);
+    void giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession);
     Dirs armyMoveDecision(ArmyProfession profession);
-    void armyMove(ArmyProfession profession);
+    void armyMove(Monsters &monsters, ArmyProfession profession);
 
 
     void spacingController(ArmyProfession profession);
@@ -85,6 +88,10 @@ class Army
 
     void noiseController(ArmyProfession profession);
 
-    void widthController(ArmyProfession profession);
+    void widthController(Monsters &monsters, ArmyProfession profession);
     void posWidth(ArmyProfession profession);
+
+    void cornerController(ArmyProfession profession);
+
+    void armyController(Monsters &monsters);
 };

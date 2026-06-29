@@ -6,12 +6,13 @@
 #include "Tree.h"
 #include "Streets.h"
 #include "Army.h"
+#include "Monsters.h"
 World::Cell World::grid[Config::sizeX * Config::sizeY];
 #include <fstream>
 
 
 
-void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Human &human, Stone &stone, Food &food, Tree &tree, Army &army)
+void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Human &human, Stone &stone, Food &food, Tree &tree, Army &army, Monsters &monsters)
 {
     std::ofstream statsFile("stats.txt");
     
@@ -57,7 +58,14 @@ void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Huma
         statsFile << "ilosc ludzi w armii: " << army.armyRegistry[Army::ArmyProfession::soldier].hp.size() + 
         army.armyRegistry[Army::ArmyProfession::archer].hp.size() << "\n";
         statsFile << "ilosc zolnierzy: " << army.armyRegistry[Army::ArmyProfession::soldier].hp.size() << "\n";
-        statsFile << "ilosc lucznikow: " <<  army.armyRegistry[Army::ArmyProfession::archer].hp.size() << "\n";
+        statsFile << "ilosc lucznikow: " <<  army.armyRegistry[Army::ArmyProfession::archer].hp.size() << "\n\n";
+
+        statsFile << "potwory:\n";
+        statsFile << "ilosc potworow lacznie: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].hp.size() + 
+        monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].hp.size() << "\n";
+        statsFile << "ilosc zwyklych potworow: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].hp.size() << "\n";
+        statsFile << "ilosc gigantow: " << monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].hp.size() << "\n";
+
 
         
         statsFile.close();
