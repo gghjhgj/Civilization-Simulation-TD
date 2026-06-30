@@ -79,6 +79,7 @@ class Monsters
         Corners corners;
         int area;
         States states;
+        Army::ArmyProfession targetProfession;
     };
     std::array<MonstersData, MonstersTypes::COUNT> monstersRegistry;
 
@@ -112,5 +113,7 @@ class Monsters
     void cornerController(MonstersTypes types);
     void areaController(MonstersTypes types, int realWidth, int realHeight);
 
-    void monstersController(Army &army);
+    Army::ArmyProfession targetProfessionDecission(Army &army, MonstersTypes types);
+
+    void monstersController(Army &army, CombatSystem &combat);
 };

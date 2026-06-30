@@ -206,6 +206,8 @@ g++ *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system && app.exe
 g++ -g *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system && gdb app
 */
 
+
+
 /* szybkie
 g++ -O3 *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system && app.exe
 */
@@ -215,14 +217,6 @@ g++ -O3 -march=native -flto -ffast-math *.cpp -o app -lsfml-graphics -lsfml-wind
 /*
 g++ -Ofast -march=native -flto -funroll-loops -ffast-math *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
 */
-
-/*
-g++ -O3 -march=native -flto -ffast-math -fprofile-generate *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
-*/
-/*
-g++ -O3 -march=native -flto -ffast-math -fprofile-use *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
-*/
-
 
 /*
 g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofile-generate *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe

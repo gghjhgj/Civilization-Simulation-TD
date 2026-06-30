@@ -90,7 +90,7 @@ void Army::giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession)
     int realHeight = height * spacingY - spacingY;
     
     int x = 800;
-    int y = 500 - realHeight - (profession * 100);
+    int y = 500 - realHeight - (profession * 30) - 1;
     /* debug
     std::cout << "width " << width << std::endl;
     std::cout << "size " << entry.hp.size() << std::endl;
@@ -264,7 +264,34 @@ void Army::areaController(ArmyProfession profession, int realWidth, int realHeig
 {
     armyRegistry[profession].area = realWidth * realHeight;
 }
-void Army::armyController(Monsters &monsters)
+
+
+
+Monsters::MonstersTypes Army::targetMonstersDecision(Monsters &monsters, ArmyProfession profession)
+{
+    int maxCoverage = 0;
+    Monsters::MonstersTypes targetType = Monsters::MonstersTypes::COUNT;
+    auto &armyEntry = armyRegistry[profession].corners;
+    for(int i = 0; i < Monsters::MonstersTypes::COUNT; i++)
+    {
+        auto &monstersEntry = monsters.monstersRegistry[i].corners;
+        int coverage = CombatSystem::getCoverage(
+            armyEntry.leftTop,
+            armyEntry.rightBot,
+            monstersEntry.leftTop,
+            monstersEntry.rightBot
+        );
+        if(coverage > maxCoverage)
+        {
+            maxCoverage = coverage;
+            targetType = Monsters::MonstersTypes(i);
+        }
+    }
+    return targetType;
+}
+
+
+void Army::armyController(Monsters &monsters, CombatSystem &combat)
 {
     for(int i = 0; i < ArmyProfession::COUNT; i++)
     {

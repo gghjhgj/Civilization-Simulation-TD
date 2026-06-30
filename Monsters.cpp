@@ -273,7 +273,30 @@ void Monsters::areaController(MonstersTypes types, int realWidth, int realHeight
     monstersRegistry[types].area = realWidth * realHeight;
 }
 
-void Monsters::monstersController(Army &army)
+Army::ArmyProfession Monsters::targetProfessionDecission(Army &army, MonstersTypes types)
+{
+    int maxCoverage = 0;
+    Army::ArmyProfession targetProfession = Army::ArmyProfession::COUNT;
+    auto &monstersEntry = monstersRegistry[types].corners;
+    for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
+    {
+        auto &armyEntry = army.armyRegistry[i].corners;
+        int coverage = CombatSystem::getCoverage(
+            monstersEntry.leftTop,
+            monstersEntry.rightBot,
+            armyEntry.leftTop,
+            armyEntry.rightBot
+        );
+        if(coverage > maxCoverage)
+        {
+            maxCoverage = coverage;
+            targetProfession = Army::ArmyProfession(i);
+        }
+    }
+    return targetProfession;
+}
+
+void Monsters::monstersController(Army &army, CombatSystem &combat)
 {
     for(int i = 0; i < MonstersTypes::COUNT; i++)
     {
