@@ -291,7 +291,7 @@ Monsters::MonstersTypes Army::targetMonstersDecision(Monsters &monsters, ArmyPro
 }
 
 
-void Army::armyController(Monsters &monsters, CombatSystem &combat)
+void Army::armyController(Monsters &monsters)
 {
     for(int i = 0; i < ArmyProfession::COUNT; i++)
     {

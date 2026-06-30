@@ -115,5 +115,5 @@ class Monsters
 
     Army::ArmyProfession targetProfessionDecission(Army &army, MonstersTypes types);
 
-    void monstersController(Army &army, CombatSystem &combat);
+    void monstersController(Army &army);
 };

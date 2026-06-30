@@ -296,7 +296,7 @@ Army::ArmyProfession Monsters::targetProfessionDecission(Army &army, MonstersTyp
     return targetProfession;
 }
 
-void Monsters::monstersController(Army &army, CombatSystem &combat)
+void Monsters::monstersController(Army &army)
 {
     for(int i = 0; i < MonstersTypes::COUNT; i++)
     {

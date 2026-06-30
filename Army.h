@@ -107,6 +107,6 @@ class Army
     void areaController(ArmyProfession profession, int realWidth, int realHeight);
 
     Monsters::MonstersTypes targetMonstersDecision(Monsters &monsters, ArmyProfession profession);
-    
-    void armyController(Monsters &monsters, CombatSystem &combat);
+
+    void armyController(Monsters &monsters);
 };
