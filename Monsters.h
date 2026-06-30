@@ -10,12 +10,14 @@ class Civilization;
 class World;
 class RendererSFML;
 class Army;
+class CombatSystem;
 
 class Monsters
 {
     public:
     Monsters();
     static Monsters* instance;
+
     struct MonstersShapeProfile
     {
         int currentSpacingX = 2;
@@ -35,6 +37,19 @@ class Monsters
         giantMonster,
         
         COUNT
+    };
+    struct Corners
+    {
+        int leftTop;
+        int rightTop;
+        int leftBot;
+        int rightBot;
+    };
+    enum States
+    {
+        idle,
+        moving,
+        combat
     };
     struct MonstersData
     {
@@ -61,6 +76,9 @@ class Monsters
         int monstersAssignedToType;
         int monstersTotalDMG;
         MonstersShapeProfile monstersShape;
+        Corners corners;
+        int area;
+        States states;
     };
     std::array<MonstersData, MonstersTypes::COUNT> monstersRegistry;
 
@@ -79,9 +97,9 @@ class Monsters
 
     void monstersCreate(RendererSFML &renderer);
     
-    void giveMonstersTargetIndex(MonstersTypes types);
+    void giveMonstersTargetIndex(Army &army, MonstersTypes types);
     Dirs monstersMoveDecision(MonstersTypes types);
-    void monstersMove(MonstersTypes types);
+    void monstersMove(Army &army, MonstersTypes types);
 
     void spacingController(MonstersTypes types);
     void posSpacing(MonstersTypes types);
@@ -91,6 +109,8 @@ class Monsters
     void widthController(MonstersTypes types);
     void posWidth(MonstersTypes types);
 
+    void cornerController(MonstersTypes types);
+    void areaController(MonstersTypes types, int realWidth, int realHeight);
 
     void monstersController(Army &army);
 };

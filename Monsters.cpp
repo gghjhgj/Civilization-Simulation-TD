@@ -3,7 +3,7 @@
 #include "Monsters.h"
 #include "World.h"
 #include "RendererSFML.h"
-
+#include "CombatSystem.h"
 
 Monsters* Monsters::instance = nullptr;
 
@@ -71,6 +71,7 @@ void Monsters::waveInit()
         else
         monstersRegistry[i].monstersMainIndex = monstersRegistry[i].monstersSpawn;
 
+        monstersRegistry[i].states = States::idle;
         monstersRegistry[i].monstersTargetIndex = -1;
     }
 }
@@ -86,6 +87,7 @@ void Monsters::monstersCreate(RendererSFML &renderer)
                 renderer.addProfToBuffer(i, RendererSFML::Source::monstersClass, j);
                 monstersRegistry[i].addNormalMonster(j);
             }
+            monstersRegistry[i].monstersTotalDMG = Config::normalMonsterDamage * Config::normalMonstersCreated;
         }
         else if(i == 1)
         {
@@ -94,23 +96,22 @@ void Monsters::monstersCreate(RendererSFML &renderer)
                 renderer.addProfToBuffer(i, RendererSFML::Source::monstersClass, j);
                 monstersRegistry[i].addGiant(j);
             }
+            monstersRegistry[i].monstersTotalDMG = Config::giantMonsterDamage * Config::giantMonstersCreated;
         }
     }
 }
 
-void Monsters::giveMonstersTargetIndex(MonstersTypes types)
+void Monsters::giveMonstersTargetIndex(Army &army, MonstersTypes types)
 {
     //y * size + x
-    /*
+    if(monstersRegistry[types].states == States::idle)
+    {
     int x = 800;
-    int y = 300 - (profession * 100);
-    int start = y * Config::sizeX + x;
-    armyRegistry[profession].armyTargetIndex = start;
-    */
-    int x = 800;
-    int y = 600; - (types * 100);
+    int y = 500; - (types * 100);
     int start = y * Config::sizeX + x;
     monstersRegistry[types].monstersTargetIndex = start;
+    monstersRegistry[types].states = States::moving;
+    }
 }
 Monsters::Dirs Monsters::monstersMoveDecision(MonstersTypes types)
 {
@@ -132,7 +133,7 @@ Monsters::Dirs Monsters::monstersMoveDecision(MonstersTypes types)
     return none;
 }
 
-void Monsters::monstersMove(MonstersTypes types)
+void Monsters::monstersMove(Army &army, MonstersTypes types)
 {
     auto dir = monstersMoveDecision(types);
     switch(dir)
@@ -160,7 +161,7 @@ void Monsters::monstersMove(MonstersTypes types)
         case none:
         default:
         {
-            giveMonstersTargetIndex(types);
+            giveMonstersTargetIndex(army, types);
             break;
         }
     }
@@ -241,6 +242,36 @@ void Monsters::posWidth(MonstersTypes types)
     monstersRegistry[types].monstersShape.currentWidth = current;
 }
 
+void Monsters::cornerController(MonstersTypes types)
+{
+    auto &entry = monstersRegistry[types];
+
+    int mainIndex = entry.monstersMainIndex;
+    int width = entry.monstersShape.currentWidth;
+    int height = (width > 0) ? (entry.hp.size() + width - 1) / width : 0; // 10/3 = 4 not 3
+    int spacingX = entry.monstersShape.currentSpacingX;
+    int spacingY = entry.monstersShape.currentSpacingY;
+    int realWidth = width * spacingX - spacingX;
+    int realHeight = height * spacingY - spacingY;
+
+    int leftTop = mainIndex;
+    int rightTop = mainIndex + realWidth;
+
+    int leftBot = mainIndex - (realHeight*Config::sizeX);
+    int rightBot = leftBot + realWidth;
+
+    entry.corners.leftTop = leftTop;
+    entry.corners.rightTop = rightTop;
+    entry.corners.leftBot = leftBot;
+    entry.corners.rightBot = rightBot;
+
+    areaController(types, realWidth, realHeight);
+}
+
+void Monsters::areaController(MonstersTypes types, int realWidth, int realHeight)
+{
+    monstersRegistry[types].area = realWidth * realHeight;
+}
 
 void Monsters::monstersController(Army &army)
 {
@@ -252,7 +283,29 @@ void Monsters::monstersController(Army &army)
         noiseController(types);
         widthController(types);
         posWidth(types);
-        if(monstersRegistry[0].hp.size() == 0) continue;
-        monstersMove(types);
+        if(monstersRegistry[0].hp.size() == 0)
+        {
+            cornerController(types);
+            continue;
+        } 
+        monstersMove(army, types);
+        cornerController(types);
+        /* debug
+        if(i == 0)
+        {
+        auto &entry = monstersRegistry[types];
+        std::cout << "mainIndex " << entry.monstersMainIndex
+        << " width " << entry.monstersShape.currentWidth
+        << " || " 
+        << " leftTop " << entry.corners.leftTop 
+        << " rightTop " << entry.corners.rightTop
+        << " leftBot " << entry.corners.leftBot
+        << " rightBot " << entry.corners.rightBot
+        << " || "
+        << " area " << entry.area
+        << std::endl;
+        }
+        */
+        
     }
 }

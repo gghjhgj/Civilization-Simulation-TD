@@ -11,11 +11,14 @@ class World;
 class RendererSFML;
 class Human;
 class Monsters;
+class CombatSystem;
+
 class Army
 {
     public:
     Army();
     static Army* instance;
+
     struct ArmyShapeProfile
     {
         int currentSpacingX = 2;
@@ -38,10 +41,16 @@ class Army
     };
     struct Corners
     {
-        int leftTopCorner;
-        int rightTopCorner;
-        int leftBotConrer;
-        int rightBotCorner;
+        int leftTop;
+        int rightTop;
+        int leftBot;
+        int rightBot;
+    };
+    enum States
+    {
+        idle,
+        moving,
+        combat
     };
     struct ArmyData
     {
@@ -60,9 +69,11 @@ class Army
         int armyMainIndex;
         int armyTargetIndex;
         int armyAssignedToProfession;
-        int armyTotalDmg;
+        int armyTotalDMG;
         ArmyShapeProfile armyShape;
         Corners corners;
+        int area;
+        States states;
     };
     std::array<ArmyData, ArmyProfession::COUNT> armyRegistry;
 
@@ -92,6 +103,7 @@ class Army
     void posWidth(ArmyProfession profession);
 
     void cornerController(ArmyProfession profession);
+    void areaController(ArmyProfession profession, int realWidth, int realHeight);
 
     void armyController(Monsters &monsters);
 };
