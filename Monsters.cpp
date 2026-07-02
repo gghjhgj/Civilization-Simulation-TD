@@ -115,8 +115,19 @@ void Monsters::giveMonstersTargetIndex(Army &army, MonstersTypes types)
 }
 Monsters::Dirs Monsters::monstersMoveDecision(MonstersTypes types)
 {
-    int monstersIndex = monstersRegistry[types].monstersMainIndex;
-    int targetIndex = monstersRegistry[types].monstersTargetIndex;
+    auto &entry = monstersRegistry[types];
+    int monstersIndex = entry.monstersMainIndex;
+    int targetIndex = entry.monstersTargetIndex;
+    if(monstersIndex == targetIndex)
+    {
+        entry.monstersTargetIndex = -1;
+        entry.states = States::waitingForCombat;
+        CombatSystem::incrementArmiesReady();
+        if(CombatSystem::areArmiesReady())
+        {
+            CombatSystem::startCombat();
+        }
+    }
 
     int monstersX = monstersIndex % Config::sizeX;
     int monstersY = monstersIndex / Config::sizeX;
@@ -133,9 +144,9 @@ Monsters::Dirs Monsters::monstersMoveDecision(MonstersTypes types)
     return none;
 }
 
-void Monsters::monstersMove(Army &army, MonstersTypes types)
+void Monsters::monstersMove(Army &army, MonstersTypes types, Dirs dir)
 {
-    auto dir = monstersMoveDecision(types);
+    //auto dir = monstersMoveDecision(types);
     switch(dir)
     {
         case left:
@@ -273,7 +284,7 @@ void Monsters::areaController(MonstersTypes types, int realWidth, int realHeight
     monstersRegistry[types].area = realWidth * realHeight;
 }
 
-Army::ArmyProfession Monsters::targetProfessionDecission(Army &army, MonstersTypes types)
+void Monsters::targetProfessionDecission(Army &army, MonstersTypes types)
 {
     int maxCoverage = 0;
     Army::ArmyProfession targetProfession = Army::ArmyProfession::COUNT;
@@ -293,7 +304,55 @@ Army::ArmyProfession Monsters::targetProfessionDecission(Army &army, MonstersTyp
             targetProfession = Army::ArmyProfession(i);
         }
     }
-    return targetProfession;
+    if(targetProfession == Army::ArmyProfession::COUNT)
+    {
+        targetProfession = Army::ArmyProfession::soldier;
+    }
+    monstersRegistry[types].targetProfession = targetProfession;
+}
+
+Monsters::Dirs Monsters::positioningWhileCombat(Army &army, MonstersTypes types)
+{
+    static constexpr int offsets[4]
+    {
+            -Config::sizeX,
+         -1,               +1,
+            +Config::sizeX
+    };
+    static constexpr Monsters::Dirs dirs[4]
+    {
+        Monsters::Dirs::up,
+        Monsters::Dirs::left,
+        Monsters::Dirs::right,
+        Monsters::Dirs::down
+    };
+
+    int target = monstersRegistry[types].targetProfession;
+    auto &monstersEntry = monstersRegistry[types].corners;
+    auto &armyEntry = army.armyRegistry[target].corners;
+    int maxCoverage = CombatSystem::getCoverage(
+            monstersEntry.leftTop,
+            monstersEntry.rightBot,
+            armyEntry.leftTop,
+            armyEntry.rightBot
+        );
+        std::cout << "max coverage " << maxCoverage << " ";
+    for(int i = 0; i < std::size(offsets); i++)
+    {
+        int coverage = CombatSystem::getCoverage(
+            monstersEntry.leftTop + offsets[i],
+            monstersEntry.rightBot + offsets[i],
+            armyEntry.leftTop,
+            armyEntry.rightBot
+        );
+        std::cout << "check " << i << " " << coverage << " ";
+        if(coverage > maxCoverage)
+        {
+            return dirs[i];
+        }
+    }
+
+    return Monsters::Dirs::none;
 }
 
 void Monsters::monstersController(Army &army)
@@ -310,9 +369,30 @@ void Monsters::monstersController(Army &army)
         {
             cornerController(types);
             continue;
-        } 
-        monstersMove(army, types);
-        cornerController(types);
+        }
+        if(monstersRegistry[types].states == Monsters::States::idle)
+        {
+            std::cout << "got to idle" << std::endl;
+            giveMonstersTargetIndex(army, types);
+            continue;
+        }
+        if(monstersRegistry[types].states == Monsters::States::moving)
+        {
+            std::cout << "got to moving" << std::endl;
+            auto dir = monstersMoveDecision(types);
+            monstersMove(army, types, dir);
+            cornerController(types);
+            continue;
+        }
+        if(monstersRegistry[types].states == Monsters::States::combat)
+        {
+            std::cout << "got to combat" << std::endl;
+            targetProfessionDecission(army, types);
+            auto dir = positioningWhileCombat(army, types);
+            monstersMove(army, types, dir);
+            cornerController(types);
+            continue;
+        }
         /* debug
         if(i == 0)
         {

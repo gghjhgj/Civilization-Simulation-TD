@@ -50,6 +50,7 @@ class Army
     {
         idle,
         moving,
+        waitingForCombat,
         combat
     };
     struct ArmyData
@@ -74,7 +75,7 @@ class Army
         Corners corners;
         int area;
         States states;
-        Monsters::MonstersTypes targetType;
+        int targetType;
     };
     std::array<ArmyData, ArmyProfession::COUNT> armyRegistry;
 
@@ -106,7 +107,8 @@ class Army
     void cornerController(ArmyProfession profession);
     void areaController(ArmyProfession profession, int realWidth, int realHeight);
 
-    Monsters::MonstersTypes targetMonstersDecision(Monsters &monsters, ArmyProfession profession);
+    void targetMonstersDecision(Monsters &monsters, ArmyProfession profession);
 
+    void positioningWhileCombat(Monsters &monsters, ArmyProfession profession);
     void armyController(Monsters &monsters);
 };

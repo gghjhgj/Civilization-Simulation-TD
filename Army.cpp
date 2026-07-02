@@ -108,8 +108,19 @@ void Army::giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession)
 }
 Army::Dirs Army::armyMoveDecision(ArmyProfession profession)
 {
-    int armyIndex = armyRegistry[profession].armyMainIndex;
-    int targetIndex = armyRegistry[profession].armyTargetIndex;
+    auto &entry = armyRegistry[profession];
+    int armyIndex = entry.armyMainIndex;
+    int targetIndex = entry.armyTargetIndex;
+    if(armyIndex == targetIndex)
+    {
+        entry.armyTargetIndex = -1;
+        entry.states = States::waitingForCombat;
+        CombatSystem::incrementArmiesReady();
+        if(CombatSystem::areArmiesReady())
+        {
+            CombatSystem::startCombat();
+        }
+    }
 
     int armyX = armyIndex % Config::sizeX;
     int armyY = armyIndex / Config::sizeX;
@@ -267,7 +278,7 @@ void Army::areaController(ArmyProfession profession, int realWidth, int realHeig
 
 
 
-Monsters::MonstersTypes Army::targetMonstersDecision(Monsters &monsters, ArmyProfession profession)
+void Army::targetMonstersDecision(Monsters &monsters, ArmyProfession profession)
 {
     int maxCoverage = 0;
     Monsters::MonstersTypes targetType = Monsters::MonstersTypes::COUNT;
@@ -287,9 +298,13 @@ Monsters::MonstersTypes Army::targetMonstersDecision(Monsters &monsters, ArmyPro
             targetType = Monsters::MonstersTypes(i);
         }
     }
-    return targetType;
+    armyRegistry[profession].targetType = targetType;
 }
 
+void Army::positioningWhileCombat(Monsters &monsters, ArmyProfession profession)
+{
+    
+}
 
 void Army::armyController(Monsters &monsters)
 {
@@ -308,6 +323,10 @@ void Army::armyController(Monsters &monsters)
         }
         armyMove(monsters, profession);
         cornerController(profession);
+        if(armyRegistry[profession].states == States::combat)
+        {
+
+        }
         /* debug
         if(i == 0)
         {

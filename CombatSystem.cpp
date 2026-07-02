@@ -2,13 +2,19 @@
 #include "Army.h"
 #include "CombatSystem.h"
 
+CombatSystem* CombatSystem::instance = nullptr;
+
+CombatSystem::CombatSystem() {
+    instance = this;
+}
+
 int CombatSystem::getCoverage(int armyLeftTop, int armyRightBot, int monstersLeftTop, int monstersRightBot)
 {
     int armyFirstX = armyLeftTop % Config::sizeX;
     int armyLastX = armyRightBot % Config::sizeX;
     int armyMaxX = std::max(armyFirstX, armyLastX);
     int armyMinX = std::min(armyFirstX, armyLastX);
-
+    
     int armyFirstY = armyLeftTop / Config::sizeX;
     int armyLastY = armyRightBot / Config::sizeX;
     int armyMaxY = std::max(armyFirstY, armyLastY);
@@ -45,4 +51,47 @@ float CombatSystem::getCoveragePercent(int coverage, int area)
 int CombatSystem::getDMG(float coveragePercent, int totalDMG)
 {
     return totalDMG * coveragePercent;
+}
+
+void CombatSystem::incrementArmiesReady()
+{
+    if (instance != nullptr)
+    {
+        instance->armiesReadyForCombat++;
+    }
+}
+
+bool CombatSystem::areArmiesReady()
+{
+    if(instance == nullptr) return false;
+    return instance->armiesReadyForCombat == instance->armiesNeededForStartingCombat;
+}
+
+void CombatSystem::startCombat()
+{
+    std::cout << "Combat started" << std::endl;
+    if(Army::instance != nullptr)
+    {
+        for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
+        {
+            Army::instance->armyRegistry[i].states = Army::States::combat;
+        }
+    }
+    else 
+    {
+        std::cout << "no army instance" << std::endl;
+    }
+
+
+    if(Monsters::instance != nullptr)
+    {
+        for(int i = 0; i < Monsters::MonstersTypes::COUNT; i++)
+        {
+            Monsters::instance->monstersRegistry[i].states = Monsters::States::combat;
+        }
+    } 
+    else
+    {
+        std::cout << "no monsters instance" << std::endl;
+    }
 }

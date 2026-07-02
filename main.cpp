@@ -10,6 +10,7 @@
 #include "Walls.h"
 #include "Army.h"
 #include "Monsters.h"
+#include "CombatSystem.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -34,6 +35,7 @@ int main() {
     Walls walls;
     Army army;
     Monsters monsters;
+    CombatSystem combatSystem;
     RendererSFML renderer(Config::WindowSizeX, Config::WindowSizeY, 1);
 
     world.init();
@@ -206,14 +208,6 @@ g++ *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system && app.exe
 g++ -g *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system && gdb app
 */
 
-
-
-/* szybkie
-g++ -O3 *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system && app.exe
-*/
-/*
-g++ -O3 -march=native -flto -ffast-math *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
-*/
 /*
 g++ -Ofast -march=native -flto -funroll-loops -ffast-math *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
 */

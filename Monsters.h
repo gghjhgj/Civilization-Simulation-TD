@@ -3,6 +3,7 @@
 #include <array>
 #include <vector>
 #include <algorithm>
+#include <iterator>
 #include <cmath>
 #include <windows.h>
 #include "Config.h"
@@ -49,6 +50,7 @@ class Monsters
     {
         idle,
         moving,
+        waitingForCombat,
         combat
     };
     struct MonstersData
@@ -79,7 +81,7 @@ class Monsters
         Corners corners;
         int area;
         States states;
-        Army::ArmyProfession targetProfession;
+        int targetProfession;
     };
     std::array<MonstersData, MonstersTypes::COUNT> monstersRegistry;
 
@@ -100,7 +102,7 @@ class Monsters
     
     void giveMonstersTargetIndex(Army &army, MonstersTypes types);
     Dirs monstersMoveDecision(MonstersTypes types);
-    void monstersMove(Army &army, MonstersTypes types);
+    void monstersMove(Army &army, MonstersTypes types, Dirs dir);
 
     void spacingController(MonstersTypes types);
     void posSpacing(MonstersTypes types);
@@ -113,7 +115,8 @@ class Monsters
     void cornerController(MonstersTypes types);
     void areaController(MonstersTypes types, int realWidth, int realHeight);
 
-    Army::ArmyProfession targetProfessionDecission(Army &army, MonstersTypes types);
+    void targetProfessionDecission(Army &army, MonstersTypes types);
 
+    Dirs positioningWhileCombat(Army &army, MonstersTypes types);
     void monstersController(Army &army);
 };
