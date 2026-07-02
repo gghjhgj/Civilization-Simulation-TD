@@ -85,18 +85,23 @@ void Monsters::monstersCreate(RendererSFML &renderer)
             for(int j = 0; j < Config::normalMonstersCreated; j++)
             {
                 renderer.addProfToBuffer(i, RendererSFML::Source::monstersClass, j);
-                monstersRegistry[i].addNormalMonster(j);
+                monstersRegistry[i].logicID.push_back(j);
+
             }
-            monstersRegistry[i].monstersTotalDMG = Config::normalMonsterDamage * Config::normalMonstersCreated;
+            monstersRegistry[i].totalDMG = Config::normalMonsterDamage * Config::normalMonstersCreated;
+            monstersRegistry[i].totalHP = Config::normalMonsterHP * Config::normalMonstersCreated;
+            monstersRegistry[i].avarageHP = Config::normalMonsterHP;
         }
         else if(i == 1)
         {
             for(int j = 0; j < Config::giantMonstersCreated; j++)
             {
                 renderer.addProfToBuffer(i, RendererSFML::Source::monstersClass, j);
-                monstersRegistry[i].addGiant(j);
+                monstersRegistry[i].logicID.push_back(j);
             }
-            monstersRegistry[i].monstersTotalDMG = Config::giantMonsterDamage * Config::giantMonstersCreated;
+            monstersRegistry[i].totalDMG = Config::giantMonsterDamage * Config::giantMonstersCreated;
+            monstersRegistry[i].totalHP = Config::normalMonsterHP * Config::normalMonstersCreated;
+            monstersRegistry[i].avarageHP = Config::normalMonsterHP;
         }
     }
 }
@@ -231,10 +236,10 @@ void Monsters::widthController(MonstersTypes types)
     int current = monstersRegistry[types].monstersShape.currentWidth;
     if(current == 1)
     {
-        monstersRegistry[types].monstersShape.currentWidth = sqrt(monstersRegistry[types].hp.size()) * 2;
+        monstersRegistry[types].monstersShape.currentWidth = sqrt(monstersRegistry[types].logicID.size()) * 2;
         return;
     }
-    monstersRegistry[types].monstersShape.targetWidth = sqrt(monstersRegistry[types].hp.size()) * 2;
+    monstersRegistry[types].monstersShape.targetWidth = sqrt(monstersRegistry[types].logicID.size()) * 2;
 }
 
 void Monsters::posWidth(MonstersTypes types)
@@ -259,11 +264,11 @@ void Monsters::cornerController(MonstersTypes types)
 
     int mainIndex = entry.monstersMainIndex;
     int width = entry.monstersShape.currentWidth;
-    int height = (width > 0) ? (entry.hp.size() + width - 1) / width : 0; // 10/3 = 4 not 3
+    int height = (width > 0) ? (entry.logicID.size() + width - 1) / width : 0; // 10/3 = 4 not 3
     int spacingX = entry.monstersShape.currentSpacingX;
     int spacingY = entry.monstersShape.currentSpacingY;
-    int realWidth = width * spacingX - spacingX;
-    int realHeight = height * spacingY - spacingY;
+    int realWidth = width * spacingX - spacingX + 1; //bez + 1
+    int realHeight = height * spacingY - spacingY + 1; // bez + 1
 
     int leftTop = mainIndex;
     int rightTop = mainIndex + realWidth;
@@ -366,7 +371,7 @@ void Monsters::monstersController(Army &army)
         noiseController(types);
         widthController(types);
         posWidth(types);
-        if(monstersRegistry[0].hp.size() == 0)
+        if(monstersRegistry[0].logicID.size() == 0)
         {
             cornerController(types);
             continue;
@@ -399,6 +404,21 @@ void Monsters::monstersController(Army &army)
             auto dir = positioningWhileCombat(army, types);
             monstersMove(army, types, dir);
             cornerController(types);
+            auto &cornerEntry = entry.corners;
+            int target = entry.targetProfession;
+            auto &armyEntry = army.armyRegistry[target].corners;
+            int coverage = CombatSystem::getCoverage(
+                armyEntry.leftTop,
+                armyEntry.rightBot,
+                cornerEntry.leftTop,
+                cornerEntry.rightBot
+            );
+            std::cout << "MONSTERS[" << i << "]" << std::endl;
+            std::cout << "coverage: " << coverage << ", army area: " << entry.area;
+            float coveragePercent = CombatSystem::getCoveragePercent(coverage, entry.area);
+            std::cout << ", coveragePercent: " << coveragePercent << std::endl;
+            int damage = CombatSystem::getDMG(coveragePercent, entry.totalDMG);
+            std::cout << "damage: " << damage << "\n" << std::endl;
             /*
             std::cout
             << "leftTop: " << entry.corners.leftTop 

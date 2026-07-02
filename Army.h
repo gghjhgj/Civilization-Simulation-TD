@@ -56,26 +56,19 @@ class Army
     struct ArmyData
     {
         std::vector<int> logicID;
-        std::vector<int> hp;
-        std::vector<int> stamina;
-        std::vector<int> damage;
-        void add(int logicIDARG, int hpARG = Config::humanInArmyHP, int staminaARG = Config::humanInArmyStamina, int damageARG = Config::humanInArmyDamage)
-        {
-            logicID.push_back(logicIDARG);
-            hp.push_back(hpARG);
-            stamina.push_back(staminaARG);
-            damage.push_back(damageARG);
-        }
 
         int armyMainIndex;
         int armyTargetIndex;
         int armyAssignedToProfession;
-        int armyTotalDMG;
         ArmyShapeProfile armyShape;
         Corners corners;
         int area;
         States states;
         int targetType;
+
+        int totalDMG;
+        int totalHP;
+        int avarageHP;
     };
     std::array<ArmyData, ArmyProfession::COUNT> armyRegistry;
 

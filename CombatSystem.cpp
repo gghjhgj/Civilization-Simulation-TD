@@ -37,8 +37,8 @@ int CombatSystem::getCoverage(int armyLeftTop, int armyRightBot, int monstersLef
     int startY = std::max(armyMinY, monstersMinY);
     int endY = std::min(armyMaxY, monstersMaxY);
 
-    int coverageX = std::max(0, endX - startX+1);
-    int coverageY = std::max(0, endY - startY+1);
+    int coverageX = std::max(0, endX - startX); //+1
+    int coverageY = std::max(0, endY - startY); //+1
 
     return coverageX * coverageY;
 }

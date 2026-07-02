@@ -103,7 +103,7 @@ while (renderer.isOpen())
     }
     if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForBuildingWall == 0)
     {
-        if(monsters.monstersRegistry[0].hp.empty())
+        if(monsters.monstersRegistry[0].logicID.empty())
         {
         monsters.spawnDecision(civilization);
         monsters.waveInit();

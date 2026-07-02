@@ -55,16 +55,16 @@ void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Huma
         statsFile << "fabryki " << civilization.buildings.factories.size() << "\n\n";
 
         statsFile << "armia:\n";
-        statsFile << "ilosc ludzi w armii: " << army.armyRegistry[Army::ArmyProfession::soldier].hp.size() + 
-        army.armyRegistry[Army::ArmyProfession::archer].hp.size() << "\n";
-        statsFile << "ilosc zolnierzy: " << army.armyRegistry[Army::ArmyProfession::soldier].hp.size() << "\n";
-        statsFile << "ilosc lucznikow: " <<  army.armyRegistry[Army::ArmyProfession::archer].hp.size() << "\n\n";
+        statsFile << "ilosc ludzi w armii: " << army.armyRegistry[Army::ArmyProfession::soldier].logicID.size() + 
+        army.armyRegistry[Army::ArmyProfession::archer].logicID.size() << "\n";
+        statsFile << "ilosc zolnierzy: " << army.armyRegistry[Army::ArmyProfession::soldier].logicID.size() << "\n";
+        statsFile << "ilosc lucznikow: " <<  army.armyRegistry[Army::ArmyProfession::archer].logicID.size() << "\n\n";
 
         statsFile << "potwory:\n";
-        statsFile << "ilosc potworow lacznie: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].hp.size() + 
-        monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].hp.size() << "\n";
-        statsFile << "ilosc zwyklych potworow: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].hp.size() << "\n";
-        statsFile << "ilosc gigantow: " << monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].hp.size() << "\n";
+        statsFile << "ilosc potworow lacznie: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].logicID.size() + 
+        monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].logicID.size() << "\n";
+        statsFile << "ilosc zwyklych potworow: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].logicID.size() << "\n";
+        statsFile << "ilosc gigantow: " << monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].logicID.size() << "\n";
 
 
         

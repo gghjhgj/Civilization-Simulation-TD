@@ -56,32 +56,20 @@ class Monsters
     struct MonstersData
     {
         std::vector<int> logicID;
-        std::vector<int> hp;
-        std::vector<int> damage;
-        void addNormalMonster(int logicIDARG, int hpARG = Config::normalMonsterHP, int damageARG = Config::normalMonsterDamage)
-        {
-            logicID.push_back(logicIDARG);
-            hp.push_back(hpARG);
-            damage.push_back(damageARG);
-        }
-
-        void addGiant(int logicIDARG, int hpARG = Config::giantMonsterHP, int damageARG = Config::giantMonsterDamage)
-        {
-            logicID.push_back(logicIDARG);
-            hp.push_back(hpARG);
-            damage.push_back(damageARG);
-        }
 
         int monstersSpawn;
         int monstersMainIndex;
         int monstersTargetIndex;
         int monstersAssignedToType;
-        int monstersTotalDMG;
         MonstersShapeProfile monstersShape;
         Corners corners;
         int area;
         States states;
         int targetProfession;
+
+        int totalDMG;
+        int totalHP;
+        int avarageHP;
     };
     std::array<MonstersData, MonstersTypes::COUNT> monstersRegistry;
 

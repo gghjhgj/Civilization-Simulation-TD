@@ -40,11 +40,11 @@ void Army::armyInit()
 int Army::assignDecision()
 {
     int armyCount[ArmyProfession::COUNT];
-    int smallest = armyRegistry[0].hp.size();
+    int smallest = armyRegistry[0].logicID.size();
     int smallestProf = 0;
     for(int i = 1; i < ArmyProfession::COUNT; i++)
     {
-        armyCount[i] = armyRegistry[i].hp.size();
+        armyCount[i] = armyRegistry[i].logicID.size();
         if(armyCount[i] < smallest)
         {
             smallest = armyCount[i];
@@ -56,10 +56,14 @@ int Army::assignDecision()
 void Army::addHumanToArmy(RendererSFML &renderer)
 {
     int profession = assignDecision();
-    int vecID = armyRegistry[profession].hp.size();
+    auto &entry = armyRegistry[profession];
+    int vecID = entry.logicID.size();
     int logicID = vecID;
-    armyRegistry[profession].add(logicID);
-    armyRegistry[profession].armyTotalDMG += Config::humanInArmyDamage;
+    entry.logicID.push_back(logicID);
+    entry.totalDMG += Config::humanInArmyDamage;
+    entry.totalHP += Config::humanInArmyHP;
+    entry.avarageHP = entry.totalHP / entry.logicID.size();
+
     renderer.addProfToBuffer(profession, RendererSFML::Source::armyClass, logicID);
 }
 void Army::addHumansToArmy(World &world, Human &human, Civilization &civilization,RendererSFML &renderer, ArmyProfession profession)
@@ -83,7 +87,7 @@ void Army::giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession)
     auto &entry = armyRegistry[profession];
     int width = entry.armyShape.targetWidth;
     if(width == 1) return;
-    int height = (width > 0) ? (entry.hp.size() + width - 1) / width : 0; // 10/3 = 4 not 3
+    int height = (width > 0) ? (entry.logicID.size() + width - 1) / width : 0; // 10/3 = 4 not 3
     int spacingX = entry.armyShape.targetSpacingX;
     int spacingY = entry.armyShape.targetSpacingY;
     int realWidth = width * spacingX - spacingX;
@@ -220,9 +224,9 @@ void Army::noiseController(ArmyProfession profession)
 
 void Army::widthController(Monsters &monsters, ArmyProfession profession)
 {
-    if(monsters.monstersRegistry[0].hp.empty())
+    if(monsters.monstersRegistry[0].logicID.empty())
     {
-        armyRegistry[profession].armyShape.targetWidth = sqrt(armyRegistry[profession].hp.size());
+        armyRegistry[profession].armyShape.targetWidth = sqrt(armyRegistry[profession].logicID.size());
         return;
     }
     int monstersCurrent = monsters.monstersRegistry[0].monstersShape.currentWidth * monsters.monstersRegistry[0].monstersShape.currentSpacingX -  monsters.monstersRegistry[0].monstersShape.currentSpacingX;
@@ -251,11 +255,11 @@ void Army::cornerController(ArmyProfession profession)
 
     int mainIndex = entry.armyMainIndex;
     int width = entry.armyShape.currentWidth;
-    int height = (width > 0) ? (entry.hp.size() + width - 1) / width : 0; // 10/3 = 4 not 3
+    int height = (width > 0) ? (entry.logicID.size() + width - 1) / width : 0; // 10/3 = 4 not 3
     int spacingX = entry.armyShape.currentSpacingX;
     int spacingY = entry.armyShape.currentSpacingY;
-    int realWidth = width * spacingX - spacingX;
-    int realHeight = height * spacingY - spacingY;
+    int realWidth = width * spacingX - spacingX + 1; // bez+1
+    int realHeight = height * spacingY - spacingY + 1; //bez +1
 
     int leftTop = mainIndex;
     int rightTop = mainIndex + realWidth;
@@ -316,7 +320,7 @@ void Army::armyController(Monsters &monsters)
         noiseController(profession);
         widthController(monsters, profession);
         posWidth(profession);
-        if(monsters.monstersRegistry[0].hp.size() == 0)
+        if(monsters.monstersRegistry[0].logicID.size() == 0)
         {
             cornerController(profession);
             continue;
@@ -343,7 +347,26 @@ void Army::armyController(Monsters &monsters)
         }
         if(armyRegistry[profession].states == States::combat)
         {
-
+            targetMonstersDecision(monsters, profession);
+            cornerController(profession);
+            if(profession == Army::ArmyProfession::soldier)
+            {
+            auto &cornerEntry = entry.corners;
+            int target = entry.targetType;
+            auto &monstersEntry = monsters.monstersRegistry[target].corners;
+            int coverage = CombatSystem::getCoverage(
+                cornerEntry.leftTop,
+                cornerEntry.rightBot,
+                monstersEntry.leftTop,
+                monstersEntry.rightBot
+            );
+            std::cout << "ARMY" << std::endl;
+            std::cout << "coverage: " << coverage << ", army area: " << entry.area;
+            float coveragePercent = CombatSystem::getCoveragePercent(coverage, entry.area);
+            std::cout << ", coveragePercent: " << coveragePercent << std::endl;
+            int damage = CombatSystem::getDMG(coveragePercent, entry.totalDMG);
+            std::cout << "damage: " << damage << "\n" << std::endl;
+            }
         }
         /* debug
         if(i == 0)
