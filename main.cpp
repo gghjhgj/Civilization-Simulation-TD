@@ -103,7 +103,7 @@ while (renderer.isOpen())
     }
     if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForBuildingWall == 0)
     {
-        if(monsters.monstersRegistry[0].logicID.empty())
+        if(monsters.monstersRegistry[0].monstersCount == 0)
         {
         monsters.spawnDecision(civilization);
         monsters.waveInit();
@@ -115,40 +115,13 @@ while (renderer.isOpen())
     {
         army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
     }
-    /*
-    if(world.allTicksCount%100 == 0)
-    {
-        /*
-        for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
-        {
-        Army::ArmyProfession profession = Army::ArmyProfession(i);
-        //army.spacingController(profession);
-        //army.posSpacing(profession);
-        army.noiseController(profession);
-        army.widthController(monsters, profession);
-        army.posWidth(profession);
-        }
-        */
-       /*
-        for(int i = 0; i < Monsters::MonstersTypes::COUNT; i++)
-        {
-        Monsters::MonstersTypes types = Monsters::MonstersTypes(i);
-        //monsters.spacingController(types);
-        //monsters.posSpacing(types);
-        monsters.noiseController(types);
-        monsters.widthController(types);
-        monsters.posWidth(types);
-        }
-        
-    }
-    */
     civilization.assignHumansToHouse(human);
     food.foodRespawn(world);
     stone.stoneRespawn(world);
     tree.treeRespawn(world);
     human.humanMove(world, civilization, streets, food, tree, stone, human);
-    army.armyController(monsters);
-    monsters.monstersController(army);
+    army.armyController(monsters, renderer);
+    monsters.monstersController(army, renderer);
     /*
     for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
     {
@@ -183,12 +156,12 @@ while (renderer.isOpen())
 
         world.makeAllHumansDirty(human);
     }
-    
+    /*
     if(world.allTicksCount > Config::ticksForBuildingWall)
     {
         Sleep(1);
     }
-        
+    */
     world.allTicksCount++;
 }
 

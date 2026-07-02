@@ -5,6 +5,7 @@ uniform float spacingY;
 uniform float time;
 uniform float noise;
 uniform float formationWidth;
+uniform float profID;
 uniform vec4 color;
 
 uniform vec2 armyMain;
@@ -19,8 +20,8 @@ void main()
     float col = mod(id, formationWidth);
     float row = floor(id / formationWidth + 0.0001);
 
-    float phaseX = fract(sin(id) * 43758.5453);
-    float phaseY = fract(sin(id + 123.456) * 12345.6789);
+    float phaseX = fract(sin(id + profID * 12.34) * 43758.5453);
+    float phaseY = fract(sin(id + 123.456 + profID * 56.78) * 12345.6789);
 
     float sX = sin(time * 4.0 + phaseX * 6.28);
     float sY = sin(time * 3.7 + phaseY * 6.28);

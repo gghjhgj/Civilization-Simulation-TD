@@ -85,7 +85,7 @@ void Monsters::monstersCreate(RendererSFML &renderer)
             for(int j = 0; j < Config::normalMonstersCreated; j++)
             {
                 renderer.addProfToBuffer(i, RendererSFML::Source::monstersClass, j);
-                monstersRegistry[i].logicID.push_back(j);
+                monstersRegistry[i].monstersCount++;
 
             }
             monstersRegistry[i].totalDMG = Config::normalMonsterDamage * Config::normalMonstersCreated;
@@ -97,13 +97,30 @@ void Monsters::monstersCreate(RendererSFML &renderer)
             for(int j = 0; j < Config::giantMonstersCreated; j++)
             {
                 renderer.addProfToBuffer(i, RendererSFML::Source::monstersClass, j);
-                monstersRegistry[i].logicID.push_back(j);
+                monstersRegistry[i].monstersCount++;
             }
             monstersRegistry[i].totalDMG = Config::giantMonsterDamage * Config::giantMonstersCreated;
             monstersRegistry[i].totalHP = Config::normalMonsterHP * Config::normalMonstersCreated;
             monstersRegistry[i].avarageHP = Config::normalMonsterHP;
         }
     }
+}
+
+void Monsters::eraseMonster(RendererSFML &renderer, int type, int id)
+{
+    auto &entry = monstersRegistry[type];
+    if(type == 0)
+    {
+        entry.totalDMG -= Config::normalMonsterDamage;
+        entry.totalHP -= Config::normalMonsterHP;
+    }
+    else if(type == 1)
+    {
+        entry.totalDMG -= Config::giantMonsterDamage;
+        entry.totalHP -= Config::giantMonsterHP;
+    }
+    entry.monstersCount--;
+    renderer.eraseProfFromBuffer(type, RendererSFML::Source::monstersClass, id);
 }
 
 void Monsters::giveMonstersTargetIndex(Army &army, MonstersTypes types)
@@ -236,10 +253,10 @@ void Monsters::widthController(MonstersTypes types)
     int current = monstersRegistry[types].monstersShape.currentWidth;
     if(current == 1)
     {
-        monstersRegistry[types].monstersShape.currentWidth = sqrt(monstersRegistry[types].logicID.size()) * 2;
+        monstersRegistry[types].monstersShape.currentWidth = sqrt(monstersRegistry[types].monstersCount) * 2;
         return;
     }
-    monstersRegistry[types].monstersShape.targetWidth = sqrt(monstersRegistry[types].logicID.size()) * 2;
+    monstersRegistry[types].monstersShape.targetWidth = sqrt(monstersRegistry[types].monstersCount) * 2;
 }
 
 void Monsters::posWidth(MonstersTypes types)
@@ -264,7 +281,7 @@ void Monsters::cornerController(MonstersTypes types)
 
     int mainIndex = entry.monstersMainIndex;
     int width = entry.monstersShape.currentWidth;
-    int height = (width > 0) ? (entry.logicID.size() + width - 1) / width : 0; // 10/3 = 4 not 3
+    int height = (width > 0) ? (entry.monstersCount + width - 1) / width : 0; // 10/3 = 4 not 3
     int spacingX = entry.monstersShape.currentSpacingX;
     int spacingY = entry.monstersShape.currentSpacingY;
     int realWidth = width * spacingX - spacingX + 1; //bez + 1
@@ -360,7 +377,37 @@ Monsters::Dirs Monsters::positioningWhileCombat(Army &army, MonstersTypes types)
     return Monsters::Dirs::none;
 }
 
-void Monsters::monstersController(Army &army)
+int Monsters::enemiesToKill(Army &army, MonstersTypes types, int DMG)
+{
+    auto &entry = monstersRegistry[types];
+    int target = entry.targetProfession;
+    int avarageHP = army.armyRegistry[target].avarageHP;
+
+    int enemiesToKill = DMG / avarageHP;
+    entry.remainingDMG += DMG % avarageHP;
+
+    return enemiesToKill;
+}
+
+int Monsters::eraseDecision(Army &army, int profession)
+{
+    auto &armyEntry = army.armyRegistry[profession];
+    return armyEntry.humansCount -1;
+}
+
+void Monsters::eraseEnemies(RendererSFML &renderer, Army &army, MonstersTypes type, int count)
+{
+    auto &entry = monstersRegistry[type];
+    int targetProfession = entry.targetProfession;
+    for(int i = 0; i < count; i++)
+    {
+        int id = eraseDecision(army, targetProfession);
+        if(id == -1) return;
+        army.eraseHuman(renderer, targetProfession, id);
+    }
+}
+
+void Monsters::monstersController(Army &army, RendererSFML &renderer)
 {
     for(int i = 0; i < MonstersTypes::COUNT; i++)
     {
@@ -371,7 +418,7 @@ void Monsters::monstersController(Army &army)
         noiseController(types);
         widthController(types);
         posWidth(types);
-        if(monstersRegistry[0].logicID.size() == 0)
+        if(monstersRegistry[0].monstersCount == 0)
         {
             cornerController(types);
             continue;
@@ -413,38 +460,13 @@ void Monsters::monstersController(Army &army)
                 cornerEntry.leftTop,
                 cornerEntry.rightBot
             );
-            std::cout << "MONSTERS[" << i << "]" << std::endl;
-            std::cout << "coverage: " << coverage << ", army area: " << entry.area;
             float coveragePercent = CombatSystem::getCoveragePercent(coverage, entry.area);
-            std::cout << ", coveragePercent: " << coveragePercent << std::endl;
             int damage = CombatSystem::getDMG(coveragePercent, entry.totalDMG);
-            std::cout << "damage: " << damage << "\n" << std::endl;
-            /*
-            std::cout
-            << "leftTop: " << entry.corners.leftTop 
-            << " rightTop: " << entry.corners.rightTop
-            << " leftBot: " << entry.corners.leftBot
-            << " rightBot: " << entry.corners.rightBot
-            << std::endl;
-            */
+            damage += entry.remainingDMG;
+            int enemiesCountToKill = enemiesToKill(army, types, damage);
+            //std::cout << enemiesCountToKill << std::endl;
+            eraseEnemies(renderer, army, types, enemiesCountToKill);
             continue;
         }
-        /* debug
-        if(i == 0)
-        {
-        auto &entry = monstersRegistry[types];
-        std::cout << "mainIndex " << entry.monstersMainIndex
-        << " width " << entry.monstersShape.currentWidth
-        << " || " 
-        << " leftTop " << entry.corners.leftTop 
-        << " rightTop " << entry.corners.rightTop
-        << " leftBot " << entry.corners.leftBot
-        << " rightBot " << entry.corners.rightBot
-        << " || "
-        << " area " << entry.area
-        << std::endl;
-        }
-        */
-        
     }
 }

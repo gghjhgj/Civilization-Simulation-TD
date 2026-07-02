@@ -14,6 +14,7 @@ RendererSFML::RendererSFML(int w, int h, int cellSize)
     {
         MessageBoxA(NULL, "Shader load failed", "Error", MB_OK);
     }
+    setArmyColors();
     /*
     armyVertices.resize(Config::maxHumansInArmy);
     armyLayer.create(Config::maxHumansInArmy);
@@ -128,6 +129,31 @@ else
     }
 }
 }
+
+void RendererSFML::eraseProfFromBuffer(int profession, Source source, int logicID)
+{
+    if(source == Source::monstersClass) profession += 2;
+    auto &layer = armyLayers[profession];
+
+    int lastIDX = layer.armyVertices.size() - 1;
+    if(logicID > lastIDX || logicID < 0) return;
+    
+    if(logicID != lastIDX)
+    {
+        layer.armyVertices[logicID] = layer.armyVertices[lastIDX];
+        layer.armyVertices.pop_back();
+
+        if (!layer.armyLayer.update(&layer.armyVertices[logicID], 1, logicID)) 
+        {
+            return;
+        }
+    } 
+    else 
+    {
+        layer.armyVertices.pop_back();
+    }
+}
+
 void RendererSFML::reloadArmyBuffer()
 {
     for(auto& [profID, layer] : armyLayers)
@@ -195,6 +221,7 @@ for(auto& [profID, layer] : armyLayers)
     armyShader.setUniform("noise", noise);
     armyShader.setUniform("formationWidth", formationWidth);
     armyShader.setUniform("armyMain", sf::Glsl::Vec2(armyMainX, armyMainY));
+    armyShader.setUniform("profID", static_cast<float>(profID));
     
     armyShader.setUniform("color", sf::Glsl::Vec4(
         layer.color.r / 255.f, 

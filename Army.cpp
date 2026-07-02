@@ -24,27 +24,29 @@ void Army::armyInit()
         armyRegistry[profession].armyMainIndex = 800 * Config::sizeX + 300;
         armyRegistry[profession].armyTargetIndex = -1;
         */
+       auto &entry = armyRegistry[profession];
+       entry.spawnPoint = Config::civSpawnPoint + (200 * (i+1)) * Config::sizeX + 200;
        if(i == 0)
        {
-        armyRegistry[profession].armyMainIndex = Config::civSpawnPoint + 200 * Config::sizeX + 200;
+            entry.armyMainIndex = entry.spawnPoint;
        }
        if(i == 1)
        {
-        armyRegistry[profession].armyMainIndex = Config::civSpawnPoint + 100 * Config::sizeX + 200;
+            entry.armyMainIndex = entry.spawnPoint;
        }
-       armyRegistry[profession].states = States::idle;
-        armyRegistry[profession].armyTargetIndex = -1;
+       entry.states = States::idle;
+        entry.armyTargetIndex = -1;
     }
 }
 
 int Army::assignDecision()
 {
     int armyCount[ArmyProfession::COUNT];
-    int smallest = armyRegistry[0].logicID.size();
+    int smallest = armyRegistry[0].humansCount;
     int smallestProf = 0;
     for(int i = 1; i < ArmyProfession::COUNT; i++)
     {
-        armyCount[i] = armyRegistry[i].logicID.size();
+        armyCount[i] = armyRegistry[i].humansCount;
         if(armyCount[i] < smallest)
         {
             smallest = armyCount[i];
@@ -57,15 +59,29 @@ void Army::addHumanToArmy(RendererSFML &renderer)
 {
     int profession = assignDecision();
     auto &entry = armyRegistry[profession];
-    int vecID = entry.logicID.size();
+    int vecID = entry.humansCount;
     int logicID = vecID;
-    entry.logicID.push_back(logicID);
+    entry.humansCount++;
     entry.totalDMG += Config::humanInArmyDamage;
     entry.totalHP += Config::humanInArmyHP;
-    entry.avarageHP = entry.totalHP / entry.logicID.size();
+    entry.avarageHP = entry.totalHP / entry.humansCount;
 
     renderer.addProfToBuffer(profession, RendererSFML::Source::armyClass, logicID);
 }
+
+void Army::eraseHuman(RendererSFML &renderer, int profession, int id)
+{
+    auto &entry = armyRegistry[profession];
+
+    int avarageDMG = entry.totalDMG / entry.humansCount;
+    entry.totalDMG -= avarageDMG;
+
+    entry.totalHP -= entry.avarageHP;
+    
+    entry.humansCount--;
+    renderer.eraseProfFromBuffer(profession, RendererSFML::Source::armyClass, id);
+}
+
 void Army::addHumansToArmy(World &world, Human &human, Civilization &civilization,RendererSFML &renderer, ArmyProfession profession)
 {
     int humansAddedToArmy = 0;
@@ -87,24 +103,15 @@ void Army::giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession)
     auto &entry = armyRegistry[profession];
     int width = entry.armyShape.targetWidth;
     if(width == 1) return;
-    int height = (width > 0) ? (entry.logicID.size() + width - 1) / width : 0; // 10/3 = 4 not 3
+    int height = (width > 0) ? (entry.humansCount + width - 1) / width : 0; // 10/3 = 4 not 3
     int spacingX = entry.armyShape.targetSpacingX;
     int spacingY = entry.armyShape.targetSpacingY;
     int realWidth = width * spacingX - spacingX;
     int realHeight = height * spacingY - spacingY;
     
     int x = 800;
-    int y = 500 - realHeight - (profession * 30) - 1;
-    /* debug
-    std::cout << "width " << width << std::endl;
-    std::cout << "size " << entry.hp.size() << std::endl;
-    std::cout << "height " << height << std::endl;
-    std::cout << "spacingX " << spacingX << std::endl;
-    std::cout << "spacingY " << spacingY << std::endl;
-    std::cout << "realWidth " << realWidth << std::endl;
-    std::cout << "realHight " << realHeight << std::endl;
-    std::cout<<y << std::endl;
-    */
+    int y = 500 - realHeight - (profession * 50) - 1;
+ 
     int start = y * Config::sizeX + x;
     armyRegistry[profession].armyTargetIndex = start;
     armyRegistry[profession].states = States::moving;
@@ -224,9 +231,9 @@ void Army::noiseController(ArmyProfession profession)
 
 void Army::widthController(Monsters &monsters, ArmyProfession profession)
 {
-    if(monsters.monstersRegistry[0].logicID.empty())
+    if(monsters.monstersRegistry[0].monstersCount == 0)
     {
-        armyRegistry[profession].armyShape.targetWidth = sqrt(armyRegistry[profession].logicID.size());
+        armyRegistry[profession].armyShape.targetWidth = sqrt(armyRegistry[profession].humansCount);
         return;
     }
     int monstersCurrent = monsters.monstersRegistry[0].monstersShape.currentWidth * monsters.monstersRegistry[0].monstersShape.currentSpacingX -  monsters.monstersRegistry[0].monstersShape.currentSpacingX;
@@ -255,7 +262,7 @@ void Army::cornerController(ArmyProfession profession)
 
     int mainIndex = entry.armyMainIndex;
     int width = entry.armyShape.currentWidth;
-    int height = (width > 0) ? (entry.logicID.size() + width - 1) / width : 0; // 10/3 = 4 not 3
+    int height = (width > 0) ? (entry.humansCount + width - 1) / width : 0; // 10/3 = 4 not 3
     int spacingX = entry.armyShape.currentSpacingX;
     int spacingY = entry.armyShape.currentSpacingY;
     int realWidth = width * spacingX - spacingX + 1; // bez+1
@@ -301,6 +308,13 @@ void Army::targetMonstersDecision(Monsters &monsters, ArmyProfession profession)
             targetType = Monsters::MonstersTypes(i);
         }
     }
+    if(targetType == Monsters::MonstersTypes::COUNT)
+    {
+        if(monsters.monstersRegistry[0].monstersCount != 0)
+            targetType = Monsters::MonstersTypes::normalMonster;
+        else if(monsters.monstersRegistry[1].monstersCount != 0)
+            targetType = Monsters::MonstersTypes::giantMonster;
+    }
     armyRegistry[profession].targetType = targetType;
 }
 
@@ -309,7 +323,44 @@ void Army::positioningWhileCombat(Monsters &monsters, ArmyProfession profession)
     
 }
 
-void Army::armyController(Monsters &monsters)
+int Army::enemiesToKill(Monsters &monsters, ArmyProfession profession, int DMG)
+{
+    auto &entry = armyRegistry[profession];
+    int target = entry.targetType;
+    int avarageHP = monsters.monstersRegistry[target].avarageHP;
+
+    int enemiesToKill = DMG/avarageHP;
+    entry.remainingDMG += DMG%avarageHP;
+
+    return enemiesToKill;
+}
+
+int Army::eraseDecision(Monsters &monsters, int type)
+{
+    auto &monstersEntry = monsters.monstersRegistry[type];
+    return monstersEntry.monstersCount - 1;
+}
+
+void Army::eraseEnemies(RendererSFML &renderer, Monsters &monsters, ArmyProfession profession, int count)
+{
+    auto &entry = armyRegistry[profession];
+    int targetType = entry.targetType;
+    for(int i = 0 ; i < count; i++)
+    {
+        int id = eraseDecision(monsters, targetType);
+        if(id == -1) return;
+        monsters.eraseMonster(renderer, targetType, id);
+    }
+}
+
+void Army::armyComeBack(ArmyProfession profession)
+{
+    auto &entry = armyRegistry[profession];
+
+    entry.armyTargetIndex = entry.spawnPoint;
+    entry.states = Army::States::moving;
+}
+void Army::armyController(Monsters &monsters, RendererSFML &renderer)
 {
     for(int i = 0; i < ArmyProfession::COUNT; i++)
     {
@@ -320,10 +371,17 @@ void Army::armyController(Monsters &monsters)
         noiseController(profession);
         widthController(monsters, profession);
         posWidth(profession);
-        if(monsters.monstersRegistry[0].logicID.size() == 0)
+        if(monsters.monstersRegistry[0].monstersCount == 0 
+            && monsters.monstersRegistry[1].monstersCount == 0 )
         {
             cornerController(profession);
-            continue;
+            if(entry.states == Army::States::combat)
+            {
+                entry.states = Army::States::comingBack;
+                CombatSystem::endCombat();
+            }
+            if(entry.states == Army::States::idle)
+                continue;
         }
         if(armyRegistry[profession].states == Army::States::idle)
         {
@@ -334,21 +392,13 @@ void Army::armyController(Monsters &monsters)
         {
             armyMove(monsters, profession);
             cornerController(profession);
-            /*
-            auto &entry2 = entry.corners;
-            std::cout << "main Index: " << entry.armyMainIndex << "\n"
-            << "left top: " << entry2.leftTop << "\n"
-            << "right top: " << entry2.rightTop << "\n"
-            << "left bot: " << entry2.leftBot << "\n"
-            << "right bot: " << entry2.rightBot << "\n"
-            <<std::endl;
-            */
             continue;
         }
         if(armyRegistry[profession].states == States::combat)
         {
             targetMonstersDecision(monsters, profession);
             cornerController(profession);
+            int damage = 0;
             if(profession == Army::ArmyProfession::soldier)
             {
             auto &cornerEntry = entry.corners;
@@ -360,29 +410,20 @@ void Army::armyController(Monsters &monsters)
                 monstersEntry.leftTop,
                 monstersEntry.rightBot
             );
-            std::cout << "ARMY" << std::endl;
-            std::cout << "coverage: " << coverage << ", army area: " << entry.area;
-            float coveragePercent = CombatSystem::getCoveragePercent(coverage, entry.area);
-            std::cout << ", coveragePercent: " << coveragePercent << std::endl;
-            int damage = CombatSystem::getDMG(coveragePercent, entry.totalDMG);
-            std::cout << "damage: " << damage << "\n" << std::endl;
             }
+            else if(profession == Army::ArmyProfession::archer)
+            {
+                damage = entry.totalDMG;
+            }
+            damage += entry.remainingDMG;
+            int enemiesCountToKill = enemiesToKill(monsters, profession, damage);
+            eraseEnemies(renderer, monsters, profession, enemiesCountToKill);
+            continue;
         }
-        /* debug
-        if(i == 0)
+        if(armyRegistry[profession].states == Army::States::comingBack)
         {
-        auto &entry = armyRegistry[profession].corners;
-        std::cout << "mainIndex " << armyRegistry[profession].armyMainIndex
-        << " width " << armyRegistry[profession].armyShape.currentWidth
-        << " || " 
-        << " leftTop " << entry.leftTop 
-        << " rightTop " << entry.rightTop
-        << " leftBot " << entry.leftBot
-        << " rightBot " << entry.rightBot
-        << " || "
-        << " area " << armyRegistry[profession].area
-        << std::endl;
+            armyComeBack(profession);
+            continue;
         }
-        */
     }
 }

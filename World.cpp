@@ -55,16 +55,16 @@ void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Huma
         statsFile << "fabryki " << civilization.buildings.factories.size() << "\n\n";
 
         statsFile << "armia:\n";
-        statsFile << "ilosc ludzi w armii: " << army.armyRegistry[Army::ArmyProfession::soldier].logicID.size() + 
-        army.armyRegistry[Army::ArmyProfession::archer].logicID.size() << "\n";
-        statsFile << "ilosc zolnierzy: " << army.armyRegistry[Army::ArmyProfession::soldier].logicID.size() << "\n";
-        statsFile << "ilosc lucznikow: " <<  army.armyRegistry[Army::ArmyProfession::archer].logicID.size() << "\n\n";
+        statsFile << "ilosc ludzi w armii: " << army.armyRegistry[Army::ArmyProfession::soldier].humansCount + 
+        army.armyRegistry[Army::ArmyProfession::archer].humansCount << "\n";
+        statsFile << "ilosc zolnierzy: " << army.armyRegistry[Army::ArmyProfession::soldier].humansCount << "\n";
+        statsFile << "ilosc lucznikow: " <<  army.armyRegistry[Army::ArmyProfession::archer].humansCount << "\n\n";
 
         statsFile << "potwory:\n";
-        statsFile << "ilosc potworow lacznie: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].logicID.size() + 
-        monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].logicID.size() << "\n";
-        statsFile << "ilosc zwyklych potworow: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].logicID.size() << "\n";
-        statsFile << "ilosc gigantow: " << monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].logicID.size() << "\n";
+        statsFile << "ilosc potworow lacznie: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].monstersCount + 
+        monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].monstersCount << "\n";
+        statsFile << "ilosc zwyklych potworow: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].monstersCount << "\n";
+        statsFile << "ilosc gigantow: " << monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].monstersCount << "\n";
 
 
         

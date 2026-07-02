@@ -23,4 +23,5 @@ class CombatSystem
     static void incrementArmiesReady();
     static bool areArmiesReady();
     static void startCombat();
+    static void endCombat();
 };

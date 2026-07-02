@@ -25,6 +25,7 @@ public:
     void setArmyColors();
     void render(World& world);
     void addProfToBuffer(int profession, Source source, int logicID);
+    void eraseProfFromBuffer(int profession, Source source, int logicID);
     void reloadArmyBuffer();
     void end();
 

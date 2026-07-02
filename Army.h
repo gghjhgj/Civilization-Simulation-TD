@@ -51,11 +51,15 @@ class Army
         idle,
         moving,
         waitingForCombat,
-        combat
+        combat,
+        comingBack
     };
     struct ArmyData
     {
-        std::vector<int> logicID;
+        int spawnPoint;
+
+        int humansCount = 0;
+        std::vector<int> missingIDS;
 
         int armyMainIndex;
         int armyTargetIndex;
@@ -67,6 +71,7 @@ class Army
         int targetType;
 
         int totalDMG;
+        int remainingDMG = 0;
         int totalHP;
         int avarageHP;
     };
@@ -83,6 +88,7 @@ class Army
     void armyInit();
     int assignDecision();
     void addHumanToArmy(RendererSFML &renderer);
+    void eraseHuman(RendererSFML &renderer, int profession, int id);
     void addHumansToArmy(World &world, Human &human, Civilization & civilization, RendererSFML &renderer, ArmyProfession profession);
     void giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession);
     Dirs armyMoveDecision(ArmyProfession profession);
@@ -103,5 +109,11 @@ class Army
     void targetMonstersDecision(Monsters &monsters, ArmyProfession profession);
 
     void positioningWhileCombat(Monsters &monsters, ArmyProfession profession);
-    void armyController(Monsters &monsters);
+    int enemiesToKill(Monsters &monsters, ArmyProfession profession, int DMG);
+    int eraseDecision(Monsters &monsters, int type);
+    void eraseEnemies(RendererSFML &renderer, Monsters &monsters, ArmyProfession profession, int count);
+
+    void armyComeBack(ArmyProfession profession);
+
+    void armyController(Monsters &monsters, RendererSFML &renderer);
 };

@@ -55,7 +55,8 @@ class Monsters
     };
     struct MonstersData
     {
-        std::vector<int> logicID;
+        int monstersCount = 0;
+        std::vector<int> missingIDS;
 
         int monstersSpawn;
         int monstersMainIndex;
@@ -68,6 +69,7 @@ class Monsters
         int targetProfession;
 
         int totalDMG;
+        int remainingDMG;
         int totalHP;
         int avarageHP;
     };
@@ -87,6 +89,7 @@ class Monsters
     void waveInit();
 
     void monstersCreate(RendererSFML &renderer);
+    void eraseMonster(RendererSFML &renderer, int type, int id);
     
     void giveMonstersTargetIndex(Army &army, MonstersTypes types);
     Dirs monstersMoveDecision(MonstersTypes types);
@@ -106,5 +109,8 @@ class Monsters
     void targetProfessionDecission(Army &army, MonstersTypes types);
 
     Dirs positioningWhileCombat(Army &army, MonstersTypes types);
-    void monstersController(Army &army);
+    int enemiesToKill(Army &army, MonstersTypes types, int DMG);
+    int eraseDecision(Army &army, int profession);
+    void eraseEnemies(RendererSFML &renderer, Army &army, MonstersTypes types, int count);
+    void monstersController(Army &army, RendererSFML &renderer);
 };

@@ -115,7 +115,7 @@ class Config
     static constexpr int stoneWallHP = 5000;
     static constexpr int woodNeededForWoodWall = 5;
     static constexpr int stoneNeededForStoneWall = 10;
-    static constexpr int ticksForBuildingWall = 300000;
+    static constexpr int ticksForBuildingWall = 750000;
 
 
 
@@ -133,10 +133,10 @@ class Config
 
     ///////monsters
 
-    static constexpr int normalMonsterHP = 20;
+    static constexpr int normalMonsterHP = 5;
     static constexpr int normalMonsterDamage = 1;
 
-    static constexpr int normalMonstersCreated = 500;
+    static constexpr int normalMonstersCreated = 100000;
 
 
     static constexpr int giantMonsterHP = 200;

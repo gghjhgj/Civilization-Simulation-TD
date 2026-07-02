@@ -95,3 +95,11 @@ void CombatSystem::startCombat()
         std::cout << "no monsters instance" << std::endl;
     }
 }
+
+void CombatSystem::endCombat()
+{
+    if (instance != nullptr)
+    {
+        instance->armiesReadyForCombat = 0;
+    }
+}
