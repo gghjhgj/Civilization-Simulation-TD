@@ -107,7 +107,7 @@ void Monsters::giveMonstersTargetIndex(Army &army, MonstersTypes types)
     if(monstersRegistry[types].states == States::idle)
     {
     int x = 800;
-    int y = 500; - (types * 100);
+    int y = 500;
     int start = y * Config::sizeX + x;
     monstersRegistry[types].monstersTargetIndex = start;
     monstersRegistry[types].states = States::moving;
@@ -268,7 +268,7 @@ void Monsters::cornerController(MonstersTypes types)
     int leftTop = mainIndex;
     int rightTop = mainIndex + realWidth;
 
-    int leftBot = mainIndex - (realHeight*Config::sizeX);
+    int leftBot = mainIndex + (realHeight*Config::sizeX);
     int rightBot = leftBot + realWidth;
 
     entry.corners.leftTop = leftTop;
@@ -331,21 +331,21 @@ Monsters::Dirs Monsters::positioningWhileCombat(Army &army, MonstersTypes types)
     auto &monstersEntry = monstersRegistry[types].corners;
     auto &armyEntry = army.armyRegistry[target].corners;
     int maxCoverage = CombatSystem::getCoverage(
-            monstersEntry.leftTop,
-            monstersEntry.rightBot,
             armyEntry.leftTop,
-            armyEntry.rightBot
+            armyEntry.rightBot,
+            monstersEntry.leftTop,
+            monstersEntry.rightBot
         );
-        std::cout << "max coverage " << maxCoverage << " ";
+        //std::cout << "max coverage " << maxCoverage << " ";
     for(int i = 0; i < std::size(offsets); i++)
     {
         int coverage = CombatSystem::getCoverage(
-            monstersEntry.leftTop + offsets[i],
-            monstersEntry.rightBot + offsets[i],
             armyEntry.leftTop,
-            armyEntry.rightBot
+            armyEntry.rightBot,
+            monstersEntry.leftTop + offsets[i],
+            monstersEntry.rightBot + offsets[i]
         );
-        std::cout << "check " << i << " " << coverage << " ";
+        //std::cout << "check " << i << " " << coverage << " ";
         if(coverage > maxCoverage)
         {
             return dirs[i];
@@ -360,6 +360,7 @@ void Monsters::monstersController(Army &army)
     for(int i = 0; i < MonstersTypes::COUNT; i++)
     {
         MonstersTypes types = MonstersTypes(i);
+        auto &entry = monstersRegistry[types];
         //spacingController(types);
         //posSpacing(profession);
         noiseController(types);
@@ -372,25 +373,40 @@ void Monsters::monstersController(Army &army)
         }
         if(monstersRegistry[types].states == Monsters::States::idle)
         {
-            std::cout << "got to idle" << std::endl;
+            //std::cout << "got to idle" << std::endl;
             giveMonstersTargetIndex(army, types);
             continue;
         }
         if(monstersRegistry[types].states == Monsters::States::moving)
         {
-            std::cout << "got to moving" << std::endl;
+            //std::cout << "got to moving" << std::endl;
             auto dir = monstersMoveDecision(types);
             monstersMove(army, types, dir);
             cornerController(types);
+            /*
+            std::cout << "leftTop: " << entry.corners.leftTop 
+            << " rightTop: " << entry.corners.rightTop
+            << " leftBot: " << entry.corners.leftBot
+            << " rightBot: " << entry.corners.rightBot
+            << std::endl;
+            */
             continue;
         }
         if(monstersRegistry[types].states == Monsters::States::combat)
         {
-            std::cout << "got to combat" << std::endl;
+            //std::cout << "got to combat" << std::endl;
             targetProfessionDecission(army, types);
             auto dir = positioningWhileCombat(army, types);
             monstersMove(army, types, dir);
             cornerController(types);
+            /*
+            std::cout
+            << "leftTop: " << entry.corners.leftTop 
+            << " rightTop: " << entry.corners.rightTop
+            << " leftBot: " << entry.corners.leftBot
+            << " rightBot: " << entry.corners.rightBot
+            << std::endl;
+            */
             continue;
         }
         /* debug

@@ -259,8 +259,7 @@ void Army::cornerController(ArmyProfession profession)
 
     int leftTop = mainIndex;
     int rightTop = mainIndex + realWidth;
-
-    int leftBot = mainIndex - (realHeight*Config::sizeX);
+    int leftBot = mainIndex + (realHeight*Config::sizeX);
     int rightBot = leftBot + realWidth;
 
     entry.corners.leftTop = leftTop;
@@ -311,6 +310,7 @@ void Army::armyController(Monsters &monsters)
     for(int i = 0; i < ArmyProfession::COUNT; i++)
     {
         ArmyProfession profession = ArmyProfession(i);
+        auto &entry = armyRegistry[profession];
         //spacingController(profession);
         //posSpacing(profession);
         noiseController(profession);
@@ -321,8 +321,26 @@ void Army::armyController(Monsters &monsters)
             cornerController(profession);
             continue;
         }
-        armyMove(monsters, profession);
-        cornerController(profession);
+        if(armyRegistry[profession].states == Army::States::idle)
+        {
+            giveArmyTargetIndex(monsters, profession);
+            continue;
+        }
+        if(armyRegistry[profession].states == Army::States::moving)
+        {
+            armyMove(monsters, profession);
+            cornerController(profession);
+            /*
+            auto &entry2 = entry.corners;
+            std::cout << "main Index: " << entry.armyMainIndex << "\n"
+            << "left top: " << entry2.leftTop << "\n"
+            << "right top: " << entry2.rightTop << "\n"
+            << "left bot: " << entry2.leftBot << "\n"
+            << "right bot: " << entry2.rightBot << "\n"
+            <<std::endl;
+            */
+            continue;
+        }
         if(armyRegistry[profession].states == States::combat)
         {
 
