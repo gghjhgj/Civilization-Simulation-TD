@@ -410,7 +410,7 @@ void Human::humanMove(World &world, Civilization &civilization, Streets &streets
             world.grid[newIndex].humanIndex <= 0 &&
             !(world.grid[newIndex].flags & World::Water))
         {
-            world.updateTilePopularity(humans[i].index);
+            //world.updateTilePopularity(humans[i].index);
             int id = world.grid[humans[i].index].humanIndex;
             world.grid[humans[i].index].humanIndex = 0;
 

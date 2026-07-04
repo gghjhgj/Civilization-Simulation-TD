@@ -1,3 +1,5 @@
+#include <glad/glad.h>
+
 #include "World.h"
 #include "Config.h"
 #include "RendererSFML.h"
@@ -37,7 +39,14 @@ int main() {
     Monsters monsters;
     CombatSystem combatSystem;
     RendererSFML renderer(Config::WindowSizeX, Config::WindowSizeY, 1);
-
+    if(!gladLoadGL())
+    {
+        std::cout << "GLAD juz nie" << std::endl;
+    }
+    else
+    {
+        std::cout << "GLAD dziala" << std::endl;
+    }
     world.init();
     world.createOcean();
     world.createLand();
@@ -171,23 +180,16 @@ return 0;
 /*
 to do
 
-*/
+/* debug
+g++ -g -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system && gdb app
 
-/*    run
-g++ *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system && app.exe
-*/
+    run
+g++ -Ofast -march=native -flto -funroll-loops -ffast-math -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
 
-/*    debug
-g++ -g *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system && gdb app
-*/
 
-/*
-g++ -Ofast -march=native -flto -funroll-loops -ffast-math *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
-*/
+generate prof
+g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofile-generate -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
 
-/*
-g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofile-generate *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
-*/
-/*
-g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofile-use *.cpp -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
+use prof
+g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofile-use -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
 */

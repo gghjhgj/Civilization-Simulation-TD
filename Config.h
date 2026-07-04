@@ -135,7 +135,7 @@ class Config
     static constexpr int normalMonsterHP = 5;
     static constexpr int normalMonsterDamage = 1;
 
-    static constexpr int normalMonstersCreated = 1000000;
+    static constexpr int normalMonstersCreated = 50000000;
 
 
     static constexpr int giantMonsterHP = 200;
@@ -144,5 +144,5 @@ class Config
     static constexpr int giantMonstersCreated = 20;
 
 
-    static constexpr int maxUnits = 2000000;
+    static constexpr int maxUnits = 50000000;
 };

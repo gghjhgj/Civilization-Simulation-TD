@@ -26,7 +26,6 @@ RendererSFML::RendererSFML(int w, int h, int cellSize)
     }
 
 }
-
 bool RendererSFML::isOpen()
 {
     return window.isOpen();
@@ -72,7 +71,7 @@ void RendererSFML::updateCellPixels(int x, int y, sf::Color color)
 
 sf::Color RendererSFML::getColor(const World::Cell& c)
 {
-    if(c.armyTile.armyProf >= 0) return sf::Color::Black;
+    //if(c.armyTile.armyProf >= 0) return sf::Color::Black;
     if(c.buildings.House > 0) return sf::Color::Red;
     if(c.buildings.Farm > 0) return sf::Color(255, 255, 150);
     if(c.buildings.Sawmill > 0) return sf::Color(165, 42, 42);
@@ -82,7 +81,7 @@ sf::Color RendererSFML::getColor(const World::Cell& c)
     if(c.humanIndex > 0) return sf::Color::Black;
     if(c.walls.woodWallHP > 0) return sf::Color(139, 69, 19);
     if(c.walls.stoneWallHP > 0) return sf::Color(180, 180, 180);
-    if(c.streets.Street > 0) return sf::Color(255, 230, 140);
+    //if(c.streets.Street > 0) return sf::Color(255, 230, 140);
     if (c.civilizationPlace) return sf::Color::Black;
     if (c.food > 0) return sf::Color(255, 165, 0);
     if (c.treeHP > 0)  return sf::Color(0, 120, 0);

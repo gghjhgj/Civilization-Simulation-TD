@@ -7,10 +7,10 @@
 #include "Streets.h"
 #include "Army.h"
 #include "Monsters.h"
+
+
 World::Cell World::grid[Config::sizeX * Config::sizeY];
-#include <fstream>
-
-
+unsigned int World::GPU_World_Buffer_ID = 0;
 
 void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Human &human, Stone &stone, Food &food, Tree &tree, Army &army, Monsters &monsters)
 {
@@ -73,8 +73,8 @@ void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Huma
 }
 void World::init()
 {
-    popularityRanking.clear();
-    popularityRanking.resize(1);
+    //popularityRanking.clear();
+    //popularityRanking.resize(1);
     for (int y = 0; y < Config::sizeY; y++)
     {
         for (int x = 0; x < Config::sizeX; x++)
@@ -84,18 +84,26 @@ void World::init()
             c.treeHP = 0;
             c.stoneHP = 0;
             c.flags = 0;
-            c.popularity = 0;
-            c.indexInBucket = 0;
+            //c.popularity = 0;
+            //c.indexInBucket = 0;
             c.humanIndex = -1; 
             c.civZone = 0;
             c.buildings = {0, 0, 0, 0, 0, 0};
-            c.streets = {0};
+            //c.streets = {0};
             c.walls = {0, 0};
-            c.indexInBucket = popularityRanking[0].size();
+            //c.indexInBucket = popularityRanking[0].size();
 
-            popularityRanking[0].push_back(index(x, y));
+            //popularityRanking[0].push_back(index(x, y));
         }
     }
+    glGenBuffers(1, &World::GPU_World_Buffer_ID);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, World::GPU_World_Buffer_ID);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(World::grid), World::grid, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, World::GPU_World_Buffer_ID);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    std::cout << "sync z gpu przeszedl" << std::endl;
+    std::cout << "Rozmiar pojedynczego kafelka: " << sizeof(Cell) << " bajtow." << std::endl;
+    std::cout << "Calkowity rozmiar swiata na karcie: " << sizeof(World::grid) / (1024.0 * 1024.0) << " MB." << std::endl;
 }
 bool World::isValid(int x, int y)
 {
@@ -424,6 +432,7 @@ void World::markAllDirty()
     }
 }
 
+/*
 void World::updateTilePopularity(int idx)
 {
     Cell &c = grid[idx];
@@ -479,6 +488,7 @@ void World::updateTilePopularity(int idx)
         currentMaxPopularity = newPopularity;
     }
 }
+*/
 
 void World::makeAllHumansDirty(Human &human)
 {

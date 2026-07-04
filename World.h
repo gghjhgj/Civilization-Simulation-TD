@@ -1,4 +1,5 @@
 #pragma once
+#include <glad/glad.h>
 #include <cstdint>
 #include <cstdlib>
 #include <vector>
@@ -8,6 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include "Config.h"
+
 class Streets;
 class Food;
 class Tree;
@@ -16,6 +18,7 @@ class Human;
 class Civilization;
 class Army;
 class Monsters;
+
 class World
 {
     public:
@@ -64,18 +67,18 @@ class World
 
         uint8_t civilizationPlace;
 
-        int popularity = 0;
-        int indexInBucket = 0;
-
         int humanIndex = -1;
-        ArmyTile armyTile;
 
         int civZone = 0;
         Buildings buildings;
-        Streets streets;
         Walls walls;
 
         uint8_t flags;
+
+        //int popularity = 0;
+        //int indexInBucket = 0;
+        //ArmyTile armyTile;
+        //Streets streets;
     };
     std::vector<int> foods;
     std::vector<int> trees;
@@ -83,6 +86,9 @@ class World
 
 
     static Cell grid[Config::sizeX * Config::sizeY];
+    static unsigned int GPU_World_Buffer_ID;
+
+
 
     std::vector<std::vector<int>> popularityRanking;
     int currentMaxPopularity = 0;
