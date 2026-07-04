@@ -392,6 +392,7 @@ int Monsters::enemiesToKill(Army &army, MonstersTypes types, int DMG)
 int Monsters::eraseDecision(Army &army, int profession)
 {
     auto &armyEntry = army.armyRegistry[profession];
+    //std::cout << armyEntry.humansCount - 1 << std::endl;
     return armyEntry.humansCount -1;
 }
 

@@ -41,7 +41,9 @@ private:
         soldier,
         archer,
         normalMonster,
-        giantMonster
+        giantMonster,
+
+        COUNT
     };
     std::map<int, ArmyLayer> armyLayers;
     sf::Shader armyShader;

@@ -35,7 +35,7 @@ void main()
     pos.y += armyMain.y + (row * spacingY) + (quantY * noise);
     
     gl_Position = gl_ModelViewProjectionMatrix * pos;
-    
+
     /*
     float debug = fract(id * 0.001);
     gl_FrontColor = vec4(debug, 0.0, 0.0, 1.0);

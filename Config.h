@@ -120,9 +120,8 @@ class Config
 
 
     /////////army
-    static constexpr int humanInArmyHP = 100;
-    static constexpr int humanInArmyStamina = 1000;
-    static constexpr int humanInArmyDamage = 1;
+    static constexpr int humanInArmyHP = 1000;
+    static constexpr int humanInArmyDamage = 5;
     static constexpr int maxHumanCountAddedToArmy = 1;
     static constexpr int ticksForAddingHumansToArmy = 500;
     static constexpr int maxHumansInArmy = 1000000;
@@ -136,7 +135,7 @@ class Config
     static constexpr int normalMonsterHP = 5;
     static constexpr int normalMonsterDamage = 1;
 
-    static constexpr int normalMonstersCreated = 100000;
+    static constexpr int normalMonstersCreated = 1000000;
 
 
     static constexpr int giantMonsterHP = 200;
@@ -144,4 +143,6 @@ class Config
     
     static constexpr int giantMonstersCreated = 20;
 
+
+    static constexpr int maxUnits = 2000000;
 };

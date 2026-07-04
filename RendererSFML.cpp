@@ -15,10 +15,16 @@ RendererSFML::RendererSFML(int w, int h, int cellSize)
         MessageBoxA(NULL, "Shader load failed", "Error", MB_OK);
     }
     setArmyColors();
-    /*
-    armyVertices.resize(Config::maxHumansInArmy);
-    armyLayer.create(Config::maxHumansInArmy);
-    */
+
+
+    int maxSize = Config::maxUnits;
+    for(int i = 0; i < RendererSFML::Profs::COUNT; i++)
+    {
+        auto &entry = armyLayers[i];
+        entry.armyVertices.reserve(maxSize);
+        entry.armyLayer.create(maxSize);
+    }
+
 }
 
 bool RendererSFML::isOpen()
@@ -133,11 +139,16 @@ else
 void RendererSFML::eraseProfFromBuffer(int profession, Source source, int logicID)
 {
     if(source == Source::monstersClass) profession += 2;
+    /*
+    else  
+    {   
+    std::cout << armyLayers[profession].armyVertices.size() << " ";
+    std::cout << armyLayers[profession].armyLayer.getVertexCount() << std::endl;
+    }
+    */
     auto &layer = armyLayers[profession];
-
     int lastIDX = layer.armyVertices.size() - 1;
     if(logicID > lastIDX || logicID < 0) return;
-    
     if(logicID != lastIDX)
     {
         layer.armyVertices[logicID] = layer.armyVertices[lastIDX];
@@ -147,7 +158,7 @@ void RendererSFML::eraseProfFromBuffer(int profession, Source source, int logicI
         {
             return;
         }
-    } 
+    }
     else 
     {
         layer.armyVertices.pop_back();
@@ -159,21 +170,12 @@ void RendererSFML::reloadArmyBuffer()
     for(auto& [profID, layer] : armyLayers)
     {
         if (layer.armyVertices.empty()) continue;
-
-    if (!layer.armyLayer.create(layer.armyVertices.size())) 
-    {
-        // std::cerr << "Blad: Nie udalo sie stworzyc VertexBuffer!" << std::endl;
-        return; 
-    }
-    if (!layer.armyLayer.update(layer.armyVertices.data(), layer.armyVertices.size(), 0)) 
-    {
-        // std::cerr << "Blad: Nie udalo sie zaktualizowac VertexBuffer!" << std::endl;
-    }
+        layer.armyLayer.update(layer.armyVertices.data(), layer.armyVertices.size(), 0);
     }
 }
-
 void RendererSFML::end()
 {
+    //reloadArmyBuffer();
     texture.update(pixelImage);
     window.clear();
     window.draw(sprite);
@@ -230,7 +232,7 @@ for(auto& [profID, layer] : armyLayers)
         layer.color.a / 255.f
     ));            
     
-    window.draw(layer.armyLayer, states);
+    window.draw(layer.armyLayer, 0, layer.armyVertices.size(), states);
 
     }
     

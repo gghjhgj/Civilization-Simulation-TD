@@ -111,7 +111,7 @@ while (renderer.isOpen())
         }
         walls.buildWalls(world, civilization, Walls::WallsTypes::woodenWall);
     }
-    if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForAddingHumansToArmy == 0) //&& army.armyRegistry[Army::ArmyProfession::soldier].index.size() < 5000 && (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
+    if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForAddingHumansToArmy == 0 && combatSystem.armiesReadyForCombat != 4) //&& army.armyRegistry[Army::ArmyProfession::soldier].index.size() < 5000 && (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
     {
         army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
     }
@@ -157,7 +157,7 @@ while (renderer.isOpen())
         world.makeAllHumansDirty(human);
     }
     /*
-    if(world.allTicksCount > Config::ticksForBuildingWall)
+    if(world.allTicksCount > Config::ticksForBuildingWall && combatSystem.armiesReadyForCombat == 4)
     {
         Sleep(1);
     }

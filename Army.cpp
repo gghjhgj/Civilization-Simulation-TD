@@ -97,6 +97,11 @@ void Army::addHumansToArmy(World &world, Human &human, Civilization &civilizatio
 }
 void Army::giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession)
 {
+    if (monsters.monstersRegistry[0].monstersCount == 0 
+        && monsters.monstersRegistry[1].monstersCount == 0)
+    {
+        return; 
+    }
     //y * size + x
     if(armyRegistry[profession].states == States::idle)
     {
@@ -124,12 +129,20 @@ Army::Dirs Army::armyMoveDecision(ArmyProfession profession)
     int targetIndex = entry.armyTargetIndex;
     if(armyIndex == targetIndex)
     {
+        if(entry.armyTargetIndex != entry.spawnPoint)
+        {
         entry.armyTargetIndex = -1;
         entry.states = States::waitingForCombat;
         CombatSystem::incrementArmiesReady();
         if(CombatSystem::areArmiesReady())
         {
             CombatSystem::startCombat();
+        }
+        }
+        else
+        {
+            entry.armyTargetIndex = -1;
+            entry.states = States::idle;
         }
     }
 
@@ -366,6 +379,7 @@ void Army::armyController(Monsters &monsters, RendererSFML &renderer)
     {
         ArmyProfession profession = ArmyProfession(i);
         auto &entry = armyRegistry[profession];
+        //std::cout << "i: " << i << "state: " << entry.states << std::endl;
         //spacingController(profession);
         //posSpacing(profession);
         noiseController(profession);
