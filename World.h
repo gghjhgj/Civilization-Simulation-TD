@@ -8,6 +8,7 @@
 #include <random>
 #include <algorithm>
 #include <fstream>
+#include <sstream>
 #include "Config.h"
 
 class Streets;
@@ -61,6 +62,8 @@ class World
     
     struct Cell
     {
+        uint8_t flags;
+
         uint8_t food;
         uint8_t treeHP;
         uint8_t stoneHP;
@@ -72,8 +75,6 @@ class World
         int civZone = 0;
         Buildings buildings;
         Walls walls;
-
-        uint8_t flags;
 
         //int popularity = 0;
         //int indexInBucket = 0;
@@ -87,6 +88,7 @@ class World
 
     static Cell grid[Config::sizeX * Config::sizeY];
     static unsigned int GPU_World_Buffer_ID;
+    static GLuint GPU_Compute_Shader_ID;
 
 
 
@@ -104,6 +106,7 @@ class World
 
     bool visited[Config::sizeX * Config::sizeY] = {};
     
+    std::string loadShaderSource(const std::string& filePath);
     void writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Human &human, Stone &stone, Food &food, Tree &tree, Army &army, Monsters &monsters);
     void init();
     bool isValid(int x, int y);
