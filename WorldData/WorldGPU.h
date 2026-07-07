@@ -26,7 +26,11 @@ class WorldGPU
     std::string loadShaderSource(const std::string& filePath);
     void init(const void* dataPtr);
     void downloadData(void* destPtr);
+    void uploadCells(size_t startIndex, size_t count, const void* srcPtr);
+
+
+
+    //test
     void runShader();
     void printDebugData();
-
 };

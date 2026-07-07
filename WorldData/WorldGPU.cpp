@@ -53,6 +53,26 @@ void WorldGPU::downloadData(void* destPtr)
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
+void WorldGPU::uploadCells(size_t startIndex, size_t count, const void* srcPtr)
+{
+    if(bufferID == 0) return;
+
+    size_t offsetInBytes = startIndex * sizeof(Cell);
+
+    size_t sizeInBytes = count * sizeof(Cell);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, bufferID);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, offsetInBytes, sizeInBytes, srcPtr);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+
+
+
+
+
+
+
 void WorldGPU::runShader()
 {
     if(shaderID == 0 || bufferID == 0) return;
