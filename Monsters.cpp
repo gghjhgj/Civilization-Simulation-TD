@@ -1,7 +1,7 @@
 #include "Army.h"
 #include "Civilization.h"
 #include "Monsters.h"
-#include "World.h"
+#include "WorldData/World.h"
 #include "RendererSFML.h"
 #include "CombatSystem.h"
 

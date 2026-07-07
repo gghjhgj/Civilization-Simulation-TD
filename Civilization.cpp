@@ -1,6 +1,6 @@
 #include "Civilization.h"
 #include "Human.h"
-#include "World.h"
+#include "WorldData/World.h"
 #include "Streets.h"
 #include "Walls.h"
 #include "Army.h"
@@ -359,7 +359,7 @@ void Civilization::addTilesToPossibleVillage(World &world, int index, int r)
         if (!world.isValid(idx) || 
         world.grid[idx].civilizationPlace > 0 || 
         world.grid[idx].civZone > 0 ||
-        world.grid[idx].flags & World::CellFlags::Water)
+        world.grid[idx].flags & Water)
             continue;
 
         bestTilesForBuildingsVillage.push_back(idx);

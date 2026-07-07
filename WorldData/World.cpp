@@ -9,27 +9,6 @@
 #include "Monsters.h"
 
 
-World::Cell World::grid[Config::sizeX * Config::sizeY];
-unsigned int World::GPU_World_Buffer_ID = 0;
-GLuint World::GPU_Compute_Shader_ID = 0;
-
-std::string World::loadShaderSource(const std::string& filePath)
-{
-    std::ifstream file(filePath);
-
-    if(!file.is_open())
-    {
-        std::cout << "no file in path: " << filePath << std::endl;
-        return "";
-    }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-}
-
-
-
 void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Human &human, Stone &stone, Food &food, Tree &tree, Army &army, Monsters &monsters)
 {
     std::ofstream statsFile("stats.txt");
@@ -114,51 +93,6 @@ void World::init()
             //popularityRanking[0].push_back(index(x, y));
         }
     }
-    glGenBuffers(1, &World::GPU_World_Buffer_ID);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, World::GPU_World_Buffer_ID);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(World::grid), World::grid, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, World::GPU_World_Buffer_ID);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    std::cout << "sync z gpu przeszedl" << std::endl;
-    std::cout << "Rozmiar pojedynczego kafelka: " << sizeof(Cell) << " bajtow." << std::endl;
-    std::cout << "Calkowity rozmiar swiata na karcie: " << sizeof(World::grid) / (1024.0 * 1024.0) << " MB." << std::endl;
-
-
-    std::string shaderCode = loadShaderSource("shaders/sim.glsl");
-    const char* computeShaderSource = shaderCode.c_str();
-
-    GLuint shader = glCreateShader(GL_COMPUTE_SHADER);
-    glShaderSource(shader, 1, &computeShaderSource, NULL);
-    glCompileShader(shader);
-
-    World::GPU_Compute_Shader_ID = glCreateProgram();
-    glAttachShader(World::GPU_Compute_Shader_ID, shader);
-    glLinkProgram(World::GPU_Compute_Shader_ID);
-    glDeleteShader(shader);
-
-    glUseProgram(World::GPU_Compute_Shader_ID);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, World::GPU_World_Buffer_ID);
-    glDispatchCompute((Config::sizeX + 15) / 16, (Config::sizeY + 15) / 16, 1);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-    glUseProgram(0);
-
-
-
-    World::Cell test[2];
-    test[0].civZone = -999;
-    test[1].civZone = -999;
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, World::GPU_World_Buffer_ID);
-    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(World::Cell) * 2, test);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    std::cout << "1" << std::endl;
-    std::cout << "-999- nie dziala, cos innego - dziala, WYNIK:" << test[0].civZone << std::endl;
-    std::cout << "oczekiwane-1000, WYNIK: " << test[0].walls.stoneWallHP << "\n" << std::endl;
-
-    std::cout << "2" << std::endl;
-    std::cout << "-999- nie dziala, cos innego - dziala, WYNIK:" << test[1].civZone << std::endl;
-    std::cout << "oczekiwane-1000, WYNIK: " << test[1].walls.stoneWallHP << std::endl;
-
 }
 bool World::isValid(int x, int y)
 {

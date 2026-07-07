@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 
-#include "World.h"
+#include "WorldData/World.h"
+#include "WorldData/WorldGPU.h"
+
 #include "Config.h"
 #include "RendererSFML.h"
 #include "Food.h"
@@ -27,7 +29,10 @@ int main() {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
     srand(time(NULL));
+
     World world;
+    WorldGPU worldGPU;
+
     Food food;
     Tree tree;
     Stone stone;
@@ -50,9 +55,9 @@ int main() {
     world.init();
     world.createOcean();
     world.createLand();
-    world.createStruct(World::CellFlags::Water);
-    world.createStruct(World::CellFlags::Sand);
-    world.createStruct(World::CellFlags::Mountain);
+    world.createStruct(Water);
+    world.createStruct(Sand);
+    world.createStruct(Mountain);
     world.addSandToLand();
     world.smoothShores();
     world.surfaceVectorsInit();
@@ -63,6 +68,13 @@ int main() {
     stone.createStone(world);
     world.markAllDirty();
     army.armyInit();
+
+    
+    worldGPU.init(world.grid);
+    //worldGPU.runShader();
+    //worldGPU.downloadData(world.grid);
+    //worldGPU.printDebugData();
+    
     //civilization.makeEverybodyTreeWorker(human);
     //streets.addStreet(world, civilization, human, 8765, 743986);
 

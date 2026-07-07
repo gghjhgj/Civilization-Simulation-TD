@@ -87,10 +87,10 @@ sf::Color RendererSFML::getColor(const World::Cell& c)
     if (c.treeHP > 0)  return sf::Color(0, 120, 0);
     if (c.stoneHP > 0) return sf::Color::White;
 
-    if (c.flags & World::Water)     return sf::Color::Blue;
-    if (c.flags & World::Land)      return sf::Color::Green;
-    if (c.flags & World::Sand)      return sf::Color::Yellow;
-    if (c.flags & World::Mountain)  return sf::Color(120, 120, 120);
+    if (c.flags & Water)     return sf::Color::Blue;
+    if (c.flags & Land)      return sf::Color::Green;
+    if (c.flags & Sand)      return sf::Color::Yellow;
+    if (c.flags & Mountain)  return sf::Color(120, 120, 120);
 
     return sf::Color(200, 255, 200);
 }

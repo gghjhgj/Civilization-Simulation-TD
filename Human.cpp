@@ -1,5 +1,5 @@
 #include "Human.h"
-#include "World.h"
+#include "WorldData/World.h"
 #include "Civilization.h"
 
 
@@ -36,7 +36,7 @@ void Human::createHuman(World &world, Civilization &civilization)
             
         } while (!world.isValid(id2) ||
                  !world.isEmpty(id2) ||
-                 (world.grid[id2].flags & World::Water));
+                 (world.grid[id2].flags & Water));
         
         addHuman(world, id2, i);
     }
@@ -408,7 +408,7 @@ void Human::humanMove(World &world, Civilization &civilization, Streets &streets
 
         if (world.isValid(newIndex) &&
             world.grid[newIndex].humanIndex <= 0 &&
-            !(world.grid[newIndex].flags & World::Water))
+            !(world.grid[newIndex].flags & Water))
         {
             //world.updateTilePopularity(humans[i].index);
             int id = world.grid[humans[i].index].humanIndex;

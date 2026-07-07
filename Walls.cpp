@@ -41,7 +41,7 @@ void Walls::buildWalls(World &world, Civilization &civilization, WallsTypes type
         bool buildTop = false;
         if(world.isValid(indexTop))
         {
-            if(!(world.grid[indexTop].flags & World::CellFlags::Water))
+            if(!(world.grid[indexTop].flags & Water))
             {
                 wallsIndexes.push_back(indexTop);
                 buildTop = true;
@@ -52,7 +52,7 @@ void Walls::buildWalls(World &world, Civilization &civilization, WallsTypes type
         bool buildBot = false;
         if(world.isValid(indexBottom))
         {
-            if(!(world.grid[indexBottom].flags & World::CellFlags::Water))
+            if(!(world.grid[indexBottom].flags & Water))
             {
                 wallsIndexes.push_back(indexBottom);
                 buildBot = true;
@@ -93,7 +93,7 @@ void Walls::buildWalls(World &world, Civilization &civilization, WallsTypes type
         bool buildLeft = false;
         if(world.isValid(indexLeft))
         {
-            if(!(world.grid[indexLeft].flags & World::CellFlags::Water))
+            if(!(world.grid[indexLeft].flags & Water))
             {
                 wallsIndexes.push_back(indexLeft);
                 buildLeft = true;
@@ -104,7 +104,7 @@ void Walls::buildWalls(World &world, Civilization &civilization, WallsTypes type
         bool buildRight = false;
         if(world.isValid(indexRight))
         {
-            if(!(world.grid[indexRight].flags & World::CellFlags::Water))
+            if(!(world.grid[indexRight].flags & Water))
             {
                 wallsIndexes.push_back(indexRight);
                 buildRight = true;

@@ -68,7 +68,7 @@ void Tree::createTree(World &world)
                 }
                 k++;
                 if(k > maxTreeSpawnTries) break;
-            } while (!world.isValid(x , y) || !world.isEmpty(x, y) || !(world.grid[world.index(x, y)].flags & world.CellFlags::Land));
+            } while (!world.isValid(x , y) || !world.isEmpty(x, y) || !(world.grid[world.index(x, y)].flags & Land));
             
             if(k <= maxTreeSpawnTries)
             {
@@ -126,7 +126,7 @@ void Tree::treeRespawn(World &world)
                 }
                 k++;
                 if(k > maxTreeSpawnTries) break;
-            } while (!world.isValid(x , y) || !world.isEmpty(x, y) || !(world.grid[world.index(x, y)].flags & world.CellFlags::Land) || world.grid[id].civZone > 0);
+            } while (!world.isValid(x , y) || !world.isEmpty(x, y) || !(world.grid[world.index(x, y)].flags & Land) || world.grid[id].civZone > 0);
             
             if(k <= maxTreeSpawnTries)
             {

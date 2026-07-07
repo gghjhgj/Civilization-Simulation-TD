@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <map>
-#include "World.h"
+#include "WorldData/World.h"
 #include "Config.h"
 
 class Army;
