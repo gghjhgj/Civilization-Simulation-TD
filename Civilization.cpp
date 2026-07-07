@@ -1,5 +1,5 @@
 #include "Civilization.h"
-#include "Human.h"
+#include "HumansData/Human.h"
 #include "WorldData/World.h"
 #include "Streets.h"
 #include "Walls.h"

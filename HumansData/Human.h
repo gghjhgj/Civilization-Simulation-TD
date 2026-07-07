@@ -20,7 +20,6 @@ class Human
     };
     struct HumanData
     {
-        bool hasHouse = false;
         int index;
         Tasks task = foodFinding;
         int id;
@@ -33,6 +32,8 @@ class Human
         int buildingBuildersID = -1;
     };
     std::vector <HumanData> humans;
+
+    
     int humansCount = 0;
     int humansHavingHouseCount = 0;
     /*

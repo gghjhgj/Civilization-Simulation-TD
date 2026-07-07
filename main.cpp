@@ -3,13 +3,15 @@
 #include "WorldData/World.h"
 #include "WorldData/WorldGPU.h"
 
+#include "HumansData/Human.h"
+
+
 #include "Config.h"
 #include "RendererSFML.h"
 #include "Food.h"
 #include "Tree.h"
 #include "Stone.h"
 #include "Civilization.h"
-#include "Human.h"
 #include "Streets.h"
 #include "Walls.h"
 #include "Army.h"

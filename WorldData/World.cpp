@@ -1,5 +1,5 @@
 #include "World.h"
-#include "Human.h"
+#include "HumansData/Human.h"
 #include "Civilization.h"
 #include "Food.h"
 #include "Stone.h"

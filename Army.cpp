@@ -1,6 +1,6 @@
 #include "Army.h"
 #include "Civilization.h"
-#include "Human.h"
+#include "HumansData/Human.h"
 #include "WorldData/World.h"
 #include "RendererSFML.h"
 #include "Monsters.h"

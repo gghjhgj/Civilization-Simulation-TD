@@ -1,7 +1,7 @@
 #pragma once
 #include "Civilization.h"
 #include "WorldData/World.h"
-#include "Human.h"
+#include "HumansData/Human.h"
 class Streets
 {
     public:
