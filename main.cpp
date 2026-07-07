@@ -12,7 +12,6 @@
 #include "Tree.h"
 #include "Stone.h"
 #include "Civilization.h"
-#include "Streets.h"
 #include "Walls.h"
 #include "Army.h"
 #include "Monsters.h"
@@ -40,7 +39,6 @@ int main() {
     Stone stone;
     Civilization civilization;
     Human human;
-    Streets streets;
     Walls walls;
     Army army;
     Monsters monsters;
@@ -77,8 +75,6 @@ int main() {
     //worldGPU.downloadData(world.grid);
     //worldGPU.printDebugData();
     
-    //civilization.makeEverybodyTreeWorker(human);
-    //streets.addStreet(world, civilization, human, 8765, 743986);
 
     sf::Clock clock;
 
@@ -142,7 +138,7 @@ while (renderer.isOpen())
     food.foodRespawn(world);
     stone.stoneRespawn(world);
     tree.treeRespawn(world);
-    human.humanMove(world, civilization, streets, food, tree, stone, human);
+    human.humanMove(world, civilization, food, tree, stone, human);
     army.armyController(monsters, renderer);
     monsters.monstersController(army, renderer);
     /*

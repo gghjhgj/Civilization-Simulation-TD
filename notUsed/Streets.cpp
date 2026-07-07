@@ -1,5 +1,6 @@
-#include "Streets.h"
 /*
+#include "Streets.h"
+
 void Streets::addStreet(World &world, Civilization &civilization, Human &human, int startIDX, int endIDX)
 {
     int sx = startIDX % Config::sizeX;

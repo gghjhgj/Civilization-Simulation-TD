@@ -7,7 +7,6 @@
 #include "Stone.h"
 class Human;
 class World;
-class Streets;
 class Walls;
 class Army;
 class Civilization
@@ -120,10 +119,6 @@ class Civilization
 
     void civilizationDecision(Human &human, Food &food, Stone &stone, Tree &tree);
 
-    /*
-    int getBestTileForBuilding(World &world);
-    int getOutskirtsTileForBuilding(World &world);
-    */
     void markCloseAsCivZone(World &world, int index, int r);
     void addTilesToPossibleVillage(World &world, int index, int r);
     int getBestTileForBuilingsVillage(World &world);
@@ -143,19 +138,11 @@ class Civilization
     void assignHumansToSawmills(Human &human);
 
     void addMine(World &world, int idx);
-    //int bestNextMinePlace(World &world);
     void buildMine(World &world);
     void minesGains();
     void assignHumansToMine(Human &human);
 
-    /*
-    void addFactory(World &world, Streets &streets, Human &human, int idx);
-    void buildFactory(World &world);
-    void factoriesGains();
-    void assignHumansToFactory(Human &human);
-    */
-
     void buildingDecision(World &world, Human &human, Food &food, Stone &stone, Tree &tree);
     void startConstruction(World &world, int idx, BuildingsType type);
-    void endConstruction(World &world, Human &human, Streets &streets, int idx, BuildingsType type, int id);
+    void endConstruction(World &world, Human &human, int idx, BuildingsType type, int id);
 };

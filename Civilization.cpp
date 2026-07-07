@@ -1,7 +1,6 @@
 #include "Civilization.h"
 #include "HumansData/Human.h"
 #include "WorldData/World.h"
-#include "Streets.h"
 #include "Walls.h"
 #include "Army.h"
 void Civilization::addCivilization(World &world, int index)
@@ -143,171 +142,6 @@ void Civilization::civilizationDecision(Human &human, Food &food, Stone &stone, 
     }
     
 }
-/*
-int Civilization::getBestTileForBuilding(World &world)
-{
-    while(world.currentMaxPopularity > 0 &&
-          world.popularityRanking[world.currentMaxPopularity].empty())
-    {
-        world.currentMaxPopularity--;
-    }
-
-    if(world.popularityRanking[world.currentMaxPopularity].empty())
-    {
-        return -1;
-    }
-
-    static const int offsets[9] =
-    {
-        0,
-        -Config::sizeX - 1,
-        -Config::sizeX,
-        -Config::sizeX + 1,
-        -1,
-        1,
-        Config::sizeX - 1,
-        Config::sizeX,
-        Config::sizeX + 1
-    };
-
-    int bestTileIndex =
-        world.popularityRanking[world.currentMaxPopularity].back();
-
-    for(int i = 0; i < 9; i++)
-    {
-        int idx = bestTileIndex + offsets[i];
-
-        if(!world.isValid(idx))
-            continue;
-
-        int pop = world.grid[idx].popularity;
-        int bucketIdx = world.grid[idx].indexInBucket;
-
-        if(bucketIdx == -1)
-            continue;
-
-        auto &bucket = world.popularityRanking[pop];
-
-        if(bucket.empty())
-            continue;
-
-        int lastTile = bucket.back();
-
-        bucket[bucketIdx] = lastTile;
-        world.grid[lastTile].indexInBucket = bucketIdx;
-
-        bucket.pop_back();
-
-        world.grid[idx].popularity = 0;
-        world.grid[idx].indexInBucket = -1;
-        world.grid[idx].civZone = 1;
-    }
-
-    while(world.currentMaxPopularity > 0 &&
-          world.popularityRanking[world.currentMaxPopularity].empty())
-    {
-        world.currentMaxPopularity--;
-    }
-
-    return bestTileIndex;
-}
-int Civilization::getOutskirtsTileForBuilding(World &world)
-{
-    int targetPop = world.currentMaxPopularity * Config::outskirts;
-
-    if(targetPop < 1)
-        targetPop = 1;
-
-    int chosenPop = -1;
-
-    for(int p = targetPop; p >= 1; p--)
-    {
-        if(p < world.popularityRanking.size() &&
-           !world.popularityRanking[p].empty())
-        {
-            chosenPop = p;
-            break;
-        }
-    }
-
-    if(chosenPop == -1)
-    {
-        for(int p = targetPop + 1;
-            p <= world.currentMaxPopularity;
-            p++)
-        {
-            if(p < world.popularityRanking.size() &&
-               !world.popularityRanking[p].empty())
-            {
-                chosenPop = p;
-                break;
-            }
-        }
-    }
-
-    if(chosenPop == -1)
-    {
-        if(!world.popularityRanking[0].empty())
-            chosenPop = 0;
-        else
-            return -1;
-    }
-
-    int tileIndex =
-        world.popularityRanking[chosenPop].back();
-
-    static const int offsets[9] =
-    {
-        0,
-        -Config::sizeX - 1,
-        -Config::sizeX,
-        -Config::sizeX + 1,
-        -1,
-        1,
-        Config::sizeX - 1,
-        Config::sizeX,
-        Config::sizeX + 1
-    };
-
-    for(int i = 0; i < 9; i++)
-    {
-        int idx = tileIndex + offsets[i];
-
-        if(!world.isValid(idx))
-            continue;
-
-        int pop = world.grid[idx].popularity;
-        int bucketIdx = world.grid[idx].indexInBucket;
-
-        if(bucketIdx == -1)
-            continue;
-
-        auto &bucket = world.popularityRanking[pop];
-
-        if(bucket.empty())
-            continue;
-
-        int lastTile = bucket.back();
-
-        bucket[bucketIdx] = lastTile;
-        world.grid[lastTile].indexInBucket = bucketIdx;
-
-        bucket.pop_back();
-
-        world.grid[idx].popularity = 0;
-        world.grid[idx].indexInBucket = -1;
-        world.grid[idx].civZone = 1;
-    }
-
-    while(world.currentMaxPopularity > 0 &&
-          world.popularityRanking[world.currentMaxPopularity].empty())
-    {
-        world.currentMaxPopularity--;
-    }
-
-    return tileIndex;
-}
-*/
 
 void Civilization::markCloseAsCivZone(World &world, int index, int r)
 {
@@ -568,44 +402,7 @@ void Civilization::addMine(World &world, int idx)
     }
     buildings.mines.push_back({idx, 0});
 }
-/*
-int Civilization::bestNextMinePlace(World &world)
-{
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> dist(0, world.lands.size() - 1);
-    int bestIndex = 0;
-    int tries = 0;
-    int maxTries = Config::maxMineSpawnTries;
-    do
-    {
-        bestIndex = world.lands[dist(rng)]; 
-        tries++;
-    } while (world.grid[bestIndex].flags != World::CellFlags::Mountain && tries < maxTries);
-    if(tries >= maxTries) 
-    {
-        return getOutskirtsTileForBuilding(world);
-    }
-    int pop = world.grid[bestIndex].popularity;
-    int bucketIdx = world.grid[bestIndex].indexInBucket;
-    if (bucketIdx != -1 && pop >= 0 && pop < world.popularityRanking.size())
-    {
-        auto &bucket = world.popularityRanking[pop];
-        
-        if (!bucket.empty() && bucketIdx < bucket.size())
-        {
-            int lastTileIndex = bucket.back();
-            bucket[bucketIdx] = lastTileIndex;
-            world.grid[lastTileIndex].indexInBucket = bucketIdx;
-            bucket.pop_back();
-        }
-    }
-    world.grid[bestIndex].popularity = 0;
-    world.grid[bestIndex].indexInBucket = -1;
 
-    return bestIndex;
-}
-*/
 void Civilization::buildMine(World &world)
 {
     if(resources.wood >= Config::woodNeededForMine && resources.stone >= Config::stoneNeededForMine)
@@ -650,108 +447,6 @@ void Civilization::assignHumansToMine(Human &human)
         }
     }
 }
-/*
-void Civilization::addFactory(World &world, Streets &streets, Human &human, int idx)
-{
-    world.grid[idx].buildings.Factory = 1;
-    world.addToDirtyCells(idx);
-
-    if(!buildings.factories.empty() && (buildings.factories.back().workersAssigned == Config::maxFactoryWorkersInFactory))
-    {
-        emptyFactoriesStartingID = buildings.factories.size();
-    }
-
-    buildings.factories.push_back({idx, 0});
-    if(buildings.factories.size() > 1)
-        {
-            streets.addStreet(world, *this, human, buildings.factories[buildings.factories.size() - 2].index, idx);
-        }
-}
-void Civilization::buildFactory(World &world)
-{
-    if(resources.wood >= Config::woodNeededForFactory &&
-       resources.stone >= Config::stoneNeededForFactory)
-    {
-        int baseIndex;
-
-        if(lastFactoryIndex != -1)
-        {
-            baseIndex = lastFactoryIndex;
-        }
-        else
-        {
-            baseIndex = getOutskirtsTileForBuilding(world);
-        }
-
-        if(baseIndex == -1)
-            return;
-
-        int x = baseIndex % Config::sizeX;
-        int y = baseIndex / Config::sizeX;
-
-        int newIndex = -1;
-        int maxTries = Config::factoryMaxSpawnTries;
-
-        do
-        {
-            int dx = (rand() % 2 ? 1 : -1) *
-         (Config::factoriesMinDistance +
-          rand() % (Config::factoriesMaxDistance - Config::factoriesMinDistance + 1));
-
-        int dy = (rand() % 2 ? 1 : -1) *
-         (Config::factoriesMinDistance +
-          rand() % (Config::factoriesMaxDistance - Config::factoriesMinDistance + 1));
-
-            int nx = x + dx;
-            int ny = y + dy;
-
-            newIndex = world.index(nx, ny);
-
-            if(--maxTries <= 0)
-                return;
-
-        } while(!world.isValid(newIndex) ||
-                world.grid[newIndex].civZone > 0 ||
-                world.grid[newIndex].flags & World::Water);
-
-        startConstruction(world, newIndex, factory);
-        lastFactoryIndex = newIndex;
-        resources.wood -= Config::woodNeededForFactory;
-        resources.stone -= Config::stoneNeededForFactory;
-    }
-}
-
-void Civilization::factoriesGains()
-{
-    resources.wood += sawmillWorkers * Config::woodPerSawmillWorker;
-}
-
-void Civilization::assignHumansToFactory(Human &human)
-{
-    int j = human.humans.size() - 1;
-    for(int i = emptyFactoriesStartingID; i < buildings.factories.size() && j >= 0; i++)
-    for( ;buildings.factories[i].workersAssigned < Config::maxFactoryWorkersInFactory && j >= 0; j--)
-    {
-        if(human.humans[j].task != Human::Tasks::goingToBuilding)
-        {
-             if(human.humans[j].task == Human::Tasks::building)
-            {
-                auto &constr = buildings.constructions[human.humans[j].targetBuildingID];
-                if(human.humans[j].buildingBuildersID != constr.humansIDS.size() - 1)
-                {
-                    human.humans[constr.humansIDS.back()].buildingBuildersID = human.humans[j].buildingBuildersID;
-                    constr.humansIDS[human.humans[j].buildingBuildersID] = constr.humansIDS.back();
-                }
-                constr.humansIDS.pop_back();
-            }
-            human.humans[j].task = Human::Tasks::goingToBuilding;
-            human.humans[j].targetIndex = buildings.factories[i].index;
-            human.humans[j].targetBuildingID = i;
-            buildings.sawmills[i].workersAssigned++;
-        }
-    }
-}
-*/
 
 
 
@@ -773,12 +468,6 @@ void Civilization::buildingDecision(World &world, Human &human, Food &food, Ston
     {
         buildHouse(world);
     }
-    /*
-    else if(buildings.factories.size() + factoriesDuringConstruction < human.humansCount)
-    {
-        buildFactory(world);
-    }
-    */
 }
 
 void Civilization::startConstruction(World &world, int idx, BuildingsType type)
@@ -822,7 +511,7 @@ void Civilization::startConstruction(World &world, int idx, BuildingsType type)
     buildings.constructions.push_back({idx, type, HP});
 }
 
-void Civilization::endConstruction(World &world, Human &human, Streets &streets, int idx, BuildingsType type, int id)
+void Civilization::endConstruction(World &world, Human &human, int idx, BuildingsType type, int id)
 {
     for(size_t i = 0; i < buildings.constructions[id].humansIDS.size(); i++)
     {
@@ -870,13 +559,6 @@ void Civilization::endConstruction(World &world, Human &human, Streets &streets,
             Walls::instance->adddWallTile(world, idx, Walls::WallsTypes::stoneWall);
         }
     }
-    /*
-    else if(type == factory)
-    {
-        addFactory(world, streets, human, idx);
-        factoriesDuringConstruction--;
-    }
-    */
 
     int lastIdx = buildings.constructions.size() - 1;
     if (id != lastIdx)

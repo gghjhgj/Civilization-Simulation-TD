@@ -56,6 +56,6 @@ class Human
     int humanFindStone(World &world, int startIndex);
     bool gotResource(int h, int f);
     int humanMoveDecision(int fromIndex, int targetIndex, int i);
-    void humanMove(World &world, Civilization &civilization, Streets &streets, Food &food, Tree &tree, Stone &stone, Human &human);
+    void humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, Human &human);
 
 };

@@ -4,7 +4,6 @@
 #include "Food.h"
 #include "Stone.h"
 #include "Tree.h"
-#include "Streets.h"
 #include "Army.h"
 #include "Monsters.h"
 
@@ -421,63 +420,6 @@ void World::markAllDirty()
     }
 }
 
-/*
-void World::updateTilePopularity(int idx)
-{
-    Cell &c = grid[idx];
-    
-    int x = idx % Config::sizeX;
-    int y = idx / Config::sizeX;
-
-    bool isEdge = (x == 0) | (x == Config::sizeX - 1) | (y == 0) | (y == Config::sizeY - 1);
-
-    if (c.civZone > 0 ||
-        c.buildings.House > 0 || 
-        c.buildings.Mine > 0 || 
-        c.buildings.Farm > 0|| c.buildings.Sawmill > 0|| 
-        c.buildings.Construction > 0|| 
-        c.civilizationPlace > 0 || 
-        c.buildings.Factory > 0 ||
-        c.streets.Street > 0 ||
-        isEdge) 
-        return;
-
-    if (c.indexInBucket == -1)
-    {
-        if (popularityRanking.empty()) 
-        {
-            popularityRanking.resize(1);
-        }
-        c.popularity = 0;
-        popularityRanking[0].push_back(idx);
-        c.indexInBucket = popularityRanking[0].size() - 1;
-    }
-
-    int oldPopularity = c.popularity;
-    int newPopularity = oldPopularity + 1;
-    c.popularity = newPopularity;
-
-    int pos = c.indexInBucket;
-    int lastTileIdx = popularityRanking[oldPopularity].back();
-
-    popularityRanking[oldPopularity][pos] = lastTileIdx;
-    grid[lastTileIdx].indexInBucket = pos;
-
-    popularityRanking[oldPopularity].pop_back();
-
-    if(newPopularity >= popularityRanking.size())
-    {
-        popularityRanking.resize(newPopularity + 1);
-    }
-    popularityRanking[newPopularity].push_back(idx);
-    c.indexInBucket = popularityRanking[newPopularity].size() - 1;
-
-    if(newPopularity > currentMaxPopularity)
-    {
-        currentMaxPopularity = newPopularity;
-    }
-}
-*/
 
 void World::makeAllHumansDirty(Human &human)
 {

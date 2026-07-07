@@ -1,3 +1,4 @@
+/*
 #pragma once
 #include "Civilization.h"
 #include "WorldData/World.h"
@@ -14,9 +15,10 @@ class Streets
     {
         int id;
         int dest[2];
-        std::vector <StreetTile> streetData;
+        std::vector <StreetTile> streetData;j
     };
     std::vector <Street> streetsData;
 
     void addStreet(World &world, Civilization &civilization, Human &human, int startIDX, int endIDX);
 };
+*/

@@ -233,7 +233,7 @@ int Human::humanMoveDecision(int fromIndex, int targetIndex, int i)
 
     return (humans[i].id + humans[i].points) % 8;
 }
-void Human::humanMove(World &world, Civilization &civilization, Streets &streets, Food &food, Tree &tree, Stone &stone, Human &human)
+void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, Human &human)
 {
     static const int offsets[8] = {
     -Config::sizeX - 1, // NW
@@ -344,14 +344,10 @@ void Human::humanMove(World &world, Civilization &civilization, Streets &streets
             newIndex = humans[i].index + offsets[dir];
             if(humans[i].targetIndex == newIndex)
             {
-                /*
-                if(civilization.buildings.constructions[humans[i].targetBuildingID].result == Civilization::BuildingsType::mine) std::cout<<"0" << std::flush;
-                else std::cout << "1" << std::flush;
-                */
                 civilization.buildings.constructions[humans[i].targetBuildingID].hitsForCreating--;
                 if(civilization.buildings.constructions[humans[i].targetBuildingID].hitsForCreating <= 0)
                 {
-                    civilization.endConstruction(world, human, streets, humans[i].targetIndex, civilization.buildings.constructions[humans[i].targetBuildingID].result, humans[i].targetBuildingID);
+                    civilization.endConstruction(world, human, humans[i].targetIndex, civilization.buildings.constructions[humans[i].targetBuildingID].result, humans[i].targetBuildingID);
                     humans[i].targetIndex = -1;
                     humans[i].targetBuildingID = -1;
                     humans[i].buildingBuildersID = -1;

@@ -11,7 +11,6 @@
 
 #include "Cell.h"
 
-class Streets;
 class Food;
 class Tree;
 class Stone;
@@ -24,7 +23,7 @@ class World
 {
     public:
     using Cell = ::Cell;
-    
+
     int allTicksCount = 0;
 
     std::vector<int> waters;
@@ -74,15 +73,9 @@ class World
     bool isEmpty(int x, int y);
 
     void markAllDirty();
-    
-
-    void updateTilePopularity(int idx);
-
-
 
     void makeAllHumansDirty(Human &human);
     
-
     bool checkIfThereAreNoBuildings(int idx);
 
     void addToDirtyCells(int index);

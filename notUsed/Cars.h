@@ -1,4 +1,4 @@
-
+/*
 #pragma once
 #include "WorldData/World.h"
 class civilization;
@@ -24,3 +24,4 @@ class Cars
     void sendCar(int startIDX, int endIDX);
     void unloadCar();
 };
+*/
