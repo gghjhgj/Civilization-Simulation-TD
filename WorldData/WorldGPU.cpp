@@ -99,10 +99,10 @@ void WorldGPU::printDebugData()
     std::cout << "\n=== GPU DEBUG CHECK ===" << std::endl;
     std::cout << "1" << std::endl;
     std::cout << "-999- nie dziala, cos innego - dziala, WYNIK: " << test[0].civZone << std::endl;
-    std::cout << "oczekiwane-1000, WYNIK: " << test[0].walls.stoneWallHP << "\n" << std::endl;
+    std::cout << "oczekiwane-1000, WYNIK: " << test[0].building << "\n" << std::endl;
 
     std::cout << "2" << std::endl;
     std::cout << "-999- nie dziala, cos innego - dziala, WYNIK: " << test[1].civZone << std::endl;
-    std::cout << "oczekiwane-1000, WYNIK: " << test[1].walls.stoneWallHP << std::endl;
+    std::cout << "oczekiwane-1000, WYNIK: " << test[1].building << std::endl;
     std::cout << "=======================\n" << std::endl;
 }

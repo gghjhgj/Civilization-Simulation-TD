@@ -8,5 +8,5 @@ enum Tasks
         goingToBuilding,
         building,
 
-        COUNT
+        TASKS_COUNT
     };

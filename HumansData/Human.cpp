@@ -63,12 +63,10 @@ void Human::humanRespawn(World &world, Civilization &civilization)
         addHuman(world, civilization.spawn, id);
     }
 }
-int Human::humanFindFood(World &world, int startIndex)
+int Human::humanFindResource(World& world, int startIndex, ResourceType type)
 {
     int sx = startIndex % Config::sizeX;
     int sy = startIndex / Config::sizeX;
-
-    int bestIndex = -1;
 
     for (int dy = -Config::vision; dy <= Config::vision; dy++)
     {
@@ -84,73 +82,32 @@ int Human::humanFindFood(World &world, int startIndex)
 
             int idx = y * Config::sizeX + x;
 
-            if (world.grid[idx].food > 0)
+            bool found = false;
+
+            switch(type)
             {
-                return idx;
+                case ResourceType::food:
+                    found = world.grid[idx].food > 0;
+                    break;
+
+                case ResourceType::tree:
+                    found = world.grid[idx].treeHP > 0;
+                    break;
+
+                case ResourceType::stone:
+                    found = world.grid[idx].stoneHP > 0;
+                    break;
+                
+                case ResourceType::construction:
+                    found = world.grid[idx].construction.hitsNeeded > 0;
+                    break;
             }
+
+            if(found)
+                return idx;
         }
     }
 
-    return -1;
-}
-int Human::humanFindTree(World &world, int startIndex)
-{
-    int sx = startIndex % Config::sizeX;
-    int sy = startIndex / Config::sizeX;
-
-    int bestIndex = -1;
-
-    for (int dy = -Config::vision; dy <= Config::vision; dy++)
-    {
-        for (int dx = -Config::vision; dx <= Config::vision; dx++)
-        {
-            int x = sx + dx;
-            int y = sy + dy;
-
-            if (x < 0 || y < 0 ||
-                x >= Config::sizeX ||
-                y >= Config::sizeY)
-                continue;
-
-            int idx = y * Config::sizeX + x;
-
-            if (world.grid[idx].treeHP > 0)
-            {
-                return idx;
-            }
-        }
-    }
-    return -1;
-}
-
-
-int Human::humanFindStone(World &world, int startIndex)
-{
-    int sx = startIndex % Config::sizeX;
-    int sy = startIndex / Config::sizeX;
-
-    int bestIndex = -1;
-
-    for (int dy = -Config::vision; dy <= Config::vision; dy++)
-    {
-        for (int dx = -Config::vision; dx <= Config::vision; dx++)
-        {
-            int x = sx + dx;
-            int y = sy + dy;
-
-            if (x < 0 || y < 0 ||
-                x >= Config::sizeX ||
-                y >= Config::sizeY)
-                continue;
-
-            int idx = y * Config::sizeX + x;
-
-            if (world.grid[idx].stoneHP > 0)
-            {
-                return idx;
-            }
-        }
-    }
     return -1;
 }
 
@@ -207,11 +164,11 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
         int newIndex = -1;
         bool humanRemoved = false;
 
-        if(humans[i].task == Tasks::foodFinding)
+        if(humans[i].task == foodFinding)
         {
             if(humans[i].moves % (Config::vision + 1) == 0)
             {
-                humans[i].targetIndex = humanFindFood(world, humans[i].index);
+                humans[i].targetIndex = humanFindResource(world, humans[i].index, ResourceType::food);
             }
             dir = humanMoveDecision(humans[i].index, humans[i].targetIndex, i);
             newIndex = humans[i].index + offsets[dir];
@@ -233,11 +190,11 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
                 }
             }
         }
-        else if(humans[i].task == Tasks::treeFinding)
+        else if(humans[i].task == treeFinding)
         {
             if(humans[i].moves % (Config::vision + 1) == 0)
             {
-                humans[i].targetIndex = humanFindTree(world, humans[i].index);
+                humans[i].targetIndex = humanFindResource(world, humans[i].index, ResourceType::tree);
             }
             dir = humanMoveDecision(humans[i].index, humans[i].targetIndex, i);
             newIndex = humans[i].index + offsets[dir];
@@ -263,11 +220,11 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
                 }
             }
         }
-        else if(humans[i].task == Tasks::stoneFinding)
+        else if(humans[i].task == stoneFinding)
         {
             if(humans[i].moves % (Config::vision + 1) == 0)
             {
-                humans[i].targetIndex = humanFindStone(world, humans[i].index);
+                humans[i].targetIndex = humanFindResource(world, humans[i].index, ResourceType::stone);
             }
             dir = humanMoveDecision(humans[i].index, humans[i].targetIndex, i);
             newIndex = humans[i].index + offsets[dir];
@@ -293,56 +250,57 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
                 }
             }
         }
-        else if(humans[i].task == Tasks::building)
+        else if(humans[i].task == building)
+{
+    if(humans[i].moves % (Config::vision + 1) == 0)
+    {
+        humans[i].targetIndex = humanFindResource(world, humans[i].index, ResourceType::construction);
+    }
+    
+    dir = humanMoveDecision(humans[i].index, humans[i].targetIndex, i);
+    
+    if(dir < 0 || dir >= 8) dir = 0; 
+    
+    newIndex = humans[i].index + offsets[dir];
+
+    if(humans[i].targetIndex != -1 && humans[i].targetIndex == newIndex && world.isValid(newIndex))
+    {
+        bool restartTargetIndex = false;
+        if(world.grid[newIndex].construction.hitsNeeded > 0)
         {
-            dir = humanMoveDecision(humans[i].index, humans[i].targetIndex, i);
-            newIndex = humans[i].index + offsets[dir];
-            if(humans[i].targetIndex == newIndex)
-            {
-                civilization.buildings.constructions[humans[i].targetBuildingID].hitsForCreating--;
-                if(civilization.buildings.constructions[humans[i].targetBuildingID].hitsForCreating <= 0)
-                {
-                    civilization.endConstruction(world, human, humans[i].targetIndex, civilization.buildings.constructions[humans[i].targetBuildingID].result, humans[i].targetBuildingID);
-                    humans[i].targetIndex = -1;
-                    humans[i].targetBuildingID = -1;
-                    humans[i].buildingBuildersID = -1;
-                }
-            }
+            world.grid[newIndex].construction.hitsNeeded--;
+            restartTargetIndex = true;
         }
-        else if(humans[i].task == Tasks::goingToBuilding)
+        if(world.grid[newIndex].construction.hitsNeeded == 0)
+        {
+            world.grid[newIndex].construction.hitsNeeded = -1;
+            civilization.endConstruction(world, human, humans[i].targetIndex, world.grid[newIndex].construction.result);
+            restartTargetIndex = true;
+        }
+        if(restartTargetIndex) humans[i].targetIndex = -1;
+    }
+}
+        else if(humans[i].task == goingToBuilding)
         {
             dir = humanMoveDecision(humans[i].index, humans[i].targetIndex, i);
             newIndex = humans[i].index + offsets[dir];
             if(humans[i].targetIndex == newIndex)
             {
-                if(world.grid[humans[i].targetIndex].buildings.Farm >= 1)
+                if(world.grid[humans[i].targetIndex].building == farm)
                 {
-                    civilization.buildings.farms[humans[i].targetBuildingID].realWorkers++;
-                    civilization.farmWorkers++;
+                    civilization.realWorkers[farm]++;
                 }
-                else if(world.grid[humans[i].targetIndex].buildings.Sawmill >= 1)
+                else if(world.grid[humans[i].targetIndex].building == sawmill)
                 {
-                    civilization.buildings.sawmills[humans[i].targetBuildingID].realWorkers++;
-                    civilization.sawmillWorkers++;
+                    civilization.realWorkers[sawmill]++;
                 }
-                else if(world.grid[humans[i].targetIndex].buildings.Mine >= 1)
+                else if(world.grid[humans[i].targetIndex].building == mine)
                 {
-                    civilization.buildings.mines[humans[i].targetBuildingID].realWorkers++;
-                    civilization.mineWorkers++;
-                }
-                else if(world.grid[humans[i].targetIndex].buildings.Factory >= 1)
-                {
-                    civilization.buildings.factories[humans[i].targetBuildingID].realWorkers++;
-                    civilization.factoriesWorkers++;
+                    civilization.realWorkers[mine]++;
                 }
                 world.grid[humans[i].index].humanIndex = 0;
                 if (i < humans.size() - 1)
                 {
-                    if(humans.back().task == Tasks::building)
-                    {
-                        civilization.buildings.constructions[humans.back().targetBuildingID].humansIDS[humans.back().buildingBuildersID] = i;
-                    }
-                    
                     humans[i] = humans.back();
                     world.grid[humans[i].index].humanIndex = i;
                 }
@@ -356,12 +314,10 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
             i--; 
             continue; 
         }
-
         if (world.isValid(newIndex) &&
             world.grid[newIndex].humanIndex <= 0 &&
             !(world.grid[newIndex].flags & Water))
         {
-            //world.updateTilePopularity(humans[i].index);
             int id = world.grid[humans[i].index].humanIndex;
             world.grid[humans[i].index].humanIndex = 0;
 

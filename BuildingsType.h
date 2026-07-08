@@ -9,5 +9,5 @@ enum BuildingsType
         woodWall,
         stoneWall,
         
-        COUNT
+        BUILDINGS_COUNT
     };

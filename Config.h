@@ -4,7 +4,7 @@ class Config
 {
     public:
     static constexpr int ticksForRender = 1500;//nie ma juz
-    static constexpr float FPS = 250.f;
+    static constexpr float FPS = 30.f;
     static constexpr int ticksForCivilizationDecision = 1000;
     static constexpr int ticksForBuildingDecision = 10;
     static constexpr int ticksForAssigningDecision = 20;
@@ -115,7 +115,7 @@ class Config
     static constexpr int stoneWallHP = 5000;
     static constexpr int woodNeededForWoodWall = 5;
     static constexpr int stoneNeededForStoneWall = 10;
-    static constexpr int ticksForBuildingWall = 750000;
+    static constexpr int ticksForBuildingWall = 300000;
 
 
 

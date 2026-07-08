@@ -29,21 +29,16 @@ class Civilization
         float wood = 0.0;
         float stone = 0.0;
     };
-    BuildingResources buildingsCost[BuildingsType::COUNT]{};
-    BuildingResources buildingsGains[BuildingsType::COUNT]{};
-    int maxHumans[BuildingsType::COUNT]{};
-    int hitsForBuilding[BuildingsType::COUNT]{};
+    BuildingResources buildingsCost[BuildingsType::BUILDINGS_COUNT]{};
+    BuildingResources buildingsGains[BuildingsType::BUILDINGS_COUNT]{};
+    int maxHumans[BuildingsType::BUILDINGS_COUNT]{};
+    int hitsForBuilding[BuildingsType::BUILDINGS_COUNT]{};
 
-    std::vector<int> buildingsIndexes[BuildingsType::COUNT]{};
-    int workersAssigned[BuildingsType::COUNT]{};
-    int realWorkers[BuildingsType::COUNT]{};
+    std::vector<int> buildingsIndexes[BuildingsType::BUILDINGS_COUNT]{};
+    int workersAssigned[BuildingsType::BUILDINGS_COUNT]{};
+    int realWorkers[BuildingsType::BUILDINGS_COUNT]{};
 
-    struct Construction
-    {
-        int index;
-        int HP;
-    };
-    std::vector<Construction> constructions[BuildingsType::COUNT];
+    int constructions[BuildingsType::BUILDINGS_COUNT];
 
     std::vector<int> bestTilesForBuildingsVillage;
 
@@ -72,5 +67,5 @@ class Civilization
 
     void buildingDecision(World &world, Human &human, Food &food, Stone &stone, Tree &tree);
     void startConstruction(World &world, int idx, BuildingsType type);
-    void endConstruction(World &world, Human &human, int idx, BuildingsType type, int id);
+    void endConstruction(World &world, Human &human, int idx, BuildingsType type);
 };

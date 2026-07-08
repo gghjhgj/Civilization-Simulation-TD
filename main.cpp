@@ -105,16 +105,14 @@ while (renderer.isOpen())
 
     if(world.allTicksCount % Config::ticksForAssigningDecision == 0)
     {
-        civilization.assignHumansToFarm(human);
-        civilization.assignHumansToSawmills(human);
-        civilization.assignHumansToMine(human);
+        civilization.assignHumansToBuilding(human, farm);
+        civilization.assignHumansToBuilding(human, sawmill);
+        civilization.assignHumansToBuilding(human, mine);
     }
 
     if(world.allTicksCount % Config::ticksForResourcesGainsFromBuildings == 0)
     {
-        civilization.farmsGains();
-        civilization.sawmillsGains();
-        civilization.minesGains();
+        civilization.getBuildingsGains();
     }
     if(world.allTicksCount % Config::ticksForNewHumans == 0) //&& (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
     {
@@ -128,13 +126,13 @@ while (renderer.isOpen())
         monsters.waveInit();
         monsters.monstersCreate(renderer);
         }
-        walls.buildWalls(world, civilization, Walls::WallsTypes::woodenWall);
+        //walls.buildWalls(world, civilization, Walls::WallsTypes::woodenWall);
     }
     if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForAddingHumansToArmy == 0 && combatSystem.armiesReadyForCombat != 4) //&& army.armyRegistry[Army::ArmyProfession::soldier].index.size() < 5000 && (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
     {
         army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
     }
-    civilization.assignHumansToHouse(human);
+    civilization.assignHumansToBuilding(human, house);
     food.foodRespawn(world);
     stone.stoneRespawn(world);
     tree.treeRespawn(world);

@@ -27,10 +27,9 @@ void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Huma
         statsFile << "ilosc ludzi na mapie: " << human.humans.size() << "\n";
         statsFile << "ilosc ludzi posiadajacych dom: " << human.humansHavingHouseCount << "\n";
         statsFile << "ilosc ludzi w strukturach: " <<"\n";
-        statsFile << "ilosc ludzi na farmach: " << civilization.farmWorkers << "\n";
-        statsFile << "ilosc ludzi w tartakach: " << civilization.sawmillWorkers << "\n";
-        statsFile << "ilosc ludzi w kopalniach " << civilization.mineWorkers << "\n";
-        statsFile << "ilosc ludzi w fabrykach: " << civilization.factoriesWorkers << "\n\n";
+        statsFile << "ilosc ludzi na farmach: " << civilization.realWorkers[farm] << "\n";
+        statsFile << "ilosc ludzi w tartakach: " << civilization.realWorkers[sawmill] << "\n";
+        statsFile << "ilosc ludzi w kopalniach " << civilization.realWorkers[mine] << "\n\n";
 
         statsFile << "zasoby:\n";
         statsFile << "jedzenie: " << civilization.resources.food << "\n";
@@ -38,17 +37,14 @@ void World::writeStatsToTxt(int ticks, int FPS, Civilization &civilization, Huma
         statsFile << "kamienie: " << civilization.resources.stone << "\n\n";
 
         statsFile << "budynki:\n";
-        statsFile << "budowy: " << civilization.buildings.constructions.size() << "\n poszczególne typy budów:  \n";
-        statsFile << "domy w budowie: " << civilization.housesDuringConstruction << "\n";
-        statsFile << "farmy w budowie: " << civilization.farmsDuringConstruction << "\n";
-        statsFile << "tartaki w budowie: " << civilization.sawmillsDuringConstruction << "\n";
-        statsFile << "kopalnie w budowie: " << civilization.minesDuringConstruction << "\n";
-        statsFile << "fabryki w budowie: " << civilization.factoriesDuringConstruction << "\n";
-        statsFile << "domy " << civilization.buildings.houses.size() << "\n";
-        statsFile << "farmy " << civilization.buildings.farms.size() << "\n";
-        statsFile << "tartaki " << civilization.buildings.sawmills.size() << "\n";
-        statsFile << "kopalnie " << civilization.buildings.mines.size() << "\n";
-        statsFile << "fabryki " << civilization.buildings.factories.size() << "\n\n";
+        statsFile << "domy w budowie: " << civilization.constructions[house] << "\n";
+        statsFile << "farmy w budowie: " << civilization.constructions[farm] << "\n";
+        statsFile << "tartaki w budowie: " << civilization.constructions[sawmill] << "\n";
+        statsFile << "kopalnie w budowie: " << civilization.constructions[mine] << "\n";
+        statsFile << "domy " << civilization.buildingsIndexes[house].size() << "\n";
+        statsFile << "farmy " << civilization.buildingsIndexes[farm].size() << "\n";
+        statsFile << "tartaki " << civilization.buildingsIndexes[sawmill].size() << "\n";
+        statsFile << "kopalnie " << civilization.buildingsIndexes[mine].size() << "\n";
 
         statsFile << "armia:\n";
         statsFile << "ilosc ludzi w armii: " << army.armyRegistry[Army::ArmyProfession::soldier].humansCount + 
@@ -80,16 +76,10 @@ void World::init()
             c.treeHP = 0;
             c.stoneHP = 0;
             c.flags = 0;
-            //c.popularity = 0;
-            //c.indexInBucket = 0;
             c.humanIndex = -1; 
             c.civZone = 0;
-            c.buildings = {0, 0, 0, 0, 0, 0};
-            //c.streets = {0};
-            c.walls = {0, 0};
-            //c.indexInBucket = popularityRanking[0].size();
-
-            //popularityRanking[0].push_back(index(x, y));
+            c.building = BUILDINGS_COUNT;
+            c.construction.hitsNeeded = -1;
         }
     }
 }
@@ -431,12 +421,7 @@ void World::makeAllHumansDirty(Human &human)
 
 bool World::checkIfThereAreNoBuildings(int idx)
 {
-    if(grid[idx].buildings.Construction > 0 ||
-    grid[idx].buildings.House > 0 || 
-    grid[idx].buildings.Factory > 0 || 
-    grid[idx].buildings.Farm > 0 || 
-    grid[idx].buildings.Mine > 0 ||
-    grid[idx].buildings.Sawmill > 0)
+    if(grid[idx].building == BUILDINGS_COUNT)
     return false;
     return true;
 }

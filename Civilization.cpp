@@ -103,9 +103,9 @@ void Civilization::addWorkers(Human &human, Tasks task)
 void Civilization::civilizationDecision(Human &human, Food &food, Stone &stone, Tree &tree)
 {
     bool areConstructions = false;
-    for(int i = 0; i < BuildingsType::COUNT; i++)
+    for(int i = 0; i < BuildingsType::BUILDINGS_COUNT; i++)
     {
-        if(constructions[i].size() > 0)
+        if(constructions[i] > 0)
         {
             areConstructions = true;
             continue;
@@ -170,22 +170,27 @@ void Civilization::addTilesToPossibleVillage(World &world, int index, int r)
 {
     int x = index % Config::sizeX;
     int y = index / Config::sizeX;
+    
     for (int dy = -r; dy <= r; dy++)
     {
-    for (int dx = -r; dx <= r; dx++)
-    {
-        int nx = x + dx;
-        int ny = y + dy;
-        int idx = ny * Config::sizeX + nx;
-        if (!world.isValid(idx) || 
-        world.grid[idx].civilizationPlace > 0 || 
-        world.grid[idx].civZone > 0 ||
-        world.grid[idx].flags & Water)
-            continue;
+        for (int dx = -r; dx <= r; dx++)
+        {
+            int nx = x + dx;
+            int ny = y + dy;
+            
+            if (nx < 0 || nx >= Config::sizeX || ny < 0 || ny >= Config::sizeY)
+                continue;
 
-        bestTilesForBuildingsVillage.push_back(idx);
+            int idx = ny * Config::sizeX + nx;
+
+            if (world.grid[idx].civilizationPlace > 0 || 
+                world.grid[idx].civZone > 0 ||
+                world.grid[idx].flags & Water)
+                continue;
+
+            bestTilesForBuildingsVillage.push_back(idx);
+        }
     }
-}
 }
 
 int Civilization::getBestTileForBuilingsVillage(World &world)
@@ -202,8 +207,9 @@ int Civilization::getBestTileForBuilingsVillage(World &world)
         std::swap(bestTilesForBuildingsVillage[id], bestTilesForBuildingsVillage.back());
         bestTilesForBuildingsVillage.pop_back();
     } while (!bestTilesForBuildingsVillage.empty() && 
-    (world.grid[index].building > 0 &&
-    world.grid[index].civZone > 0));
+    (world.grid[index].building != BUILDINGS_COUNT ||
+    world.grid[index].civZone > 0 ||
+    world.grid[index].construction.hitsNeeded > 0));
 
 
     addTilesToPossibleVillage(world, index, 2);
@@ -266,7 +272,7 @@ void Civilization::assignHumansToBuilding(Human &human, BuildingsType type)
 
 void Civilization::getBuildingsGains()
 {
-    for(int i = 0; i < BuildingsType::COUNT; i++)
+    for(int i = 0; i < BuildingsType::BUILDINGS_COUNT; i++)
     {
         resources.food += buildingsGains[i].food * realWorkers[i];
         resources.wood += buildingsGains[i].wood * realWorkers[i];
@@ -279,19 +285,19 @@ void Civilization::getBuildingsGains()
 
 void Civilization::buildingDecision(World &world, Human &human, Food &food, Stone &stone, Tree &tree)
 {
-    if((buildingsIndexes[farm].size() + constructions[farm].size()) * 50 < human.humansCount )
+    if((buildingsIndexes[farm].size() + constructions[farm]) * 50 < human.humansCount )
     {
         buildBuilding(world, farm);
     }
-    else if((buildingsIndexes[sawmill].size() + constructions[sawmill].size()) * 260 < human.humansCount)
+    else if((buildingsIndexes[sawmill].size() + constructions[sawmill]) * 260 < human.humansCount)
     {
         buildBuilding(world, sawmill);
     }
-    else if((buildingsIndexes[mine].size() + constructions[mine].size()) * 2600 < human.humansCount)
+    else if((buildingsIndexes[mine].size() + constructions[mine]) * 2600 < human.humansCount)
     {
         buildBuilding(world, mine);
     }
-    else if(buildingsIndexes[house].size() + constructions[house].size() < human.humansCount/5)
+    else if(buildingsIndexes[house].size() + constructions[house] < human.humansCount/5)
     {
         buildBuilding(world, house);
     }
@@ -299,22 +305,17 @@ void Civilization::buildingDecision(World &world, Human &human, Food &food, Ston
 
 void Civilization::startConstruction(World &world, int idx, BuildingsType type)
 {
-    world.grid[idx].construction = 1;
+    world.grid[idx].construction.hitsNeeded = hitsForBuilding[type];
+    world.grid[idx].construction.result = type;
     world.addToDirtyCells(idx);
 
-    constructions[type].push_back({idx, hitsForBuilding[type]});
+    constructions[type]++;
 }
 
-void Civilization::endConstruction(World &world, Human &human, int idx, BuildingsType type, int id)
+void Civilization::endConstruction(World &world, Human &human, int idx, BuildingsType type)
 {
-    world.grid[idx].construction = 0;
+    world.grid[idx].construction.result = BUILDINGS_COUNT;
     world.addToDirtyCells(idx);
     addBuilding(world, idx, type);
-
-    int lastIdx = constructions[type].size() - 1;
-    if (id != lastIdx)
-    {
-        constructions[type][id] = constructions[type].back();
-    }
-    constructions[type].pop_back();
+    constructions[type]--;
 }

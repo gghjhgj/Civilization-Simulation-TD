@@ -88,7 +88,7 @@ void Army::addHumansToArmy(World &world, Human &human, Civilization &civilizatio
     if(human.humans.empty()) return;
     for(int i = human.humans.size() - 1; i >= 0 && humansAddedToArmy < Config::maxHumanCountAddedToArmy; i--)
     {
-        if(human.humans[i].task == Human::Tasks::goingToBuilding) continue;
+        if(human.humans[i].task == Tasks::goingToBuilding) continue;
 
         human.eraseHuman(world, civilization, i);
         addHumanToArmy(renderer);
