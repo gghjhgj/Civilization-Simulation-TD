@@ -72,8 +72,8 @@ int main() {
     
     worldGPU.init(world.grid);
     //worldGPU.runShader();
-    //worldGPU.downloadData(world.grid);
-    //worldGPU.printDebugData();
+    worldGPU.downloadData(world.grid);
+    worldGPU.printDebugData();
     
 
     sf::Clock clock;

@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <cassert>
 
 enum CellFlags
     {
@@ -27,7 +28,7 @@ enum CellFlags
 
         uint8_t civilizationPlace;
 
-        int humanIndex = -1;
+        int humanIndex = -1;//nie ma
 
         int civZone = 0;
         BuildingsType building;

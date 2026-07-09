@@ -85,6 +85,8 @@ void WorldGPU::runShader()
 
 void WorldGPU::printDebugData()
 {
+    std::cout << "Rozmiar Cell: " << sizeof(Cell) << "bajtow" << std::endl;
+    std::cout << "Rozmiar Chunka " << sizeof(Chunk) << "bajtow" << std::endl;
     if(bufferID == 0) return;
 
     Cell test[2];
