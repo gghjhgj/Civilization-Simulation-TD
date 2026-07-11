@@ -1,58 +1,66 @@
 #include "Food.h"
 
-void Food::addFood(World &world, int index)
+void Food::addFood(World& world, uint32_t x, uint32_t y)
 {
-    world.grid[index].food++;
-    world.foods.push_back(index);
-    world.addToDirtyCells(index);
+    world.setCell(x, y, TerrainType::LandWithFood);
+    world.addToDirtyCells(x, y);
     foodsCount++;
 }
 
-void Food::addFoodNoVec(World &world, int index)
+void Food::createFood(World& world)
 {
-    world.grid[index].food++;
-    world.addToDirtyCells(index);
-    foodsCount++;
-}
+    std::mt19937 rng(std::random_device{}());
 
-void Food::createFood(World &world)
-{
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> dist(0, world.lands.size() - 1);
-
-    for(int i = 0; i < Config::foodCount; i++)
+    for (int i = 0; i < Config::foodCount; i++)
     {
-        int id;
-        int tr = 0;
-        int maxTries = Config::maxFoodSpawnTries;
-        do
+        int tries = 0;
+        while (tries < Config::maxFoodSpawnTries)
         {
-            id = world.lands[dist(rng)]; 
-            tr++;
-            if(tr > maxTries) break;
-        } while (!world.isEmpty(id));
-        if(tr <= maxTries) addFood(world, id);
+            uint32_t x = rng() % Config::sizeX;
+            uint32_t y = rng() % Config::sizeY;
+
+            if (world.getCell(x, y) == TerrainType::Land)
+            {
+                world.setCell(x, y, TerrainType::LandWithFood);
+                world.addToDirtyCells(x, y);
+                foodsCount++;
+                break;
+            }
+            tries++;
+        }
     }
 }
 
-void Food::foodRespawn(World &world)
+void Food::foodRespawn(World& world)
 {
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> dist(0, world.lands.size() - 1);
-    if(Food::foodsCount < Config::maxFood)
-    for(int i = 0; i < Config::foodRespawn; i++)
+    if (foodsCount >= Config::maxFood) return;
+
+    std::mt19937 rng(std::random_device{}());
+
+    for (int i = 0; i < Config::foodCount; i++)
     {
-        int id;
-        int tr = 0;
-        int maxTries = Config::maxFoodSpawnTries;
-        do
+        int tries = 0;
+        while (tries < Config::maxFoodSpawnTries)
         {
-            id = world.lands[dist(rng)]; 
-            tr++;
-            if(tr > maxTries) break;
-        } while (!world.isEmpty(id) || world.grid[id].civZone > 0);
-        if(tr <= maxTries) addFoodNoVec(world, id);
+            uint32_t x = rng() % Config::sizeX;
+            uint32_t y = rng() % Config::sizeY;
+
+            auto ref = world.getCellRef(x, y);
+
+            if(world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::CivZone))
+            {
+                tries++;
+                continue;
+            }
+            if(world.getCell(x, y) != TerrainType::Land)
+            {
+                tries++;
+                continue;
+            }
+            world.setCell(x, y, TerrainType::LandWithFood);
+            world.addToDirtyCells(x, y);
+            foodsCount++;
+            break;
+        }
     }
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "WorldData/World.h"
-#include "BuildingsType.h"
 class Civilization;
 
 class Walls

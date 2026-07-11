@@ -52,7 +52,7 @@ void WorldGPU::downloadData(void* destPtr)
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, totalSize, destPtr);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
-
+/*
 void WorldGPU::uploadCells(size_t startIndex, size_t count, const void* srcPtr)
 {
     if(bufferID == 0) return;
@@ -66,7 +66,7 @@ void WorldGPU::uploadCells(size_t startIndex, size_t count, const void* srcPtr)
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-
+*/
 
 
 
@@ -82,16 +82,15 @@ void WorldGPU::runShader()
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     glUseProgram(0);
 }
-
+/*
 void WorldGPU::printDebugData()
 {
-    std::cout << "Rozmiar Cell: " << sizeof(Cell) << "bajtow" << std::endl;
     std::cout << "Rozmiar Chunka " << sizeof(Chunk) << "bajtow" << std::endl;
     if(bufferID == 0) return;
 
-    Cell test[2];
+    Chunk test[2];
 
-    test[0].civZone = -999;
+    test[0]. = -999;
     test[1].civZone = -999;
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, bufferID);
@@ -108,3 +107,4 @@ void WorldGPU::printDebugData()
     std::cout << "oczekiwane-1000, WYNIK: " << test[1].building << std::endl;
     std::cout << "=======================\n" << std::endl;
 }
+    */

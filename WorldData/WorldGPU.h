@@ -1,9 +1,8 @@
 #pragma once
 
 #include <glad/glad.h>
-
+#include "ChunkData/Chunk.h"
 #include "Config.h"
-#include "Cell.h"
 
 #include <sstream>
 #include <fstream>
@@ -16,7 +15,7 @@ class WorldGPU
 
     size_t getWorldSizeInBytes() const
     {
-        return Config::sizeX * Config::sizeY * sizeof(Cell);
+        return Config::sizeX * Config::sizeY * sizeof(Chunk);
     }
 
     public:

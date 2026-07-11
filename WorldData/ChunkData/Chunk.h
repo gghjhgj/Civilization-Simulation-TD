@@ -1,7 +1,10 @@
 #pragma once
+#include "ChunkEnums/TerrainType.h"
+#include "ChunkEnums/BuildingType.h"
+#include "ChunkEnums/ChunkFlag.h"
 
 #include <cstdint>
-#include <assert.h>
+#include <cassert>
 namespace ChunkConfig
 {
     constexpr uint32_t CHUNK_SIZE = 3;//(3x3=)
@@ -9,26 +12,13 @@ namespace ChunkConfig
     constexpr uint32_t BITS_PER_CELL = 3;
     constexpr uint32_t TERRAIN_BITS = CELL_COUNT * BITS_PER_CELL;
     constexpr uint32_t CELL_MASK = 0x7;
+
+    constexpr uint32_t BUILDING_SHIFT = TERRAIN_BITS;
+    constexpr uint32_t BUILDING_MASK = 0x7;
+
+    constexpr uint32_t FLAG_SHIFT = TERRAIN_BITS + 3;
 }
-enum class TerrainType : uint32_t
-{
-    Water               = 0b000,
-    Desert              = 0b001,
-    Mountain            = 0b010,
-    MountainWithStone   = 0b011,
-    Land                = 0b100,
-    LandWithFood        = 0b101,
-    LandWithTree        = 0b110,
-    Empty               = 0b111
-};
-enum class ChunkFlag : uint32_t
-{
-    CivZone     = 1 << 0,
-    Buildings   = 1 << 1,
-    Empty1      = 1 << 2,
-    Empty2      = 1 << 3,
-    Empty3      = 1 << 4
-};
+
 struct Chunk
 {
     uint32_t data = 0;
@@ -51,17 +41,31 @@ struct Chunk
         uint32_t value = (data >> shift) & ChunkConfig::CELL_MASK;
         return static_cast<TerrainType>(value);
     }
+    
+    void setBuilding(BuildingType type)
+    {
+        uint32_t value = static_cast<uint32_t>(type);
+        data &= ~(ChunkConfig::BUILDING_MASK << ChunkConfig::BUILDING_SHIFT);
+        data |= value << ChunkConfig::BUILDING_SHIFT;
+        data |= (value & ChunkConfig::BUILDING_MASK) << ChunkConfig::BUILDING_SHIFT;
+    }
+    BuildingType getBuilding() const
+    {
+        uint32_t value = (data >> ChunkConfig::BUILDING_SHIFT) & ChunkConfig::BUILDING_MASK;
+        return static_cast<BuildingType>(value);
+    }
+
 
     void setFlag(ChunkFlag flag)
     {
-        data |= static_cast<uint32_t>(flag) << ChunkConfig::TERRAIN_BITS;
+        data |= static_cast<uint32_t>(flag) << ChunkConfig::FLAG_SHIFT;
     }
     void clearFlag(ChunkFlag flag)
     {
-        data &= ~(static_cast<uint32_t>(flag) << ChunkConfig::TERRAIN_BITS);
+        data &= ~(static_cast<uint32_t>(flag) << ChunkConfig::FLAG_SHIFT);
     }
     bool hasFlag(ChunkFlag flag) const
     {
-        return (data & (static_cast<uint32_t>(flag) << ChunkConfig::TERRAIN_BITS)) != 0;
+        return (data & (static_cast<uint32_t>(flag) << ChunkConfig::FLAG_SHIFT)) != 0;
     }
 };

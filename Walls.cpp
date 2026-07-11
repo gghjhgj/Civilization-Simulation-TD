@@ -1,3 +1,4 @@
+/*
 #include "Walls.h"
 #include "Civilization.h"
 
@@ -27,7 +28,6 @@ void Walls::adddWallTile(World &world, int index, WallsTypes type)
         }
     }
 }
-    */
 
 void Walls::buildWalls(World &world, Civilization &civilization, WallsTypes type)
 {
@@ -156,3 +156,5 @@ void Walls::markWallsTilesAndCloseAsCivZoneAndAddTilesToPossible(World &world, C
     }
     lastWallIndexMarkedAsCivZone = wallsIndexes.size() - 1;
 }
+
+*/

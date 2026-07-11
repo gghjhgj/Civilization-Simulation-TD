@@ -1,59 +1,66 @@
 #include "Stone.h"
 
-void Stone::addStone(World &world, int index)
+void Stone::addStone(World &world, uint32_t x, uint32_t y)
 {
-    world.grid[index].stoneHP += Config::StoneHP;
-    world.stones.push_back(index);
-    world.addToDirtyCells(index);
-    stonesCount++;
-}
-void Stone::addStoneNoVec(World &world, int index)
-{
-    world.grid[index].stoneHP += Config::StoneHP;
-    world.addToDirtyCells(index);
+    world.setCell(x, y, TerrainType::MountainWithStone);
+    world.addToDirtyCells(x, y);
     stonesCount++;
 }
 
 void Stone::createStone(World &world)
 {
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> dist(0, world.mountains.size() - 1);
+    std::mt19937 rng(std::random_device{}());
 
     for(int i = 0; i < Config::stoneCount; i++)
     {
-        int id;
-        int maxTries = Config::maxStoneSpawnTries;
         int tries = 0;
-        do
+        while(tries < Config::maxStoneSpawnTries)
         {
-            id = world.mountains[dist(rng)]; 
+            uint32_t x = rng() % Config::sizeX;
+            uint32_t y = rng() % Config::sizeY;
+
+            if(world.getCell(x, y) == TerrainType::Mountain)
+            {
+                world.setCell(x, y, TerrainType::MountainWithStone);
+                world.addToDirtyCells(x, y);
+                stonesCount++;
+                break;
+            }
             tries++;
-            if(tries > maxTries ) break;
-        } while (!world.isEmpty(id));
-         if(tries <= maxTries)
-        addStone(world, id);
+        }
     }
 }
 
 void Stone::stoneRespawn(World &world)
 {
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> dist(0, world.mountains.size() - 1);
-    if(stonesCount < Config::maxStone)
+    if (stonesCount >= Config::maxStone) return;
+
+    std::mt19937 rng(std::random_device{}());
+
     for(int i = 0; i < Config::StoneRespawn; i++)
     {
-        int id;
         int tries = 0;
-        int maxTries = Config::maxStoneSpawnTries;
-        do
+        while(tries < Config::maxStoneSpawnTries)
         {
-            id = world.mountains[dist(rng)]; 
-            tries++;
-            if(tries > maxTries ) break;
-        } while (!world.isEmpty(id) || world.grid[id].civZone > 0);
-        if(tries <= maxTries)
-        addStoneNoVec(world, id);
+            uint32_t x = rng() % Config::sizeX;
+            uint32_t y = rng() % Config::sizeY;
+
+            auto ref = world.getCellRef(x, y);
+
+            if(world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::CivZone))
+            {
+                tries++;
+                continue;
+            }
+            if(world.getCell(x, y) != TerrainType::Mountain)
+            {
+                tries++;
+                continue;
+            }
+            world.setCell(x, y, TerrainType::MountainWithStone);
+            world.addToDirtyCells(x, y);
+            stonesCount++;
+            break;
+        }
     }
 }

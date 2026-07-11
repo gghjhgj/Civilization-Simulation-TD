@@ -25,7 +25,7 @@ void Army::armyInit()
         armyRegistry[profession].armyTargetIndex = -1;
         */
        auto &entry = armyRegistry[profession];
-       entry.spawnPoint = Config::civSpawnPoint + (200 * (i+1)) * Config::sizeX + 200;
+       entry.spawnPoint = (Config::civSpawnChunkY*3)*Config::sizeX + (Config::civSpawnChunkX) + (200 * (i+1)) * Config::sizeX + 200;
        if(i == 0)
        {
             entry.armyMainIndex = entry.spawnPoint;
@@ -84,6 +84,7 @@ void Army::eraseHuman(RendererSFML &renderer, int profession, int id)
 
 void Army::addHumansToArmy(World &world, Human &human, Civilization &civilization,RendererSFML &renderer, ArmyProfession profession)
 {
+    /*
     int humansAddedToArmy = 0;
     if(human.humans.empty()) return;
     for(int i = human.humans.size() - 1; i >= 0 && humansAddedToArmy < Config::maxHumanCountAddedToArmy; i--)
@@ -94,6 +95,7 @@ void Army::addHumansToArmy(World &world, Human &human, Civilization &civilizatio
         addHumanToArmy(renderer);
         humansAddedToArmy++;
     }
+        */
 }
 void Army::giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession)
 {

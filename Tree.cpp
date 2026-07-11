@@ -1,138 +1,169 @@
 #include "Tree.h"
 
-void Tree::addTree(World &world, int index)
+void Tree::createSeed(World& world, int& tr, std::mt19937& rng)
 {
-    world.grid[index].treeHP += Config::treeHP;
-    world.trees.push_back(index);
-    world.addToDirtyCells(index);
-    treesCount++;
+    int seedTries = 0;
+
+    while (seedTries < Config::maxTreeSpawnTries)
+    {
+        uint32_t x = rng() % Config::sizeX;
+        uint32_t y = rng() % Config::sizeY;
+
+        if (world.getCell(x, y) == TerrainType::Land)
+        {
+            world.setCell(x, y, TerrainType::LandWithTree);
+            world.addToDirtyCells(x, y);
+
+            last.x = x;
+            last.y = y;
+            tr++;
+            return;
+        }
+        seedTries++;
+    }
 }
-void Tree::addTreeNoVec(World &world, int index)
+
+void Tree::addTree(World& world, uint32_t x, uint32_t y)
 {
-    world.grid[index].treeHP += Config::treeHP;
-    world.addToDirtyCells(index);
+    world.setCell(x, y, TerrainType::LandWithTree);
+    world.addToDirtyCells(x, y);
     treesCount++;
 }
 
-void Tree::createTree(World &world)
+void Tree::createTree(World& world)
 {
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> distLands(0, world.lands.size() - 1); 
-    std::uniform_int_distribution<int> distDir(0, 3);                 
+    std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> distDir(0, 3);
 
     int tr = 0;
     int maxTreeSpawnTries = Config::maxTreeSpawnTries;
     for (int i = 0; i < Config::forestCount || tr < Config::treeCount; i++)
     {
-        int id;
-        do
-        {
-            id = world.lands[distLands(rng)];
-        } while (!world.isEmpty(id));
-        
-        addTree(world, id);
-        tr++;
+        int trBefore = tr;
+        createSeed(world, tr, rng);
+        if (tr == trBefore) continue;
 
-        for (int j = 0; j < Config::treeCount / Config::forestCount && tr < Config::treeCount; j++)
+        int treesPerForest = Config::treeCount / Config::forestCount;
+        for (int j = 0; j < treesPerForest && tr < Config::treeCount; j++)
         {
             int k = 1;
             int x, y;
             do
             {
-                id = world.trees.back();
-                x = id % Config::sizeX;
-                y = id / Config::sizeX;
-                
+                x = last.x;
+                y = last.y;
+
                 int dir = distDir(rng);
-                
-                if(dir == 0)
+
+                if (dir == 0)
                 {
                     x += k;
                     y += k;
                 }
-                else if(dir == 1)
+                else if (dir == 1)
                 {
                     x -= k;
                     y -= k;
                 }
-                else if(dir == 2)
+                else if (dir == 2)
                 {
                     x -= k;
                     y += k;
                 }
-                else if(dir == 3)
+                else if (dir == 3)
                 {
                     x += k;
                     y -= k;
                 }
                 k++;
-                if(k > maxTreeSpawnTries) break;
-            } while (!world.isValid(x , y) || !world.isEmpty(x, y) || !(world.grid[world.index(x, y)].flags & Land));
-            
-            if(k <= maxTreeSpawnTries)
+                if (k > maxTreeSpawnTries) break;
+            } while (!world.isValid(x, y) || world.getCell(x, y) != TerrainType::Land);
+            if (k <= maxTreeSpawnTries)
             {
-                addTree(world, (y * Config::sizeX + x));
+                world.setCell(x, y, TerrainType::LandWithTree);
+                world.addToDirtyCells(x, y);
+                last.x = x;
+                last.y = y;
                 tr++;
+            }
+            else
+            {
+                trBefore = tr;
+                createSeed(world, tr, rng);
+                if (tr == trBefore) break;
             }
         }
     }
 }
 
-void Tree::treeRespawn(World &world)
+void Tree::treeRespawn(World& world)
 {
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> distLands(0, world.lands.size() - 1); 
-    std::uniform_int_distribution<int> distDir(0, 3);                 
+    std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> distDir(0, 3);
 
-    int tr = 0;
-    int id;
-        if(treesCount < Config::maxTree)
+    if (treesCount >= Config::maxTree) return;
+
+    for (int i = 0; i < Config::treeRespawn; i++)
+    {
+        int k = 1;
+        int x, y;
+        bool placed = false;
+        int maxTreeSpawnTries = Config::maxTreeSpawnTries;
+        do
         {
-        for (int i = 0; i < Config::treeRespawn; i++)
-        {
-            int k = 1;
-            int x, y;
-            int maxTreeSpawnTries = Config::maxTreeSpawnTries;
-            do
+            x = last.x;
+            y = last.y;
+            int dir = distDir(rng);
+
+            if (dir == 0)
             {
-                std::uniform_int_distribution<int> distTree(0, world.trees.size() - 1);
-                id = world.trees[distTree(rng)];
-                x = id % Config::sizeX;
-                y = id / Config::sizeX;
-                
-                int dir = distDir(rng);
-                
-                if(dir == 0)
-                {
-                    x += k;
-                    y += k;
-                }
-                else if(dir == 1)
-                {
-                    x -= k;
-                    y -= k;
-                }
-                else if(dir == 2)
-                {
-                    x -= k;
-                    y += k;
-                }
-                else if(dir == 3)
-                {
-                    x += k;
-                    y -= k;
-                }
-                k++;
-                if(k > maxTreeSpawnTries) break;
-            } while (!world.isValid(x , y) || !world.isEmpty(x, y) || !(world.grid[world.index(x, y)].flags & Land) || world.grid[id].civZone > 0);
-            
-            if(k <= maxTreeSpawnTries)
-            {
-                addTreeNoVec(world, (y * Config::sizeX + x));
-                tr++;
+                x += k;
+                y += k;
             }
+            else if (dir == 1)
+            {
+                x -= k;
+                y -= k;
+            }
+            else if (dir == 2)
+            {
+                x -= k;
+                y += k;
+            }
+            else if (dir == 3)
+            {
+                x += k;
+                y -= k;
+            }
+            k++;
+            if (k > maxTreeSpawnTries)
+                break;
+
+            if (!world.isValid(x, y))
+                continue;
+
+            auto ref = world.getCellRef(x, y);
+
+            if (world.getCell(x, y) != TerrainType::Land)
+                continue;
+
+            if (world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::CivZone))
+                continue;
+
+            break;
+        } while(true);
+        if (k <= maxTreeSpawnTries)
+        {
+            world.setCell(x, y, TerrainType::LandWithTree);
+            world.addToDirtyCells(x, y);
+            last.x = x;
+            last.y = y;
+            treesCount++;
+            placed = true;
         }
+        else
+        {
+            createSeed(world, treesCount, rng);
         }
     }
+}

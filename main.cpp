@@ -12,7 +12,6 @@
 #include "Tree.h"
 #include "Stone.h"
 #include "Civilization.h"
-#include "Walls.h"
 #include "Army.h"
 #include "Monsters.h"
 #include "CombatSystem.h"
@@ -39,7 +38,7 @@ int main() {
     Stone stone;
     Civilization civilization;
     Human human;
-    Walls walls;
+    //Walls walls;
     Army army;
     Monsters monsters;
     CombatSystem combatSystem;
@@ -52,28 +51,27 @@ int main() {
     {
         std::cout << "GLAD dziala" << std::endl;
     }
-    world.init();
-    world.createOcean();
-    world.createLand();
-    world.createStruct(Water);
-    world.createStruct(Sand);
-    world.createStruct(Mountain);
-    world.addSandToLand();
-    world.smoothShores();
-    world.surfaceVectorsInit();
-    civilization.createCivilization(world);
+    world.init(); std::cout << "finisted wordl init" << std::endl;
+    world.createOcean(); std::cout << "ocean created" << std::endl;
+    world.createLand(); std::cout << "land created" << std::endl;
+    world.createStruct(TerrainType::Water); std::cout << "water created" << std::endl;
+    world.createStruct(TerrainType::Desert); std::cout << "desert created" << std::endl;
+    world.createStruct(TerrainType::Mountain); std::cout << "mountain created" << std::endl;
+    world.addSandToLand(); std::cout << "sand added to land" << std::endl;
+    world.smoothShores(); std::cout << "shores smoothed" << std::endl;
+    civilization.createCivilization(world); std::cout << "civ created" << std::endl;
     human.createHuman(world, civilization);
-    tree.createTree(world);
-    food.createFood(world);
-    stone.createStone(world);
-    world.markAllDirty();
-    army.armyInit();
+    tree.createTree(world); std::cout << "tree created" << std::endl;
+    food.createFood(world); std::cout << "food created" << std::endl;
+    stone.createStone(world); std::cout << "stone created" << std::endl;
+    world.markAllDirty(); std::cout << "marked all dirty" << std::endl;
+    army.armyInit(); std::cout << "army inited" << std::endl;
 
     
-    worldGPU.init(world.grid);
+    //worldGPU.init(world.grid);
     //worldGPU.runShader();
-    worldGPU.downloadData(world.grid);
-    worldGPU.printDebugData();
+    //worldGPU.downloadData(world.grid);
+    //worldGPU.printDebugData();
     
 
     sf::Clock clock;
@@ -93,6 +91,7 @@ while (renderer.isOpen())
 
     ticksCount++;
    
+    /*
     if(world.allTicksCount % Config::ticksForCivilizationDecision == 0)
     {
         civilization.civilizationDecision(human, food, stone, tree);
@@ -105,14 +104,14 @@ while (renderer.isOpen())
 
     if(world.allTicksCount % Config::ticksForAssigningDecision == 0)
     {
-        civilization.assignHumansToBuilding(human, farm);
-        civilization.assignHumansToBuilding(human, sawmill);
-        civilization.assignHumansToBuilding(human, mine);
+        civilization.assignHumansToBuilding(human, Type::FARM);
+        civilization.assignHumansToBuilding(human, Type::SAWMILL);
+        civilization.assignHumansToBuilding(human, Type::MINE);
     }
-
+    */
     if(world.allTicksCount % Config::ticksForResourcesGainsFromBuildings == 0)
     {
-        civilization.getBuildingsGains();
+        civilization.getBuildingsGains(); 
     }
     if(world.allTicksCount % Config::ticksForNewHumans == 0) //&& (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
     {
@@ -130,15 +129,15 @@ while (renderer.isOpen())
     }
     if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForAddingHumansToArmy == 0 && combatSystem.armiesReadyForCombat != 4) //&& army.armyRegistry[Army::ArmyProfession::soldier].index.size() < 5000 && (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
     {
-        army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
+        //army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
     }
-    civilization.assignHumansToBuilding(human, house);
-    food.foodRespawn(world);
+    //civilization.assignHumansToBuilding(human, Type::HOUSE);
+    food.foodRespawn(world); 
     stone.stoneRespawn(world);
     tree.treeRespawn(world);
     human.humanMove(world, civilization, food, tree, stone, human);
-    army.armyController(monsters, renderer);
-    monsters.monstersController(army, renderer);
+    //army.armyController(monsters, renderer);
+    //monsters.monstersController(army, renderer);
     /*
     for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
     {
@@ -159,19 +158,19 @@ while (renderer.isOpen())
     {
         renderTimer = 0.f;
 
-        world.makeAllHumansDirty(human);
+        //world.makeAllHumansDirty(human);
 
     int mainIndex = army.armyRegistry[0].armyMainIndex;
     int leaderX = (mainIndex % Config::sizeX) * 1;
     int leaderY = (mainIndex / Config::sizeX) * 1;
 
-        renderer.begin();
-        renderer.render(world);
+        renderer.begin(); 
+        renderer.render(world, human);
         renderer.end();
 
         framesCount++;
 
-        world.makeAllHumansDirty(human);
+        //world.makeAllHumansDirty(human);
     }
     /*
     if(world.allTicksCount > Config::ticksForBuildingWall && combatSystem.armiesReadyForCombat == 4)
@@ -181,7 +180,6 @@ while (renderer.isOpen())
     */
     world.allTicksCount++;
 }
-
 return 0;
 }
 

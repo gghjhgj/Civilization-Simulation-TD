@@ -1,8 +1,7 @@
 #pragma once
 
-#include "BuildingsType.h"
+#include "WorldData/ChunkData/Chunk.h"
 #include "Tasks.h"
-
 #include "Food.h"
 #include "Tree.h"
 #include "Stone.h"
@@ -10,11 +9,36 @@ class Human;
 class World;
 class Walls;
 class Army;
+
+enum Type
+{
+    HOUSE,
+    FARM,
+    SAWMILL,
+    MINE,
+
+    COUNT
+};
+inline BuildingType GetBuildingType(Type t) {
+    switch(t) {
+        case Type::HOUSE:   return BuildingType::House;
+        case Type::FARM:    return BuildingType::Farm;
+        case Type::SAWMILL: return BuildingType::Sawmill;
+        case Type::MINE:    return BuildingType::Mine;
+        default:            return BuildingType::None;
+    }
+}
+
 class Civilization
 {
-    public:
-    std::mt19937 rng{std::random_device{}()};
-    int spawn = -1;
+public:
+    std::mt19937 rng{ std::random_device{}() };
+    struct ChunkPos
+    {
+        uint32_t chunkX;
+        uint32_t chunkY;
+    };
+    ChunkPos spawn;
     struct Resources
     {
         long long int food = 0;
@@ -29,18 +53,19 @@ class Civilization
         float wood = 0.0;
         float stone = 0.0;
     };
-    BuildingResources buildingsCost[BuildingsType::BUILDINGS_COUNT]{};
-    BuildingResources buildingsGains[BuildingsType::BUILDINGS_COUNT]{};
-    int maxHumans[BuildingsType::BUILDINGS_COUNT]{};
-    int hitsForBuilding[BuildingsType::BUILDINGS_COUNT]{};
 
-    std::vector<int> buildingsIndexes[BuildingsType::BUILDINGS_COUNT]{};
-    int workersAssigned[BuildingsType::BUILDINGS_COUNT]{};
-    int realWorkers[BuildingsType::BUILDINGS_COUNT]{};
+    BuildingResources buildingsCost[COUNT]{};
+    BuildingResources buildingsGains[COUNT]{};
+    int buildingsCount[COUNT]{};
+    int maxHumans[COUNT]{};
+    int hitsForBuilding[COUNT]{};
 
-    int constructions[BuildingsType::BUILDINGS_COUNT];
+    int workersAssigned[COUNT]{};
+    int realWorkers[COUNT]{};
 
-    std::vector<int> bestTilesForBuildingsVillage;
+    int constructions[COUNT];
+
+    std::vector<ChunkPos> bestChunksForBuildingsVillage;
 
     int mostEastCivZone = -1;
     int mostWestCivZone = -1;
@@ -48,24 +73,23 @@ class Civilization
     int mostSouthCivZone = -1;
 
 
-    void addCivilization(World &world, int index);//git
-    void createCivilization(World &world);//git
+    void addCivilization(World& world, int index);//git
+    void createCivilization(World& world);//git
     void initBuildings();//nowe git
 
-    void addWorkers(Human &human, Tasks task);//nowe git
+    void addWorkers(Human& human, Tasks task);//nowe git
 
-    void civilizationDecision(Human &human, Food &food, Stone &stone, Tree &tree);//git
+    void civilizationDecision(Human& human, Food& food, Stone& stone, Tree& tree);//git
 
-    void markCloseAsCivZone(World &world, int index, int r);//git
-    void addTilesToPossibleVillage(World &world, int index, int r);//git
-    int getBestTileForBuilingsVillage(World &world);//git
+    void markCloseAsCivZone(World& world, uint32_t chunkX, uint32_t chunkY, int rInChunks);//git
+    void addChunksToPossibleVillage(World& world, uint32_t chunkX, uint32_t chunkY, int rInChunks);
+    ChunkPos getBestChunkForBuilingsVillage(World& world);//git
 
-    void addBuilding(World &world, int idx, BuildingsType type);
-    void buildBuilding(World &world, BuildingsType type);
-    void assignHumansToBuilding(Human &human, BuildingsType type);
+    void buildBuilding(World& world, Type type);
+    void assignHumansToBuilding(Human& human, Type type);
     void getBuildingsGains();
 
-    void buildingDecision(World &world, Human &human, Food &food, Stone &stone, Tree &tree);
-    void startConstruction(World &world, int idx, BuildingsType type);
-    void endConstruction(World &world, Human &human, int idx, BuildingsType type);
+    void buildingDecision(World& world, Human& human, Food& food, Stone& stone, Tree& tree);
+    void startConstruction(World& world, uint32_t chunkX, uint32_t chunkY, Type type);
+    void endConstruction(World& world, Human& human, uint32_t chunkX, uint32_t chunkY, Type type);
 };

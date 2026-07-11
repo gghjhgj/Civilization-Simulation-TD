@@ -4,6 +4,7 @@
 #include <map>
 #include "WorldData/World.h"
 #include "Config.h"
+#include "HumansData/Human.h"
 
 class Army;
 class Monsters;
@@ -23,7 +24,8 @@ public:
     bool isOpen();
     void begin();
     void setArmyColors();
-    void render(World& world);
+    void renderHumans(World &world, Human &human);
+    void render(World& world, Human &human);
     void addProfToBuffer(int profession, Source source, int logicID);
     void eraseProfFromBuffer(int profession, Source source, int logicID);
     void reloadArmyBuffer();
@@ -54,5 +56,5 @@ private:
     int cellSize;
 
     void updateCellPixels(int x, int y, sf::Color color);
-    sf::Color getColor(const World::Cell& c);
+    sf::Color getColor(World &world, uint32_t x, uint32_t y);
 };

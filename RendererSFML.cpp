@@ -69,37 +69,81 @@ void RendererSFML::updateCellPixels(int x, int y, sf::Color color)
     }
 }
 
-sf::Color RendererSFML::getColor(const World::Cell& c)
+sf::Color RendererSFML::getColor(World& world, uint32_t x, uint32_t y)
 {
-    if(c.building == house) return sf::Color::Red;
-    if(c.building == farm) return sf::Color(255, 255, 150);
-    if(c.building == sawmill) return sf::Color(165, 42, 42);
-    if(c.building == mine) return sf::Color(191, 0, 255);
-    if(c.construction.hitsNeeded > 0) return sf::Color(255, 128, 0);
-    if(c.humanIndex > 0) return sf::Color::Black;
-    if(c.building == woodWall) return sf::Color(139, 69, 19);
-    if(c.building == stoneWall) return sf::Color(180, 180, 180);
-    if (c.civilizationPlace) return sf::Color::Black;
-    if (c.food > 0) return sf::Color(255, 165, 0);
-    if (c.treeHP > 0)  return sf::Color(0, 120, 0);
-    if (c.stoneHP > 0) return sf::Color::White;
+    uint32_t chunkX = x / ChunkConfig::CHUNK_SIZE;
+    uint32_t chunkY = y / ChunkConfig::CHUNK_SIZE;
 
-    if (c.flags & Water)     return sf::Color::Blue;
-    if (c.flags & Land)      return sf::Color::Green;
-    if (c.flags & Sand)      return sf::Color::Yellow;
-    if (c.flags & Mountain)  return sf::Color(120, 120, 120);
 
-    return sf::Color(200, 255, 200);
-}
+    BuildingType building = world.getBuilding(chunkX, chunkY);
 
-void RendererSFML::render(World& world)
-{
-    for (int id : world.dirtyCells)
+    if (building != BuildingType::None)
     {
-        int x = id % Config::sizeX;
-        int y = id / Config::sizeX;
-        updateCellPixels(x, y, getColor(world.grid[id]));
+        switch(building)
+        {
+            case BuildingType::House:
+                return sf::Color::Red;
+
+            case BuildingType::Farm:
+                return sf::Color(255,255,150);
+
+            case BuildingType::Sawmill:
+                return sf::Color(165,42,42);
+
+            case BuildingType::Mine:
+                return sf::Color(191,0,255);
+
+            default:
+                break;
+        }
     }
+
+
+    if(world.hasChunkFlag(chunkX, chunkY, ChunkFlag::Construction))
+        return sf::Color(255,128,0);
+
+
+    switch(world.getCell(x,y))
+    {
+        case TerrainType::Water:
+            return sf::Color::Blue;
+
+        case TerrainType::Land:
+            return sf::Color::Green;
+
+        case TerrainType::Desert:
+            return sf::Color::Yellow;
+
+        case TerrainType::Mountain:
+            return sf::Color(120,120,120);
+        
+        case TerrainType::LandWithFood:
+            return sf::Color(255, 165, 0);
+
+        case TerrainType::LandWithTree:
+            return sf::Color(0, 120, 0);
+
+        default:
+            return sf::Color(200,255,200);
+    }
+}
+void RendererSFML::renderHumans(World &world, Human &human)
+{
+    for(auto& h : human.humans)
+    {
+        updateCellPixels(h.oldPos.x, h.oldPos.y, getColor(world, h.oldPos.x, h.oldPos.y));
+        updateCellPixels(h.pos.x, h.pos.y, sf::Color::Black);
+        h.oldPos.x = h.pos.x;
+        h.oldPos.y = h.pos.y;
+    }
+}
+void RendererSFML::render(World& world, Human &human)
+{
+    for (auto& cell : world.dirtyCells)
+    {
+        updateCellPixels(cell.x, cell.y, getColor(world, cell.x, cell.y));
+    }
+    renderHumans(world, human);
     world.dirtyCells.clear();
 }
 void RendererSFML::addProfToBuffer(int profession, Source source, int logicID) 
