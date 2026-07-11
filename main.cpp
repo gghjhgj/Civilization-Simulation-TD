@@ -91,7 +91,7 @@ while (renderer.isOpen())
 
     ticksCount++;
    
-    /*
+
     if(world.allTicksCount % Config::ticksForCivilizationDecision == 0)
     {
         civilization.civilizationDecision(human, food, stone, tree);
@@ -101,14 +101,12 @@ while (renderer.isOpen())
     {
         civilization.buildingDecision(world, human, food, stone, tree);
     }
-
     if(world.allTicksCount % Config::ticksForAssigningDecision == 0)
     {
         civilization.assignHumansToBuilding(human, Type::FARM);
         civilization.assignHumansToBuilding(human, Type::SAWMILL);
         civilization.assignHumansToBuilding(human, Type::MINE);
     }
-    */
     if(world.allTicksCount % Config::ticksForResourcesGainsFromBuildings == 0)
     {
         civilization.getBuildingsGains(); 
@@ -129,22 +127,20 @@ while (renderer.isOpen())
     }
     if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForAddingHumansToArmy == 0 && combatSystem.armiesReadyForCombat != 4) //&& army.armyRegistry[Army::ArmyProfession::soldier].index.size() < 5000 && (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
     {
-        //army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
+        army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
     }
-    //civilization.assignHumansToBuilding(human, Type::HOUSE);
+    civilization.assignHumansToBuilding(human, Type::HOUSE);
     food.foodRespawn(world); 
     stone.stoneRespawn(world);
     tree.treeRespawn(world);
     human.humanMove(world, civilization, food, tree, stone, human);
-    //army.armyController(monsters, renderer);
-    //monsters.monstersController(army, renderer);
-    /*
+    army.armyController(monsters, renderer);
+    monsters.monstersController(army, renderer);
     for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
     {
         Army::ArmyProfession profession = Army::ArmyProfession(i);
-        army.armyMove(profession);
+        army.armyMove(monsters, profession);
     }
-    */
     if (fileTimer >= 1.0f)
     {
         world.writeStatsToTxt(ticksCount, framesCount, civilization, human, stone, food, tree, army, monsters);
@@ -158,8 +154,6 @@ while (renderer.isOpen())
     {
         renderTimer = 0.f;
 
-        //world.makeAllHumansDirty(human);
-
     int mainIndex = army.armyRegistry[0].armyMainIndex;
     int leaderX = (mainIndex % Config::sizeX) * 1;
     int leaderY = (mainIndex / Config::sizeX) * 1;
@@ -169,8 +163,6 @@ while (renderer.isOpen())
         renderer.end();
 
         framesCount++;
-
-        //world.makeAllHumansDirty(human);
     }
     /*
     if(world.allTicksCount > Config::ticksForBuildingWall && combatSystem.armiesReadyForCombat == 4)

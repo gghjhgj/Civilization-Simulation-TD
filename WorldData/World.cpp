@@ -80,8 +80,7 @@ bool World::isValid(int x, int y)
 }
 bool World::isValidChunk(uint32_t chunkX, uint32_t chunkY)
 {
-    return chunkX >= 0 &&
-        chunkY >= 0 &&
+    return 
         chunkX < WorldConfig::CHUNKS_X &&
         chunkY < WorldConfig::CHUNKS_Y;
 }

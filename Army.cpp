@@ -84,18 +84,16 @@ void Army::eraseHuman(RendererSFML &renderer, int profession, int id)
 
 void Army::addHumansToArmy(World &world, Human &human, Civilization &civilization,RendererSFML &renderer, ArmyProfession profession)
 {
-    /*
     int humansAddedToArmy = 0;
     if(human.humans.empty()) return;
     for(int i = human.humans.size() - 1; i >= 0 && humansAddedToArmy < Config::maxHumanCountAddedToArmy; i--)
     {
-        if(human.humans[i].task == Tasks::goingToBuilding) continue;
+        if(human.humans[i].targetBuilding != BuildingType::None) continue;
 
         human.eraseHuman(world, civilization, i);
         addHumanToArmy(renderer);
         humansAddedToArmy++;
     }
-        */
 }
 void Army::giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession)
 {

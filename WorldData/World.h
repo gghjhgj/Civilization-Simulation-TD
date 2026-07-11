@@ -87,7 +87,6 @@ public:
     BuildingType getBuilding(uint32_t chunkX, uint32_t chunkY)
     {
         uint32_t index = chunkY * WorldConfig::CHUNKS_X + chunkX;
-
         return grid[index].getBuilding();
     }
 

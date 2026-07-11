@@ -26,6 +26,8 @@ class Human
         XY pos;
         XY oldPos;
         TerrainType targetTerrain;
+        BuildingType targetBuilding;
+        bool isBuilder = false;
         int id;
         int HP = Config::humanHP;
         int Stamina = Config::humanStamina;
@@ -34,6 +36,12 @@ class Human
         XY targetPos = {UINT32_MAX, UINT32_MAX};
     };
     std::vector <HumanData> humans;
+    struct DeadHuman
+    {
+        XY oldPos;
+        XY pos;
+    };
+    std::vector <DeadHuman> deadHumans;
 
     enum ResourceType
     {
@@ -52,6 +60,8 @@ class Human
     void eraseHuman(World &world, Civilization &civilization, int vecID);//nie git na sam koniec
     void humanRespawn(World &world, Civilization &civilization);//git
     XY humanFindResource(World &world, uint32_t x, uint32_t y, TerrainType type);//nie git - to ma dzialac na surowce na budynki nowa funkcja bedzie
+    XY humanFindFlagChunk(World &world, uint32_t x, uint32_t y, ChunkFlag flag);
+    XY humanFindWorkingBuildingChunk(World &world, uint32_t x, uint32_t y, BuildingType type);
     bool gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry);
     Dirs humanMoveDecision(uint32_t humanX, uint32_t humanY, uint32_t targetX, uint32_t targetY, int i);//nie git
     void humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, Human &human);//nie git

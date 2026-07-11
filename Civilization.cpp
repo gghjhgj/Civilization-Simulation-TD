@@ -3,7 +3,7 @@
 #include "WorldData/World.h"
 #include "Walls.h"
 #include "Army.h"
-void Civilization::addCivilization(World &world, int index)
+void Civilization::addCivilization(World& world, int index)
 {
     /*
     world.grid[index].civilizationPlace += Config::civilizationPlaceHP;
@@ -11,7 +11,7 @@ void Civilization::addCivilization(World &world, int index)
     */
 }
 
-void Civilization::createCivilization(World &world)
+void Civilization::createCivilization(World& world)
 {
     /*
     std::random_device rd;
@@ -21,7 +21,7 @@ void Civilization::createCivilization(World &world)
         int id;
         do
         {
-            id = world.lands[dist(rng)]; 
+            id = world.lands[dist(rng)];
         } while (
         !world.isEmpty(id) ||
         !world.isValid(id + Config::civilizationPlaceX) ||
@@ -29,24 +29,24 @@ void Civilization::createCivilization(World &world)
         );
         spawn = id;
         */
-       //
-       spawn.chunkX = Config::civSpawnChunkX;
-       spawn.chunkY = Config::civSpawnChunkY;
-       //
-        addChunksToPossibleVillage(world, spawn.chunkX, spawn.chunkY, Config::civilizationPlaceX);
-        
-            markCloseAsCivZone(
-                world, 
-                spawn.chunkX,
-                spawn.chunkY,
-                0);
-        initBuildings();
+        //
+    spawn.chunkX = Config::civSpawnChunkX;
+    spawn.chunkY = Config::civSpawnChunkY;
+    //
+    addChunksToPossibleVillage(world, spawn.chunkX, spawn.chunkY, Config::civilizationPlaceX);
+
+    markCloseAsCivZone(
+        world,
+        spawn.chunkX,
+        spawn.chunkY,
+        0);
+    initBuildings();
 }
 
 void Civilization::initBuildings()
 {
-    auto &cost = buildingsCost;
-    auto &gains = buildingsGains;
+    auto& cost = buildingsCost;
+    auto& gains = buildingsGains;
 
     hitsForBuilding[HOUSE] = Config::hitsForBuildingHouse;
     cost[HOUSE].food = 0;
@@ -88,46 +88,58 @@ void Civilization::initBuildings()
     */
 }
 
-void Civilization::addWorkers(Human &human, Tasks task)
+void Civilization::addWorkers(Human& human, TerrainType type)
 {
-    /*
-    for(int i = rand()%Config::partOfHumansChangingJobs; i < human.humans.size(); i += Config::partOfHumansChangingJobs)
+    for (int i = rand() % Config::partOfHumansChangingJobs; i < human.humans.size(); i += Config::partOfHumansChangingJobs)
     {
-        if(human.humans[i].targetIndex == -1)
-        human.humans[i].task = task;
+        if (human.humans[i].targetBuilding == BuildingType::None)
+        {
+            human.humans[i].targetTerrain = type;
+            if (human.humans[i].isBuilder) human.humans[i].isBuilder = false;
+        }
     }
-        */
+}
+void Civilization::addBuilders(Human& human)
+{
+    for (int i = rand() % Config::partOfHumansChangingJobs; i < human.humans.size(); i += Config::partOfHumansChangingJobs)
+    {
+        if (human.humans[i].targetBuilding == BuildingType::None)
+        {
+            human.humans[i].isBuilder = true;
+        }
+    }
 }
 
 
-void Civilization::civilizationDecision(Human &human, Food &food, Stone &stone, Tree &tree)
+void Civilization::civilizationDecision(Human& human, Food& food, Stone& stone, Tree& tree)
 {
     bool areConstructions = false;
-    for(int i = 0; i < COUNT; i++)
+    for (int i = 0; i < COUNT; i++)
     {
-        if(constructions[i] > 0)
+        if (constructions[i] > 0)
         {
             areConstructions = true;
             continue;
         }
     }
-    if(areConstructions)
+    if (areConstructions)
     {
-        addWorkers(human, building);
+        addBuilders(human);
     }
-    if(resources.food <= Config::foodNeededForFarm)
+
+    if (resources.food <= Config::foodNeededForFarm)
     {
-        addWorkers(human, foodFinding);
+        addWorkers(human, TerrainType::LandWithFood);
     }
-    if(resources.wood < Config::woodNeededForFarm || resources.wood < Config::woodNeededForHouse || resources.stone < Config::stoneNeededForMine || food.foodsCount < Config::maxFood/10)
+    if (resources.wood < Config::woodNeededForFarm || resources.wood < Config::woodNeededForHouse || resources.stone < Config::stoneNeededForMine || food.foodsCount < Config::maxFood / 10)
     {
-        addWorkers(human, treeFinding);
+        addWorkers(human, TerrainType::LandWithTree);
     }
-    if(resources.stone < Config::stoneNeededForMine || food.foodsCount < Config::maxFood/10)
+    if (resources.stone < Config::stoneNeededForMine || food.foodsCount < Config::maxFood / 10)
     {
-        addWorkers(human, stoneFinding);
+        addWorkers(human, TerrainType::MountainWithStone);
     }
-    
+
 }
 
 void Civilization::markCloseAsCivZone(World &world, uint32_t chunkX, uint32_t chunkY, int rInChunks)
@@ -138,7 +150,7 @@ void Civilization::markCloseAsCivZone(World &world, uint32_t chunkX, uint32_t ch
         {
             int nx = chunkX + dx;
             int ny = chunkY + dy;
-            if(!(world.isValidChunk(nx, ny)));
+            if(!(world.isValidChunk(nx, ny))) continue;
 
             if(ny < mostNorthCivZone || mostNorthCivZone == -1)
             {
@@ -156,6 +168,7 @@ void Civilization::markCloseAsCivZone(World &world, uint32_t chunkX, uint32_t ch
             {
                 mostEastCivZone = nx;
             }
+            
             world.setChunkFlag(
                 nx,
                 ny,
@@ -176,7 +189,7 @@ void Civilization::addChunksToPossibleVillage(World &world, uint32_t chunkX, uin
             if(!(world.isValidChunk(nx, ny))) continue;
             if(world.hasChunkFlag(nx, ny, ChunkFlag::CivZone)) continue;
             if(!(world.isChunkLand(nx, ny))) continue;
-
+            
             bestChunksForBuildingsVillage.push_back(
                 { static_cast<uint32_t>(nx),
                   static_cast<uint32_t>(ny)}
@@ -184,6 +197,7 @@ void Civilization::addChunksToPossibleVillage(World &world, uint32_t chunkX, uin
         }
     }
 }
+
 
 Civilization::ChunkPos Civilization::getBestChunkForBuilingsVillage(World &world)
 {
@@ -200,7 +214,6 @@ Civilization::ChunkPos Civilization::getBestChunkForBuilingsVillage(World &world
     } while (!bestChunksForBuildingsVillage.empty() && 
     (world.getBuilding(pos.chunkX, pos.chunkY) != BuildingType::None ||
     world.hasChunkFlag(pos.chunkX, pos.chunkY, ChunkFlag::CivZone)));
-
     if (
         world.getBuilding(pos.chunkX, pos.chunkY) != BuildingType::None ||
         world.hasChunkFlag(pos.chunkX, pos.chunkY, ChunkFlag::CivZone)
@@ -208,7 +221,6 @@ Civilization::ChunkPos Civilization::getBestChunkForBuilingsVillage(World &world
     {
         return {UINT32_MAX, UINT32_MAX};
     }
-
     addChunksToPossibleVillage(
         world,
         pos.chunkX,
@@ -226,16 +238,18 @@ Civilization::ChunkPos Civilization::getBestChunkForBuilingsVillage(World &world
 }
 
 
-void Civilization::buildBuilding(World &world, Type type)
+
+void Civilization::buildBuilding(World& world, Type type)
 {
-    if(resources.food >= buildingsCost[type].food
-    && resources.stone >= buildingsCost[type].stone
-    && resources.wood >= buildingsCost[type].wood)
+    if (resources.food >= buildingsCost[type].food
+        && resources.stone >= buildingsCost[type].stone
+        && resources.wood >= buildingsCost[type].wood)
     {
         auto pos = getBestChunkForBuilingsVillage(world);
-        if(pos.chunkX == UINT32_MAX || pos.chunkY == UINT32_MAX) return;
+        if (pos.chunkX == UINT32_MAX || pos.chunkY == UINT32_MAX) return;
+
         startConstruction(world, pos.chunkX, pos.chunkY, type);
-        
+
         resources.food -= buildingsCost[type].food;
         resources.wood -= buildingsCost[type].wood;
         resources.stone -= buildingsCost[type].stone;
@@ -243,34 +257,33 @@ void Civilization::buildBuilding(World &world, Type type)
 }
 
 
-void Civilization::assignHumansToBuilding(Human &human, Type type)
+void Civilization::assignHumansToBuilding(Human& human, Type type)
 {
-    if(type == HOUSE)
+    if (type == HOUSE)
     {
-    int humansWithoutHouse = human.humansCount - human.humansHavingHouseCount; 
-    int emptyPlaces = (buildingsCount[HOUSE] * Config::maxHumansInHouse) - human.humansHavingHouseCount;
+        int humansWithoutHouse = human.humansCount - human.humansHavingHouseCount;
+        int emptyPlaces = (buildingsCount[HOUSE] * Config::maxHumansInHouse) - human.humansHavingHouseCount;
 
-    human.humansHavingHouseCount += std::min(humansWithoutHouse, emptyPlaces);
-    return;
+        human.humansHavingHouseCount += std::min(humansWithoutHouse, emptyPlaces);
+        return;
     }
 
 
-        if(buildingsCount[type] == 0) return;
-        for(Human::HumanData& h : human.humans)
-        {
-            /*
-            if(h.task == goingToBuilding) continue;
-            if(buildingsCount[type] * maxHumans[type] <= workersAssigned[type]) break;
-            
-            h.task = goingToBuilding;
-            workersAssigned[type]++;
-            */
+    if (buildingsCount[type] == 0) return;
+    for (Human::HumanData& h : human.humans)
+    {
+        if (h.targetBuilding != BuildingType::None) continue;
+        if (buildingsCount[type] * maxHumans[type] <= workersAssigned[type]) break;
+
+        auto building = GetBuildingType(type);
+        h.targetBuilding = building;
+        workersAssigned[type]++;
     }
 }
 
 void Civilization::getBuildingsGains()
 {
-    for(int i = 0; i < COUNT; i++)
+    for (int i = 0; i < COUNT; i++)
     {
         resources.food += buildingsGains[i].food * realWorkers[i];
         resources.wood += buildingsGains[i].wood * realWorkers[i];
@@ -281,27 +294,27 @@ void Civilization::getBuildingsGains()
 
 
 
-void Civilization::buildingDecision(World &world, Human &human, Food &food, Stone &stone, Tree &tree)
+void Civilization::buildingDecision(World& world, Human& human, Food& food, Stone& stone, Tree& tree)
 {
-    if((buildingsCount[FARM] + constructions[FARM]) * 50 < human.humansCount )
+    if ((buildingsCount[FARM] + constructions[FARM]) * 50 < human.humansCount)
     {
         buildBuilding(world, FARM);
     }
-    else if((buildingsCount[SAWMILL] + constructions[SAWMILL]) * 260 < human.humansCount)
+    else if ((buildingsCount[SAWMILL] + constructions[SAWMILL]) * 260 < human.humansCount)
     {
         buildBuilding(world, SAWMILL);
     }
-    else if((buildingsCount[MINE] + constructions[MINE]) * 2600 < human.humansCount)
+    else if ((buildingsCount[MINE] + constructions[MINE]) * 2600 < human.humansCount)
     {
         buildBuilding(world, MINE);
     }
-    else if(buildingsCount[HOUSE] + constructions[HOUSE] < human.humansCount/5)
+    else if (buildingsCount[HOUSE] + constructions[HOUSE] < human.humansCount / 5)
     {
         buildBuilding(world, HOUSE);
     }
 }
 
-void Civilization::startConstruction(World &world, uint32_t chunkX, uint32_t chunkY, Type type)
+void Civilization::startConstruction(World& world, uint32_t chunkX, uint32_t chunkY, Type type)
 {
     world.setChunkFlag(chunkX, chunkY, ChunkFlag::Construction);
     world.setBuilding(chunkX, chunkY, GetBuildingType(type));
@@ -310,7 +323,7 @@ void Civilization::startConstruction(World &world, uint32_t chunkX, uint32_t chu
     constructions[type]++;
 }
 
-void Civilization::endConstruction(World &world, Human &human, uint32_t chunkX, uint32_t chunkY, Type type)
+void Civilization::endConstruction(World& world, Human& human, uint32_t chunkX, uint32_t chunkY, Type type)
 {
     world.clearChunkFlag(chunkX, chunkY, ChunkFlag::Construction);
     world.addChunkToDirtyCells(chunkX, chunkY);

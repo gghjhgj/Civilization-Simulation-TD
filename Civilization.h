@@ -28,6 +28,15 @@ inline BuildingType GetBuildingType(Type t) {
         default:            return BuildingType::None;
     }
 }
+inline Type GetTypeBuilding(BuildingType b) {
+    switch(b) {
+        case BuildingType::House:   return Type::HOUSE;
+        case BuildingType::Farm:    return Type::FARM;
+        case BuildingType::Sawmill: return Type::SAWMILL;
+        case BuildingType::Mine:    return Type::MINE;
+        default:            return Type::COUNT;
+    }
+}
 
 class Civilization
 {
@@ -77,7 +86,8 @@ public:
     void createCivilization(World& world);//git
     void initBuildings();//nowe git
 
-    void addWorkers(Human& human, Tasks task);//nowe git
+    void addWorkers(Human& human, TerrainType type);//nowe git
+    void addBuilders(Human &human);
 
     void civilizationDecision(Human& human, Food& food, Stone& stone, Tree& tree);//git
 
