@@ -69,7 +69,7 @@ void World::init()
     //popularityRanking.resize(1);
     for (auto& chunk : grid)
     {
-        chunk.data = 0;
+        //chunk.chunks.data = 0;
     }
 }
 bool World::isValid(int x, int y)
@@ -90,13 +90,12 @@ bool World::isChunkLand(uint32_t chunkX, uint32_t chunkY)
     {
         for (uint32_t x = 0; x < ChunkConfig::CHUNK_SIZE; x++)
         {
-            uint32_t worldX = chunkX * ChunkConfig::CHUNK_SIZE + x;
-            uint32_t worldY = chunkY * ChunkConfig::CHUNK_SIZE + y;
+            auto ref = getCellInChunk(chunkX, chunkY);
 
-            if (worldX >= Config::sizeX || worldY >= Config::sizeY)
+            if (ref.x >= Config::sizeX || ref.y >= Config::sizeY)
                 continue;
 
-            if (getCell(worldX, worldY) == TerrainType::Water)
+            if (getCell(ref.x, ref.y) == TerrainType::Water)
                 return false;
         }
     }
@@ -360,20 +359,27 @@ bool World::hasBuilding(uint32_t chunkX, uint32_t chunkY)
 {
     return getBuilding(chunkX, chunkY) != BuildingType::None;
 }
+
+World::XY World::getCellInChunk(uint32_t chunkX, uint32_t chunkY)
+{
+    uint32_t x = chunkX * ChunkConfig::CHUNK_SIZE;
+    uint32_t y = chunkY * ChunkConfig::CHUNK_SIZE;
+    return {x, y};
+}
+
 std::vector<World::XY> World::getCellsInChunk(uint32_t chunkX, uint32_t chunkY)
 {
     std::vector<XY> cells;
     cells.reserve(ChunkConfig::CELL_COUNT);
 
-    uint32_t startX = chunkX * ChunkConfig::CHUNK_SIZE;
-    uint32_t startY = chunkY * ChunkConfig::CHUNK_SIZE;
+    auto ref = getCellInChunk(chunkX, chunkY);
 
     for (uint32_t y = 0; y < ChunkConfig::CHUNK_SIZE; y++)
     {
         for (uint32_t x = 0; x < ChunkConfig::CHUNK_SIZE; x++)
         {
-            uint32_t worldX = startX + x;
-            uint32_t worldY = startY + y;
+            uint32_t worldX = ref.x + x;
+            uint32_t worldY = ref.y + y;
 
             if (worldX >= Config::sizeX || worldY >= Config::sizeY)
                 continue;

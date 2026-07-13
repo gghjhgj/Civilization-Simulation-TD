@@ -79,15 +79,14 @@ void RendererSFML::updateCellPixels(int x, int y, sf::Color color)
 
 sf::Color RendererSFML::getColor(World& world, uint32_t x, uint32_t y)
 {
-    uint32_t chunkX = x / ChunkConfig::CHUNK_SIZE;
-    uint32_t chunkY = y / ChunkConfig::CHUNK_SIZE;
+    auto ref = world.getCellRef(x, y);
 
 
-    BuildingType building = world.getBuilding(chunkX, chunkY);
+    BuildingType building = world.getBuilding(ref.chunkX, ref.chunkY);
 
     if (building != BuildingType::None)
     {
-        if (world.hasChunkFlag(chunkX, chunkY, ChunkFlag::Construction))
+        if (world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::Construction))
             return sf::Color(255, 128, 0);
         switch (building)
         {

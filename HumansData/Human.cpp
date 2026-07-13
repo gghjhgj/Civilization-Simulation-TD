@@ -101,15 +101,14 @@ Human::XY Human::humanFindResource(World& world, uint32_t x, uint32_t y, Terrain
 }
 Human::XY Human::humanFindFlagChunk(World& world, uint32_t x, uint32_t y, ChunkFlag flag)
 {
-    int chunkX = static_cast<int>(x / ChunkConfig::CHUNK_SIZE);
-    int chunkY = static_cast<int>(y / ChunkConfig::CHUNK_SIZE);
-
-    for (int dy = -Config::vision; dy <= Config::vision; dy++)
+    auto ref = world.getCellRef(x,y);
+    uint8_t vision = 1;
+    for (int dy = -vision; dy <= vision; dy++)
     {
-        for (int dx = -Config::vision; dx <= Config::vision; dx++)
+        for (int dx = -vision; dx <= vision; dx++)
         {
-            int nx = chunkX + dx;
-            int ny = chunkY + dy;
+            int nx = ref.chunkX + dx;
+            int ny = ref.chunkY + dy;
 
             if (!world.isValidChunk(nx, ny)) continue;
 
@@ -126,15 +125,15 @@ Human::XY Human::humanFindFlagChunk(World& world, uint32_t x, uint32_t y, ChunkF
 }
 Human::XY Human::humanFindWorkingBuildingChunk(World& world, uint32_t x, uint32_t y, BuildingType type)
 {
-    int chunkX = static_cast<int>(x / ChunkConfig::CHUNK_SIZE);
-    int chunkY = static_cast<int>(y / ChunkConfig::CHUNK_SIZE);
+    auto ref = world.getCellRef(x,y);
 
-    for (int dy = -Config::vision; dy <= Config::vision; dy++)
+    uint8_t vision = 1;
+    for (int dy = -vision; dy <= vision; dy++)
     {
-        for (int dx = -Config::vision; dx <= Config::vision; dx++)
+        for (int dx = -vision; dx <= vision; dx++)
         {
-            int nx = chunkX + dx;
-            int ny = chunkY + dy;
+            int nx = ref.chunkX + dx;
+            int ny = ref.chunkY + dy;
 
             if (!world.isValidChunk(nx, ny)) continue;
 
