@@ -4,7 +4,6 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
-#include <windows.h>
 #include "Config.h"
 class Civilization;
 class World;

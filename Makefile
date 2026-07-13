@@ -8,6 +8,10 @@ release: CXXFLAGS = -Ofast -march=native -flto -funroll-loops -ffast-math
 release: build
 	@echo "Build RELEASE gotowy."
 
+profile: CXXFLAGS = -O2 -march=native -g -fno-omit-frame-pointer
+profile: build
+	@echo "Build PROFILE gotowy."
+
 debug: CXXFLAGS = -g -O0 -Wall -Wextra
 debug: build
 	@echo "Build DEBUG gotowy."

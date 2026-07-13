@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <iterator>
 #include <cmath>
-#include <windows.h>
 #include "Config.h"
 class Civilization;
 class World;

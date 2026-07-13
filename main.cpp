@@ -19,13 +19,19 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+
+#ifdef _WIN32
 #include <windows.h>
+#endif
+
 
 int main() {
+    #ifdef _WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
     SetProcessAffinityMask(GetCurrentProcess(), 0x00000001);
     SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
+    #endif
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
     srand(time(NULL));
@@ -167,24 +173,16 @@ while (renderer.isOpen())
     /*
     if(world.allTicksCount > Config::ticksForBuildingWall && combatSystem.armiesReadyForCombat == 4)
     {
-        Sleep(1);
+        ifdef _WIN32
+            Sleep(1);
+        endif
     }
     */
     world.allTicksCount++;
 }
 return 0;
 }
-
 /*
-to do
-
-/* debug
-g++ -g -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system && gdb app
-
-    run
-g++ -Ofast -march=native -flto -funroll-loops -ffast-math -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
-
-
 generate prof
 g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofile-generate -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
 

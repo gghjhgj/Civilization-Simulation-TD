@@ -22,6 +22,8 @@ void Human::addHuman(World& world, uint32_t x, uint32_t y, int vecId)
 
 void Human::createHuman(World& world, Civilization& civilization)
 {
+    humans.reserve(100000);
+    deadHumans.reserve(10000);
     uint32_t x = civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE;
     uint32_t y = civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE;
     uint32_t x2;

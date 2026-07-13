@@ -1,6 +1,10 @@
 #include "RendererSFML.h"
 #include "Army.h"
 #include "Monsters.h"
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 RendererSFML::RendererSFML(int w, int h, int cellSize)
     : window(sf::VideoMode({ (unsigned)(w * cellSize), (unsigned)(h * cellSize) }), "Simulation"),
     cellSize(cellSize),
@@ -12,7 +16,11 @@ RendererSFML::RendererSFML(int w, int h, int cellSize)
 {
     if (!armyShader.loadFromFile("army.vert", sf::Shader::Type::Vertex))
     {
-        MessageBoxA(NULL, "Shader load failed", "Error", MB_OK);
+        #ifdef _WIN32
+MessageBoxA(NULL, "Shader load failed", "Error", MB_OK);
+#else
+std::cerr << "Shader load failed\n";
+#endif
     }
     setArmyColors();
 

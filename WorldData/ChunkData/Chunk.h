@@ -46,7 +46,6 @@ struct Chunk
     {
         uint32_t value = static_cast<uint32_t>(type);
         data &= ~(ChunkConfig::BUILDING_MASK << ChunkConfig::BUILDING_SHIFT);
-        data |= value << ChunkConfig::BUILDING_SHIFT;
         data |= (value & ChunkConfig::BUILDING_MASK) << ChunkConfig::BUILDING_SHIFT;
     }
     BuildingType getBuilding() const
