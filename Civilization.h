@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WorldData/ChunkData/Chunk.h"
+#include "HumansData/HumanTypes.h"
 #include "Food.h"
 #include "Tree.h"
 #include "Stone.h"
@@ -85,8 +86,7 @@ public:
     void createCivilization(World& world);//git
     void initBuildings();//nowe git
 
-    void addWorkers(Human& human, TerrainType type);//nowe git
-    void addBuilders(Human &human);
+    void addWorkers(Human& human, HumanType type);//nowe git
 
     void civilizationDecision(Human& human, Food& food, Stone& stone, Tree& tree);//git
 

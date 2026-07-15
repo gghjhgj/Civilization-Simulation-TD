@@ -404,7 +404,7 @@ void Monsters::eraseEnemies(RendererSFML &renderer, Army &army, MonstersTypes ty
     {
         int id = eraseDecision(army, targetProfession);
         if(id == -1) return;
-        army.eraseHuman(renderer, targetProfession, id);
+        army.eraseHumanFromArmy(renderer, targetProfession, id);
     }
 }
 

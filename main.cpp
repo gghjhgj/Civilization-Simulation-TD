@@ -26,6 +26,7 @@
 
 
 int main() {
+    std::cout << "START" << std::endl;
     #ifdef _WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
@@ -188,4 +189,9 @@ g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofil
 
 use prof
 g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofile-use -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
+*/
+
+
+/* do profilownia jedyne co nie wywala profilera
+clang++ -O2 -march=native -fno-omit-frame-pointer -Wno-c++11-narrowing -g -gcodeview -fuse-ld=lld -Wl,-pdb=app.pdb -I. ./Army.cpp ./Civilization.cpp ./CombatSystem.cpp ./Food.cpp ./HumansData/Human.cpp ./HumansData/HumanGPU.cpp ./main.cpp ./Monsters.cpp ./notUsed/Cars.cpp ./notUsed/Streets.cpp ./RendererSFML.cpp ./Stone.cpp ./Tree.cpp ./Walls.cpp ./WorldData/World.cpp ./WorldData/WorldGPU.cpp glad.c -o app.exe -lsfml-graphics -lsfml-window -lsfml-system
 */

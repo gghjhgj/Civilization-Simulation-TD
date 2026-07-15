@@ -1,29 +1,17 @@
 #include "Human.h"
 
 #include "WorldData/World.h"
+#include <tbb/parallel_invoke.h>
 #include "Civilization.h"
-
-
-
-void Human::addHuman(World& world, uint32_t x, uint32_t y, int vecId)
-{
-    HumanData h;
-    h.targetBuilding = BuildingType::None;
-    h.targetTerrain = TerrainType::LandWithTree;
-    h.pos.x = x;
-    h.pos.y = y;
-    h.oldPos.x = x;
-    h.oldPos.y = y;
-    h.id = vecId;
-    humans.push_back(h);
-    world.addToDirtyCells(x, y);
-    humansCount++;
-}
 
 void Human::createHuman(World& world, Civilization& civilization)
 {
-    humans.reserve(100000);
-    deadHumans.reserve(10000);
+    foodCollectors.reserve(100000);
+    woodCollectors.reserve(100000);
+    stoneCollectors.reserve(100000);
+    builders.reserve(100000);
+    assigned.reserve(100000);
+    dead.reserve(10000);
     uint32_t x = civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE;
     uint32_t y = civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE;
     uint32_t x2;
@@ -46,23 +34,10 @@ void Human::createHuman(World& world, Civilization& civilization)
         } while (!world.isValid(x2, y2) ||
             world.getCell(x2, y2) != TerrainType::Land);
 
-        addHuman(world, x2, y2, i);
+        addHuman(*this, this->foodCollectors, BuildingType::None, x2, y2);
     }
 }
 
-void Human::eraseHuman(World& world, Civilization& civilization, int vecID)
-{
-    deadHumans.push_back({
-     {humans[vecID].oldPos.x, humans[vecID].oldPos.y},
-     {humans[vecID].pos.x, humans[vecID].pos.y}
-        });
-    if (vecID < static_cast<int>(humans.size()) - 1)
-    {
-        auto& lastHuman = humans.back();
-        humans[vecID] = lastHuman;
-    }
-    humans.pop_back();
-}
 void Human::humanRespawn(World& world, Civilization& civilization)
 {
     int newPeople = static_cast<int>(std::cbrt(humansCount));
@@ -70,11 +45,10 @@ void Human::humanRespawn(World& world, Civilization& civilization)
     uint32_t y = civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE;
     for (int i = 0; i < newPeople; i++)
     {
-        int id = humans.size();
-        addHuman(world, x, y, id);
+        addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
     }
 }
-Human::XY Human::humanFindResource(World& world, uint32_t x, uint32_t y, TerrainType type)
+XY Human::humanFindResource(World& world, uint32_t x, uint32_t y, TerrainType type)
 {
     int startX = static_cast<int>(x);
     int startY = static_cast<int>(y);
@@ -93,15 +67,14 @@ Human::XY Human::humanFindResource(World& world, uint32_t x, uint32_t y, Terrain
             found = world.getCell(nx, ny) == type;
 
             if (found)
-                return { nx, ny };
-        }
+                return { static_cast<uint32_t>(nx), static_cast<uint32_t>(ny) };        }
     }
 
     return { UINT32_MAX, UINT32_MAX };
 }
-Human::XY Human::humanFindFlagChunk(World& world, uint32_t x, uint32_t y, ChunkFlag flag)
+XY Human::humanFindFlagChunk(World& world, uint32_t x, uint32_t y, ChunkFlag flag)
 {
-    auto ref = world.getCellRef(x,y);
+    auto ref = world.getCellRef(x, y);
     uint8_t vision = 1;
     for (int dy = -vision; dy <= vision; dy++)
     {
@@ -123,9 +96,9 @@ Human::XY Human::humanFindFlagChunk(World& world, uint32_t x, uint32_t y, ChunkF
     }
     return{ UINT32_MAX, UINT32_MAX };
 }
-Human::XY Human::humanFindWorkingBuildingChunk(World& world, uint32_t x, uint32_t y, BuildingType type)
+XY Human::humanFindWorkingBuildingChunk(World& world, uint32_t x, uint32_t y, BuildingType type)
 {
-    auto ref = world.getCellRef(x,y);
+    auto ref = world.getCellRef(x, y);
 
     uint8_t vision = 1;
     for (int dy = -vision; dy <= vision; dy++)
@@ -155,104 +128,104 @@ bool Human::gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry)
     return false;
 }
 
-Human::Dirs Human::humanMoveDecision(uint32_t humanX, uint32_t humanY, uint32_t targetX, uint32_t targetY, int i)
+Human::Dirs Human::humanMoveDecision(HumanBase& base)
 {
-    int dx = targetX - humanX;
-    int dy = targetY - humanY;
+    if (base.targetPos.x == UINT32_MAX || base.targetPos.y == UINT32_MAX)
+    {
+        uint32_t directionIndex = rand() % 8;
+        static constexpr int lookupX[8] = { 1, 1, 0, -1, -1, -1,  0,  1 };
+        static constexpr int lookupY[8] = { 0, 1, 1,  1,  0, -1, -1, -1 };
+        return { static_cast<int8_t>(lookupX[directionIndex]), static_cast<int8_t>(lookupY[directionIndex]) };
+    }
 
+    int dx = base.targetPos.x - base.pos.x;
+    int dy = base.targetPos.y - base.pos.y;
     int8_t dirX = (dx > 0) - (dx < 0);
     int8_t dirY = (dy > 0) - (dy < 0);
 
-    if (targetX != UINT32_MAX && targetY != UINT32_MAX && (rand() % 100 > 15))
-    {
-        return{ dirX, dirY };
-    }
-
-    uint32_t h = humans[i].id + humans[i].points;
-    constexpr float PI = 3.14159265358979323846f;
-    float angle = (h % 8) * PI / 4.f;
-    dirX = std::lround(std::cos(angle));
-    dirY = std::lround(std::sin(angle));
     return { dirX, dirY };
 }
 void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, Human& human)
 {
-    for (int i = 0; i < humans.size(); i++)
-    {
-        Dirs dir;
-        XY newPos;
-        bool humanRemoved = false;
-
-        if (!humans[i].isBuilder && humans[i].targetBuilding == BuildingType::None)
+    processHumanVector(foodCollectors, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
         {
-            if (humans[i].moves % (Config::vision + 1) == 0)
-            {
-                humans[i].targetPos = humanFindResource(world, humans[i].pos.x, humans[i].pos.y, humans[i].targetTerrain);
-            }
-            dir = humanMoveDecision(humans[i].pos.x, humans[i].pos.y,
-                humans[i].targetPos.x, humans[i].targetPos.y,
-                i);
-            newPos.x = humans[i].pos.x + dir.x;
-            newPos.y = humans[i].pos.y + dir.y;
+            if (h.moves % (Config::vision + 1) == 0)
+                h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithFood);
 
-            if (humans[i].targetPos.x != UINT32_MAX && humans[i].targetPos.y != UINT32_MAX &&
+            dir = humanMoveDecision(h);
+            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
+            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
                 gotResource(newPos.x, newPos.y,
-                    humans[i].targetPos.x, humans[i].targetPos.y))
+                    h.targetPos.x, h.targetPos.y))
             {
-
-                if (world.getCell(newPos.x, newPos.y) == humans[i].targetTerrain)
+                if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithFood)
                 {
-                    switch (humans[i].targetTerrain)
-                    {
-                    case TerrainType::LandWithFood:
-                    {
-                        food.foodsCount--;
-                        civilization.resources.food++;
-                        world.setCell(newPos.x, newPos.y, TerrainType::Land);
-                        world.addToDirtyCells(newPos.x, newPos.y);
-                        break;
-                    }
-                    case TerrainType::LandWithTree:
-                    {
-                        tree.treesCount--;
-                        civilization.resources.wood++;
-                        world.setCell(newPos.x, newPos.y, TerrainType::Land);
-                        world.addToDirtyCells(newPos.x, newPos.y);
-                        break;
-                    }
-                    case TerrainType::MountainWithStone:
-                    {
-                        stone.stonesCount--;
-                        civilization.resources.stone++;
-                        world.setCell(newPos.x, newPos.y, TerrainType::Mountain);
-                        world.addToDirtyCells(newPos.x, newPos.y);
-                        break;
-                    }
-                    default: break;
-                    }
-                }
-                else
-                {
-                    humans[i].targetPos = { UINT32_MAX, UINT32_MAX };
+                    food.foodsCount--;
+                    civilization.resources.food++;
+                    world.setCell(newPos.x, newPos.y, TerrainType::Land);
+                    world.addToDirtyCells(newPos.x, newPos.y);
                 }
             }
-        }
-        
-        else if (humans[i].isBuilder && humans[i].targetBuilding == BuildingType::None)
-        {
-            if (humans[i].moves % (Config::vision + 1) == 0)
-            {
-                humans[i].targetPos = humanFindFlagChunk(world, humans[i].pos.x, humans[i].pos.y, ChunkFlag::Construction);
-            }
-            dir = humanMoveDecision(humans[i].pos.x, humans[i].pos.y,
-                humans[i].targetPos.x, humans[i].targetPos.y,
-                i);
-            newPos.x = humans[i].pos.x + dir.x;
-            newPos.y = humans[i].pos.y + dir.y;
 
-            if (humans[i].targetPos.x != UINT32_MAX && humans[i].targetPos.y != UINT32_MAX &&
+            return false;
+        });
+
+    processHumanVector(woodCollectors, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+        {
+            if (h.moves % (Config::vision + 1) == 0)
+                h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithTree);
+
+            dir = humanMoveDecision(h);
+            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
+            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
                 gotResource(newPos.x, newPos.y,
-                    humans[i].targetPos.x, humans[i].targetPos.y))
+                    h.targetPos.x, h.targetPos.y))
+            {
+                if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithTree)
+                {
+                    tree.treesCount--;
+                    civilization.resources.wood++;
+                    world.setCell(newPos.x, newPos.y, TerrainType::Land);
+                    world.addToDirtyCells(newPos.x, newPos.y);
+                }
+            }
+
+            return false;
+        });
+
+    processHumanVector(stoneCollectors, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+        {
+            if (h.moves % (Config::vision + 1) == 0)
+                h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::MountainWithStone);
+
+            dir = humanMoveDecision(h);
+            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
+            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
+                gotResource(newPos.x, newPos.y,
+                    h.targetPos.x, h.targetPos.y))
+            {
+                if (world.getCell(newPos.x, newPos.y) == TerrainType::MountainWithStone)
+                {
+                    stone.stonesCount--;
+                    civilization.resources.stone++;
+                    world.setCell(newPos.x, newPos.y, TerrainType::Mountain);
+                    world.addToDirtyCells(newPos.x, newPos.y);
+                }
+            }
+
+            return false;
+        });
+
+    processHumanVector(builders, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+        {
+            if (h.moves % (Config::vision + 1) == 0)
+                h.targetPos = humanFindFlagChunk(world, h.pos.x, h.pos.y, ChunkFlag::Construction);
+
+            dir = humanMoveDecision(h);
+            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
+            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
+                gotResource(newPos.x, newPos.y,
+                    h.targetPos.x, h.targetPos.y))
             {
                 auto ref = world.getCellRef(newPos.x, newPos.y);
                 if (world.getBuilding(ref.chunkX, ref.chunkY) != BuildingType::None &&
@@ -265,32 +238,32 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 }
                 else
                 {
-                    humans[i].targetPos = { UINT32_MAX, UINT32_MAX };
+                    h.targetPos = { UINT32_MAX, UINT32_MAX };
                 }
             }
-        }
 
-        else if (humans[i].targetBuilding != BuildingType::None)
+            return false;
+        });
+
+    processHumanVector(assigned, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
         {
-            if (humans[i].moves % (Config::vision + 1) == 0)
+            if (h.moves % (Config::vision + 1) == 0)
             {
-                humans[i].targetPos = humanFindWorkingBuildingChunk(world, humans[i].pos.x, humans[i].pos.y, humans[i].targetBuilding);
+                h.targetPos = humanFindWorkingBuildingChunk(world, h.pos.x, h.pos.y, h.targetBuilding);
             }
-            dir = humanMoveDecision(humans[i].pos.x, humans[i].pos.y,
-                humans[i].targetPos.x, humans[i].targetPos.y,
-                i);
-            newPos.x = humans[i].pos.x + dir.x;
-            newPos.y = humans[i].pos.y + dir.y;
+            dir = humanMoveDecision(h);
+            newPos.x = h.pos.x + dir.x;
+            newPos.y = h.pos.y + dir.y;
 
-            if (humans[i].targetPos.x != UINT32_MAX && humans[i].targetPos.y != UINT32_MAX &&
+            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
                 gotResource(newPos.x, newPos.y,
-                    humans[i].targetPos.x, humans[i].targetPos.y))
+                    h.targetPos.x, h.targetPos.y))
             {
                 auto ref = world.getCellRef(newPos.x, newPos.y);
-                if (world.getBuilding(ref.chunkX, ref.chunkY) == humans[i].targetBuilding &&
+                if (world.getBuilding(ref.chunkX, ref.chunkY) == h.targetBuilding &&
                     !(world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::Construction)))
                 {
-                    switch (humans[i].targetBuilding)
+                    switch (h.targetBuilding)
                     {
                     case BuildingType::Farm:
                     {
@@ -309,37 +282,17 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                     }
                     default: break;
                     }
-                    eraseHuman(world, civilization, i);
-                    humanRemoved = true;
+
+                    size_t id = &h - &this->assigned[0];
+                    eraseHuman(*this, this->assigned, static_cast<int>(id));
+                    return true;
                 }
                 else
                 {
-                    humans[i].targetPos = { UINT32_MAX, UINT32_MAX };
+                    h.targetPos = { UINT32_MAX, UINT32_MAX };
                 }
             }
-        }
 
-        if (humanRemoved)
-        {
-            i--;
-            continue;
-        }
-        if (world.isValid(newPos.x, newPos.y) &&
-            world.getCell(newPos.x, newPos.y) != TerrainType::Water)
-        {
-            humans[i].moves++;
-            humans[i].pos = { newPos.x, newPos.y };
-        }
-        else
-        {
-            humans[i].points -= (1 + (rand() % 7));
-        }
-
-        if (humans[i].points <= 0) humans[i].points += 1000;
-
-        if (rand() % 100 < Config::chanceToChangeDir)
-        {
-            humans[i].points += (rand() % 2 == 0) ? 1 : -1;
-        }
-    }
+            return false;
+        });
 }

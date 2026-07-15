@@ -24,19 +24,29 @@ public:
     bool isOpen();
     void begin();
     void setArmyColors();
-    void renderHumans(World &world, Human &human);
-    void render(World& world, Human &human);
+    template <typename T>
+    void renderEntities(std::vector<T>& entities, World& world)
+    {
+        for (auto& e : entities)
+        {
+            updateCellPixels(e.oldPos.x, e.oldPos.y, getColor(world, e.oldPos.x, e.oldPos.y));
+            updateCellPixels(e.pos.x, e.pos.y, sf::Color::Black);
+            e.oldPos = e.pos;
+        }
+    }
+    void renderHumans(World& world, Human& human);
+    void render(World& world, Human& human);
     void addProfToBuffer(int profession, Source source, int logicID);
     void eraseProfFromBuffer(int profession, Source source, int logicID);
     void reloadArmyBuffer();
     void end();
 
 private:
-    struct ArmyLayer 
+    struct ArmyLayer
     {
-    std::vector<sf::Vertex> armyVertices;
-    sf::VertexBuffer armyLayer{sf::PrimitiveType::Points, sf::VertexBuffer::Usage::Stream};
-    sf::Color color;
+        std::vector<sf::Vertex> armyVertices;
+        sf::VertexBuffer armyLayer{ sf::PrimitiveType::Points, sf::VertexBuffer::Usage::Stream };
+        sf::Color color;
     };
     enum Profs
     {
@@ -56,5 +66,5 @@ private:
     int cellSize;
 
     void updateCellPixels(int x, int y, sf::Color color);
-    sf::Color getColor(World &world, uint32_t x, uint32_t y);
+    sf::Color getColor(World& world, uint32_t x, uint32_t y);
 };

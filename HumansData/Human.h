@@ -1,47 +1,25 @@
 #pragma once
+
+#include "HumanTypes.h"
+#include "XY.h"
+
 #include "Config.h"
 #include "Food.h"
 #include "Tree.h"
 #include "Stone.h"
+
 #include <vector>
 #include <cmath>
 class Civilization;
 class World;
 class Human
 {
-    public:
-    struct XY
-    {
-        uint32_t x;
-        uint32_t y;
-    };
+public:
     struct Dirs
     {
         int8_t x;
         int8_t y;
     };
-    struct HumanData
-    {
-        XY pos;
-        XY oldPos;
-        TerrainType targetTerrain;
-        BuildingType targetBuilding;
-        bool isBuilder = false;
-        int id;
-        int HP = Config::humanHP;
-        int Stamina = Config::humanStamina;
-        int points = 10000;
-        int moves = 0;
-        XY targetPos = {UINT32_MAX, UINT32_MAX};
-    };
-    std::vector <HumanData> humans;
-    struct DeadHuman
-    {
-        XY oldPos;
-        XY pos;
-    };
-    std::vector <DeadHuman> deadHumans;
-
     enum ResourceType
     {
         food,
@@ -49,19 +27,55 @@ class Human
         stone,
         construction
     };
-    
+
+    std::vector<CollectorHuman> foodCollectors;
+    std::vector<CollectorHuman> woodCollectors;
+    std::vector<CollectorHuman> stoneCollectors;
+    std::vector<HumanBuilder> builders;
+    std::vector<HumanAssigned> assigned;
+    std::vector<DeadHuman> dead;
+
+
+
+
     int humansCount = 0;
     int humansHavingHouseCount = 0;
 
-
-    void addHuman(World &world, uint32_t x, uint32_t y, int vecId);//git
-    void createHuman(World &world, Civilization &civilization);//git
-    void eraseHuman(World &world, Civilization &civilization, int vecID);//nie git na sam koniec
-    void humanRespawn(World &world, Civilization &civilization);//git
-    XY humanFindResource(World &world, uint32_t x, uint32_t y, TerrainType type);//nie git - to ma dzialac na surowce na budynki nowa funkcja bedzie
-    XY humanFindFlagChunk(World &world, uint32_t x, uint32_t y, ChunkFlag flag);
-    XY humanFindWorkingBuildingChunk(World &world, uint32_t x, uint32_t y, BuildingType type);
+    void createHuman(World& world, Civilization& civilization);//git
+    void humanRespawn(World& world, Civilization& civilization);//git
+    XY humanFindResource(World& world, uint32_t x, uint32_t y, TerrainType type);
+    XY humanFindFlagChunk(World& world, uint32_t x, uint32_t y, ChunkFlag flag);
+    XY humanFindWorkingBuildingChunk(World& world, uint32_t x, uint32_t y, BuildingType type);
     bool gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry);
-    Dirs humanMoveDecision(uint32_t humanX, uint32_t humanY, uint32_t targetX, uint32_t targetY, int i);//nie git
-    void humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, Human &human);//nie git
+    Dirs humanMoveDecision(HumanBase& base);
+    template <typename T, typename Func>
+    void processHumanVector(std::vector<T>& humans, World& world, Func aiLogic)
+    {
+        for (int i = 0; i < humans.size();)
+        {
+            auto& h = humans[i];
+            Dirs dir;
+            XY newPos;
+            bool removed = false;
+
+            if (aiLogic(humans[i], dir, newPos, removed))
+            {
+                continue;
+            }
+
+
+            if (world.isValid(newPos.x, newPos.y) && world.getCell(newPos.x, newPos.y) != TerrainType::Water) {
+                h.moves++;
+                h.pos = { newPos.x, newPos.y };
+            }
+            else {
+                h.points -= (1 + (rand() % 7));
+            }
+            if (h.points <= 0) h.points += 1000;
+            i++;
+        }
+    }
+    void humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, Human& human);
 };
+
+#include "HumanLogic.hpp"

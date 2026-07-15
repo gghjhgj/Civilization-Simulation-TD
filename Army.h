@@ -87,7 +87,7 @@ class Army
     void armyInit();
     int assignDecision();
     void addHumanToArmy(RendererSFML &renderer);
-    void eraseHuman(RendererSFML &renderer, int profession, int id);
+    void eraseHumanFromArmy(RendererSFML &renderer, int profession, int id);
     void addHumansToArmy(World &world, Human &human, Civilization & civilization, RendererSFML &renderer, ArmyProfession profession);
     void giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession);
     Dirs armyMoveDecision(ArmyProfession profession);

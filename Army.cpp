@@ -69,7 +69,7 @@ void Army::addHumanToArmy(RendererSFML &renderer)
     renderer.addProfToBuffer(profession, RendererSFML::Source::armyClass, logicID);
 }
 
-void Army::eraseHuman(RendererSFML &renderer, int profession, int id)
+void Army::eraseHumanFromArmy(RendererSFML &renderer, int profession, int id)
 {
     auto &entry = armyRegistry[profession];
 
@@ -82,17 +82,42 @@ void Army::eraseHuman(RendererSFML &renderer, int profession, int id)
     renderer.eraseProfFromBuffer(profession, RendererSFML::Source::armyClass, id);
 }
 
-void Army::addHumansToArmy(World &world, Human &human, Civilization &civilization,RendererSFML &renderer, ArmyProfession profession)
+void Army::addHumansToArmy(World &world, Human &human, Civilization &civilization, RendererSFML &renderer, ArmyProfession profession)
 {
     int humansAddedToArmy = 0;
-    if(human.humans.empty()) return;
-    for(int i = human.humans.size() - 1; i >= 0 && humansAddedToArmy < Config::maxHumanCountAddedToArmy; i--)
-    {
-        if(human.humans[i].targetBuilding != BuildingType::None) continue;
 
-        human.eraseHuman(world, civilization, i);
-        addHumanToArmy(renderer);
-        humansAddedToArmy++;
+    for (uint32_t i = 0;
+         i < static_cast<uint32_t>(HumanType::COUNT) &&
+         humansAddedToArmy < Config::maxHumanCountAddedToArmy;
+         i++)
+    {
+        HumanType sourceType = static_cast<HumanType>(i);
+
+        if (sourceType == HumanType::Assigned)
+            continue;
+
+        dispatchToVector(sourceType, human, [&](auto& srcVec)
+        {
+            if (srcVec.empty()) return;
+
+            while (humansAddedToArmy < Config::maxHumanCountAddedToArmy &&
+                   !srcVec.empty())
+            {
+                auto& worker = srcVec.back();
+
+                if (worker.targetBuilding != BuildingType::None)
+                {
+                    srcVec.pop_back();
+                    continue;
+                }
+
+                eraseHuman(human, srcVec, srcVec.size() - 1);
+
+                addHumanToArmy(renderer);
+
+                humansAddedToArmy++;
+            }
+        });
     }
 }
 void Army::giveArmyTargetIndex(Monsters &monsters, ArmyProfession profession)

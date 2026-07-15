@@ -1,32 +1,15 @@
 {
     "configurations": [
         {
-            "name": "Windows MinGW",
+            "name": "MINGW64",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE"
-            ],
-            "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
+            "defines": [],
+            "cStandard": "c17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "windows-gcc-x64",
-            "cStandard": "c17",
-            "cppStandard": "gnu++20"
-        },
-        {
-            "name": "Linux WSL GCC",
-            "includePath": [
-                "${workspaceFolder}/**"
-            ],
-            "defines": [
-                "_DEBUG"
-            ],
-            "compilerPath": "/usr/bin/g++",
-            "intelliSenseMode": "linux-gcc-x64",
-            "cStandard": "c17",
-            "cppStandard": "gnu++20"
+            "compilerPath": "C:\\msys64\\mingw64\\bin\\g++.exe"
         }
     ],
     "version": 4

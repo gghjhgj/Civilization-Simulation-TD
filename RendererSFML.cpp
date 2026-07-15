@@ -133,23 +133,18 @@ sf::Color RendererSFML::getColor(World& world, uint32_t x, uint32_t y)
 }
 void RendererSFML::renderHumans(World& world, Human& human)
 {
-    for (auto& h : human.humans)
+    renderEntities(human.foodCollectors, world);
+    renderEntities(human.woodCollectors, world);
+    renderEntities(human.stoneCollectors, world);
+    renderEntities(human.builders, world);
+    renderEntities(human.assigned, world);
+
+    for (auto& dead : human.dead)
     {
-        updateCellPixels(h.oldPos.x, h.oldPos.y, getColor(world, h.oldPos.x, h.oldPos.y));
-        updateCellPixels(h.pos.x, h.pos.y, sf::Color::Black);
-        h.oldPos.x = h.pos.x;
-        h.oldPos.y = h.pos.y;
-    }
-    for (auto& dead : human.deadHumans)
-    {
-        updateCellPixels(
-            dead.oldPos.x,
-            dead.oldPos.y,
-            getColor(world, dead.oldPos.x, dead.oldPos.y)
-        );
+        updateCellPixels(dead.oldPos.x, dead.oldPos.y, getColor(world, dead.oldPos.x, dead.oldPos.y));
     }
 
-    human.deadHumans.clear();
+    human.dead.clear();
 }
 void RendererSFML::render(World& world, Human& human)
 {

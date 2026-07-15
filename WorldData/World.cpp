@@ -24,7 +24,11 @@ void World::writeStatsToTxt(int ticks, int FPS, Civilization& civilization, Huma
         statsFile << "Ilosc kamieni: " << stone.stonesCount << "\n \n";
 
         statsFile << "ilosc ludzi: " << human.humansCount << "\n";
-        statsFile << "ilosc ludzi na mapie: " << human.humans.size() << "\n";
+        statsFile << "ilosc ludzi na mapie: " << human.foodCollectors.size() +
+                                                human.woodCollectors.size() +
+                                                human.stoneCollectors.size() +
+                                                human.builders.size() +
+                                                human.assigned.size() << "\n";
         statsFile << "ilosc ludzi posiadajacych dom: " << human.humansHavingHouseCount << "\n";
         statsFile << "ilosc ludzi w strukturach: " << "\n";
         statsFile << "ilosc ludzi na farmach: " << civilization.realWorkers[FARM] << "\n";
