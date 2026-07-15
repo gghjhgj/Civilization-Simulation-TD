@@ -9,7 +9,10 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}/${fileBasenameNoExtension}.exe",
+                "-I", "${env:VULKAN_SDK}/Include",
+                "-L", "${env:VULKAN_SDK}/Lib",
+                "-lvulkan-1"
             ],
             "options": {
                 "cwd": "C:/msys64/mingw64/bin"

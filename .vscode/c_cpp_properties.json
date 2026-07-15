@@ -3,7 +3,8 @@
         {
             "name": "MINGW64",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${env:VULKAN_SDK}/Include"
             ],
             "defines": [],
             "cStandard": "c17",

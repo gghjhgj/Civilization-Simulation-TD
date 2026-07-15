@@ -14,6 +14,11 @@ void Human::createHuman(World& world, Civilization& civilization)
     dead.reserve(10000);
     uint32_t x = civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE;
     uint32_t y = civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE;
+    for (int i = 0; i < Config::humanCount; i++)
+    {
+        addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
+    }
+    /*
     uint32_t x2;
     uint32_t y2;
 
@@ -36,6 +41,7 @@ void Human::createHuman(World& world, Civilization& civilization)
 
         addHuman(*this, this->foodCollectors, BuildingType::None, x2, y2);
     }
+        */
 }
 
 void Human::humanRespawn(World& world, Civilization& civilization)

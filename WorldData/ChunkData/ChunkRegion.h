@@ -1,12 +1,8 @@
 #pragma once
 
 #include "Chunk.h"
+#include "ChunkRegionConfig.h"
 
-namespace ChunkRegionConfig
-{
-    constexpr uint32_t CHUNK_REGION_SIZE = 4;
-    constexpr uint32_t CHUNKS_COUNT = CHUNK_REGION_SIZE*CHUNK_REGION_SIZE;
-}
 struct ChunkRegion
 {
     Chunk chunks[ChunkRegionConfig::CHUNKS_COUNT];

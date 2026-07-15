@@ -4,10 +4,19 @@ TARGET = app
 CXX = g++
 CLANG = clang++
 
-LIBS = -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc
-CLANG_LIBS = -lsfml-graphics -lsfml-window -lsfml-system
+ifdef VULKAN_SDK
+    VULKAN_DIR = $(subst \,/,$(VULKAN_SDK))
+    VULKAN_INC = -I"$(VULKAN_DIR)/Include"
+    VULKAN_LD  = -L"$(VULKAN_DIR)/Lib" -lvulkan-1
+else
+    VULKAN_INC =
+    VULKAN_LD  = -lvulkan-1
+endif
 
-INCLUDE = -I.
+LIBS = -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc $(VULKAN_LD)
+CLANG_LIBS = -lsfml-graphics -lsfml-window -lsfml-system $(VULKAN_LD)
+
+INCLUDE = -I. $(VULKAN_INC)
 
 COMMON_FLAGS = -march=native -flto -Ofast -funroll-loops -ffast-math
 
@@ -51,7 +60,7 @@ generate: CXXFLAGS = $(COMMON_FLAGS) -fprofile-generate=$(GCC_PROFILE_DIR)
 generate:
 	@mkdir -p $(GCC_PROFILE_DIR)
 	@echo "Generowanie GCC PGO..."
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) glad.c -o $(TARGET).exe $(LIBS)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) -o $(TARGET).exe $(LIBS)
 	@echo ""
 	@echo "Odpal app.exe i wykonaj testy."
 	@echo "Profile zapiszą się w $(GCC_PROFILE_DIR)"
@@ -61,7 +70,7 @@ use: CXXFLAGS = $(COMMON_FLAGS) -fprofile-use=$(GCC_PROFILE_DIR) -fprofile-corre
 
 use:
 	@echo "Używanie GCC PGO..."
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) glad.c -o $(TARGET).exe $(LIBS)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) -o $(TARGET).exe $(LIBS)
 	@echo "Build GCC PGO gotowy."
 
 
@@ -72,7 +81,7 @@ use:
 
 build:
 	@echo "Kompilowanie..."
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) glad.c -o $(TARGET).exe $(LIBS)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) -o $(TARGET).exe $(LIBS)
 
 
 
@@ -86,7 +95,6 @@ clang:
 	$(CLANG) $(CLANG_FLAGS) \
 	$(INCLUDE) \
 	$(SOURCES) \
-	glad.c \
 	-o $(TARGET).exe \
 	$(CLANG_LIBS)
 
@@ -107,7 +115,6 @@ clang-generate:
 	-fprofile-instr-generate=$(CLANG_PROFILE) \
 	$(INCLUDE) \
 	$(SOURCES) \
-	glad.c \
 	-o $(TARGET).exe \
 	$(CLANG_LIBS)
 
@@ -131,7 +138,6 @@ clang-use:
 	-fprofile-instr-use=$(CLANG_PROFDATA) \
 	$(INCLUDE) \
 	$(SOURCES) \
-	glad.c \
 	-o $(TARGET).exe \
 	$(CLANG_LIBS)
 

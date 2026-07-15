@@ -1,7 +1,4 @@
-#include <glad/glad.h>
-
-#include "WorldData/World.h"
-#include "WorldData/WorldGPU.h"
+#include "WorldData/WorldVK.h"
 
 #include "HumansData/Human.h"
 
@@ -27,6 +24,7 @@
 
 int main() {
     std::cout << "START" << std::endl;
+    
     #ifdef _WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
@@ -38,26 +36,18 @@ int main() {
     srand(time(NULL));
 
     World world;
-    WorldGPU worldGPU;
+    WorldVK worldVK;
 
     Food food;
     Tree tree;
     Stone stone;
     Civilization civilization;
     Human human;
-    //Walls walls;
     Army army;
     Monsters monsters;
     CombatSystem combatSystem;
     RendererSFML renderer(Config::WindowSizeX, Config::WindowSizeY, 1);
-    if(!gladLoadGL())
-    {
-        std::cout << "GLAD juz nie" << std::endl;
-    }
-    else
-    {
-        std::cout << "GLAD dziala" << std::endl;
-    }
+    
     world.init(); std::cout << "finisted wordl init" << std::endl;
     world.createOcean(); std::cout << "ocean created" << std::endl;
     world.createLand(); std::cout << "land created" << std::endl;
@@ -74,11 +64,10 @@ int main() {
     world.markAllDirty(); std::cout << "marked all dirty" << std::endl;
     army.armyInit(); std::cout << "army inited" << std::endl;
 
+    worldVK.init();
+    worldVK.uploadWorldGrid(world.grid);
     
-    //worldGPU.init(world.grid);
-    //worldGPU.runShader();
-    //worldGPU.downloadData(world.grid);
-    //worldGPU.printDebugData();
+
     
 
     sf::Clock clock;
