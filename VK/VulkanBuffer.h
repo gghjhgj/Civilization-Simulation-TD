@@ -4,6 +4,8 @@
 
 #include <cstring>
 #include <stdexcept>
+#include <iostream>
+#include <vector>
 
 class VulkanContext;
 
@@ -23,6 +25,21 @@ class VulkanBuffer
               bool mapMemory = false);
 
     void upload(const void* data, VkDeviceSize dataSize);
+
+    void download(void* dest, VkDeviceSize size);
+    template <typename T>
+    void download(std::vector<T>& destinationVector)
+    {
+        VkDeviceSize requestedSize = destinationVector.size() * sizeof(T);
+
+        if(requestedSize > size)
+        {
+            std::cerr << "error: target vector bigger than GPU buffer" << std::endl;
+            return;
+        }
+        download(destinationVector.data(), requestedSize);
+    }
+
     void destroy(VkDevice device);
 
     void initStorage(const VulkanContext& context, VkDeviceSize size, bool mapMemory = true)

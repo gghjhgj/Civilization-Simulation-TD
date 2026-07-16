@@ -10,6 +10,7 @@ WorldVK::~WorldVK()
     std::cout << "destroying WorldVK..." << std::endl;
 
     worldStorageBuffer.destroy(vkContext.device);
+    terrainGeneratorPipeline.destroy(vkContext.device);
     vkContext.destroy();
 
     std::cout << "WorldVK destroyed" << std::endl;
@@ -20,9 +21,36 @@ void WorldVK::init()
     std::cout << "initializing WorldVK..." << std::endl;
 
     vkContext.init();
-    worldStorageBuffer.initStorage(vkContext, 10 * 1024 * 1024);
-    
+
+    uint32_t totalRegions = WORLD_REGIONS_X * WORLD_REGIONS_Y;
+    uint32_t bufferSize = totalRegions * sizeof(ChunkRegion);
+
+    worldStorageBuffer.initStorage(vkContext, bufferSize);
+    terrainGeneratorPipeline.init(
+        vkContext, 
+        "shaders/terrain_gen.spv", 
+        sizeof(WorldConfigPushConstant),
+        ChunkRegionConfig::CHUNKS_COUNT
+        );
     std::cout << "WorldVK inited" << std::endl;
+}
+
+void WorldVK::debugCheck()
+{
+    std::cout << "DEBUG CHECK ON" << std::endl;
+
+    WorldConfigPushConstant config;
+
+    terrainGeneratorPipeline.bindBuffer(vkContext, worldStorageBuffer);
+    terrainGeneratorPipeline.dispatch(
+        vkContext, 
+        WORLD_REGIONS_X, 
+        WORLD_REGIONS_Y,
+        1,
+        &config,
+        sizeof(config)
+    );
+    vkQueueWaitIdle(vkContext.computeQueue);//tego nie chcemy
 }
 
 void WorldVK::uploadWorldGrid(const ChunkRegion* gridData)
@@ -31,4 +59,12 @@ void WorldVK::uploadWorldGrid(const ChunkRegion* gridData)
     worldStorageBuffer.upload(gridData, dataSize);
 
     std::cout << "world grid sent to GPU. SIZE: " << dataSize << " bytes" << std::endl;
+}
+
+void WorldVK::downloadWorldGrid(ChunkRegion* gridData)
+{
+    VkDeviceSize dataSize = WorldConfig::CHUNK_REGIONS_COUNT * sizeof(ChunkRegion);
+    worldStorageBuffer.download(gridData, dataSize);
+
+    std::cout << "world grid downloaded from GPU. SIZE: " << dataSize << " bytes" << std::endl;
 }

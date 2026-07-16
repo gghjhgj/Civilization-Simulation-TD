@@ -66,6 +66,8 @@ int main() {
 
     worldVK.init();
     worldVK.uploadWorldGrid(world.grid);
+    worldVK.debugCheck();
+    worldVK.downloadWorldGrid(world.grid);
     
 
     

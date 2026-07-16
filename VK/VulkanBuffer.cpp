@@ -53,6 +53,17 @@ void VulkanBuffer::upload(const void* data, VkDeviceSize dataSize) {
     std::memcpy(mappedData, data, dataSize);
 }
 
+void VulkanBuffer::download(void* dest, VkDeviceSize size)
+{
+    if(!mappedData)
+    {
+        std::cerr << "error: buffer not mapped" << std::endl;
+        return;
+    }
+    std::memcpy(dest, mappedData, size);
+}
+
+
 void VulkanBuffer::destroy(VkDevice device) {
     if (mappedData != nullptr && device != VK_NULL_HANDLE) {
         vkUnmapMemory(device, memory);

@@ -37,7 +37,7 @@ VkShaderModule VulkanComputePipeline::createShaderModule(VkDevice device, const 
     return module;
 }
 
-void VulkanComputePipeline::init(const VulkanContext& context, const std::string& shaderPath)
+void VulkanComputePipeline::init(const VulkanContext& context, const std::string& shaderPath, uint32_t pushConstantSize, uint32_t workGroupSizeX)
 {
     auto shaderCode = readFile(shaderPath);
     shaderModule = createShaderModule(context.device, shaderCode);
@@ -58,10 +58,29 @@ void VulkanComputePipeline::init(const VulkanContext& context, const std::string
         throw std::runtime_error("error: couldn't create descriptor set layout");
     }
 
+    VkPushConstantRange pushConstantRange{};
+    if(pushConstantSize > 0)
+    {
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = pushConstantSize;
+    }
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
     pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+
+    if(pushConstantSize > 0)
+    {
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+    }
+    else
+    {
+        pipelineLayoutInfo.pushConstantRangeCount = 0;
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;
+    }
 
     if(vkCreatePipelineLayout(context.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
@@ -75,6 +94,24 @@ void VulkanComputePipeline::init(const VulkanContext& context, const std::string
     pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     pipelineInfo.stage.module = shaderModule;
     pipelineInfo.stage.pName = "main";
+    
+    VkSpecializationMapEntry specMapEntry{};
+    VkSpecializationInfo specInfo{};
+    bool useSpec = (workGroupSizeX > 0);
+
+    if (useSpec)
+    {
+        specMapEntry.constantID = 0;
+        specMapEntry.offset = 0;
+        specMapEntry.size = sizeof(uint32_t);
+
+        specInfo.mapEntryCount = 1;
+        specInfo.pMapEntries = &specMapEntry;
+        specInfo.dataSize = sizeof(uint32_t);
+        specInfo.pData = &workGroupSizeX; 
+
+        pipelineInfo.stage.pSpecializationInfo = &specInfo;
+    }
 
     if(vkCreateComputePipelines(context.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
     {
@@ -127,7 +164,13 @@ void VulkanComputePipeline::bindBuffer(const VulkanContext& context, const Vulka
     vkUpdateDescriptorSets(context.device, 1, &descriptorWrite, 0, nullptr);
 }
 
-void VulkanComputePipeline::dispatch(const VulkanContext& context, uint32_t groupCountX, uint32_t groupCountY = 1, uint32_t groupCountZ = 1)
+void VulkanComputePipeline::dispatch(
+    const VulkanContext& context, 
+    uint32_t groupCountX, 
+    uint32_t groupCountY, 
+    uint32_t groupCountZ,
+    const void* pushConstantData,
+    uint32_t pushConstantSize)
 {
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -156,6 +199,19 @@ void VulkanComputePipeline::dispatch(const VulkanContext& context, uint32_t grou
     vkBeginCommandBuffer(commandBuffer, &beginInfo);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+
+    if(pushConstantData && pushConstantSize > 0)
+    {
+        vkCmdPushConstants(
+            commandBuffer,
+            pipelineLayout,
+            VK_SHADER_STAGE_COMPUTE_BIT,
+            0,
+            pushConstantSize,
+            pushConstantData
+        );
+    }
+
     vkCmdDispatch(commandBuffer, groupCountX, groupCountY, groupCountZ);
     vkEndCommandBuffer(commandBuffer);
 
