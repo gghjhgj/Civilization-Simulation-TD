@@ -9,26 +9,27 @@ WorldVK::~WorldVK()
 {
     std::cout << "destroying WorldVK..." << std::endl;
 
-    worldStorageBuffer.destroy(vkContext.device);
-    terrainGeneratorPipeline.destroy(vkContext.device);
-    vkContext.destroy();
+   if (vkContext) 
+    {
+        worldStorageBuffer.destroy(vkContext->device);
+        terrainGeneratorPipeline.destroy(vkContext->device);
+    }
 
     std::cout << "WorldVK destroyed" << std::endl;
 }
 
-void WorldVK::init()
+void WorldVK::init(VulkanContext &context)
 {
     std::cout << "initializing WorldVK..." << std::endl;
 
-    vkContext.init();
-
+    vkContext = &context;
     uint32_t totalRegions = WORLD_REGIONS_X * WORLD_REGIONS_Y;
     uint32_t bufferSize = totalRegions * sizeof(ChunkRegion);
 
-    worldStorageBuffer.initStorage(vkContext, bufferSize);
+    worldStorageBuffer.initStorage(*vkContext, bufferSize);
     terrainGeneratorPipeline.init(
-        vkContext, 
-        "shaders/terrain_gen.spv", 
+        *vkContext, 
+        "shaders/world/terrain_gen.spv", 
         sizeof(WorldConfigPushConstant),
         ChunkRegionConfig::CHUNKS_COUNT
         );
@@ -41,16 +42,16 @@ void WorldVK::debugCheck()
 
     WorldConfigPushConstant config;
 
-    terrainGeneratorPipeline.bindBuffer(vkContext, worldStorageBuffer);
+    terrainGeneratorPipeline.bindBuffer(*vkContext, worldStorageBuffer);
     terrainGeneratorPipeline.dispatch(
-        vkContext, 
+        *vkContext, 
         WORLD_REGIONS_X, 
         WORLD_REGIONS_Y,
         1,
         &config,
         sizeof(config)
     );
-    vkQueueWaitIdle(vkContext.computeQueue);//tego nie chcemy
+    vkQueueWaitIdle(vkContext->computeQueue);//tego nie chcemy
 }
 
 void WorldVK::uploadWorldGrid(const ChunkRegion* gridData)

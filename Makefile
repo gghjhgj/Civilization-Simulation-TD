@@ -5,9 +5,8 @@ CXX = g++
 CLANG = clang++
 
 GLSLC = glslc
-SHADER_SOURCES := $(wildcard *.glsl) $(wildcard shaders/*.glsl)
+SHADER_SOURCES := $(shell find . -maxdepth 1 -name "*.glsl") $(shell find shaders -name "*.glsl" 2>/dev/null)
 SHADER_OBJECTS = $(SHADER_SOURCES:.glsl=.spv)
-
 ifdef VULKAN_SDK
     VULKAN_DIR = $(subst \,/,$(VULKAN_SDK))
     VULKAN_INC = -I"$(VULKAN_DIR)/Include"
@@ -111,5 +110,5 @@ clean:
 	rm -f $(TARGET).exe
 	rm -rf profiles
 	rm -f *.pdb
-	rm -f $(SHADER_OBJECTS)
+	find . -name "*.spv" -delete
 	@echo "Czyszczenie zakończone."

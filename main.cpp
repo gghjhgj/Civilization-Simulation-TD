@@ -1,5 +1,6 @@
 #include "WorldData/WorldVK.h"
-
+#include "HumansData/HumanVK.h"
+#include "VK/VulkanContext.h"
 #include "HumansData/Human.h"
 
 
@@ -16,6 +17,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <filesystem>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -24,7 +26,8 @@
 
 int main() {
     std::cout << "START" << std::endl;
-    
+    std::cout << "Aktualna sciezka robocza: " << std::filesystem::current_path() << std::endl;
+    std::cout << "Czy widze folder 'shaders': " << (std::filesystem::exists("shaders") ? "TAK" : "NIE") << std::endl;
     #ifdef _WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
@@ -35,9 +38,14 @@ int main() {
     std::cin.tie(NULL);
     srand(time(NULL));
 
-    World world;
-    WorldVK worldVK;
+    VulkanContext vkContext;
+    vkContext.init();
 
+    WorldVK worldVK;
+    HumanVK humanVK;
+
+
+    World world;
     Food food;
     Tree tree;
     Stone stone;
@@ -64,7 +72,11 @@ int main() {
     world.markAllDirty(); std::cout << "marked all dirty" << std::endl;
     army.armyInit(); std::cout << "army inited" << std::endl;
 
-    worldVK.init();
+    worldVK.init(vkContext);
+    humanVK.init(vkContext);
+
+
+
     worldVK.uploadWorldGrid(world.grid);
     worldVK.debugCheck();
     worldVK.downloadWorldGrid(world.grid);
@@ -172,6 +184,9 @@ while (renderer.isOpen())
     */
     world.allTicksCount++;
 }
+
+vkContext.destroy();
+
 return 0;
 }
 /*

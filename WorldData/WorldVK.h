@@ -23,7 +23,7 @@ class WorldVK
     WorldVK();
     ~WorldVK();
 
-    void init();
+    void init(VulkanContext& context);
     void debugCheck();
     void uploadWorldGrid(const ChunkRegion* gridData);
     void downloadWorldGrid(ChunkRegion* gridData);
@@ -39,7 +39,7 @@ class WorldVK
 
     private:
 
-    VulkanContext vkContext;
+    VulkanContext* vkContext = nullptr;
     VulkanBuffer worldStorageBuffer;
     VulkanComputePipeline terrainGeneratorPipeline;
 
