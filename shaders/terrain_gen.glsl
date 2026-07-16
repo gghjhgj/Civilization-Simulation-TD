@@ -31,15 +31,95 @@ void main() {
     {
         return;
     }
+
     uint rx = gl_WorkGroupID.x;
     uint ry = gl_WorkGroupID.y;
     uint regionIndex = (ry * config.worldRegionsX) + rx;
     uint globalChunkIndex = (regionIndex * config.chunksCount) + chunkIndex;
-
+    //uint chunkData = globalChunks[globalChunkIndex];
     uint chunkData = 0;
-
-    for(uint i = 0; i < 9; i++) {
-        setCell(chunkData, i, 4);
+    switch(chunkIndex)
+    { //1 sand //mtws 3
+        case 1:
+        {
+            setCell(chunkData, 8, 3);
+            break;
+        }
+        case 2:
+        {
+            setCell(chunkData, 6, 3);
+            break;
+        }
+        case 5:
+        {
+            setCell(chunkData, 1, 3);
+            setCell(chunkData, 2, 3);
+            setCell(chunkData, 4, 3);
+            setCell(chunkData, 5, 3);
+            setCell(chunkData, 7, 1);
+            setCell(chunkData, 8, 1);
+            break;
+        }
+        case 6:
+        {
+            setCell(chunkData, 0, 3);
+            setCell(chunkData, 1, 3);
+            setCell(chunkData, 3, 3);
+            setCell(chunkData, 4, 3);
+            setCell(chunkData, 6, 1);
+            setCell(chunkData, 7, 1);
+            break;
+        }
+        case 8:
+        {
+            setCell(chunkData, 8, 1);
+            break;
+        }
+        case 9:
+        {
+            for(int i = 1; i < 9; i++)
+            {
+                setCell(chunkData, i, 1);
+            }
+            break;
+        }
+        case 10:
+        {
+            setCell(chunkData, 0, 1);
+            setCell(chunkData, 1, 1);
+            setCell(chunkData, 3, 1);
+            setCell(chunkData, 4, 1);
+            for(int i = 6; i < 9; i++)
+            {
+                setCell(chunkData, i, 1);
+            }
+            break;
+        }
+        case 12:
+        {
+            for(int i = 2; i <= 5; i+=3)
+            {
+                setCell(chunkData, i, 1);
+            }
+            break;
+        }
+        case 13:
+        {
+            for(int i = 0; i < 7; i++)
+            {
+                setCell(chunkData, i, 1);
+            }
+            break;
+        }
+        case 14:
+        {
+            for(int i = 0; i < 9; i++)
+            {
+                setCell(chunkData, i, 1);
+            }
+            break;
+        }
+        default: break;
     }
     globalChunks[globalChunkIndex] = chunkData;
 }

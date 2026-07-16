@@ -36,6 +36,9 @@ CLANG_PROFDATA = profiles/clang/app.profdata
 	@echo "Kompilacja shadera Compute: $< -> $@"
 	$(GLSLC) -fshader-stage=compute $< -o $@
 
+shader: $(SHADER_OBJECTS)
+	@echo "Shadery skompilowane."
+
 release: CXXFLAGS = $(COMMON_FLAGS)
 release: $(SHADER_OBJECTS) build
 	@echo "Build RELEASE gotowy."
