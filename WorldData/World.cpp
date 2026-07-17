@@ -364,14 +364,14 @@ bool World::hasBuilding(uint32_t chunkX, uint32_t chunkY)
     return getBuilding(chunkX, chunkY) != BuildingType::None;
 }
 
-World::XY World::getCellInChunk(uint32_t chunkX, uint32_t chunkY)
+XY World::getCellInChunk(uint32_t chunkX, uint32_t chunkY)
 {
     uint32_t x = chunkX * ChunkConfig::CHUNK_SIZE;
     uint32_t y = chunkY * ChunkConfig::CHUNK_SIZE;
     return {x, y};
 }
 
-std::vector<World::XY> World::getCellsInChunk(uint32_t chunkX, uint32_t chunkY)
+std::vector<XY> World::getCellsInChunk(uint32_t chunkX, uint32_t chunkY)
 {
     std::vector<XY> cells;
     cells.reserve(ChunkConfig::CELL_COUNT);

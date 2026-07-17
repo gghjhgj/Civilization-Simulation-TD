@@ -11,6 +11,7 @@
 
 #include "WorldConfig.h"
 #include "ChunkData/ChunkRegion.h"
+#include "HumansData/XY.h"
 
 class Food;
 class Tree;
@@ -24,11 +25,7 @@ class World
 {
 public:
     int allTicksCount = 0;
-    struct XY
-    {
-        uint32_t x;
-        uint32_t y;
-    };
+    
 
 
     ChunkRegion grid[WorldConfig::CHUNK_REGIONS_COUNT];

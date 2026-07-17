@@ -31,7 +31,8 @@ void WorldVK::init(VulkanContext &context)
         *vkContext, 
         "shaders/world/terrain_gen.spv", 
         sizeof(WorldConfigPushConstant),
-        ChunkRegionConfig::CHUNKS_COUNT
+        ChunkRegionConfig::CHUNKS_COUNT,
+        1
         );
     std::cout << "WorldVK inited" << std::endl;
 }
@@ -42,7 +43,7 @@ void WorldVK::debugCheck()
 
     WorldConfigPushConstant config;
 
-    terrainGeneratorPipeline.bindBuffer(*vkContext, worldStorageBuffer);
+    terrainGeneratorPipeline.bindBuffers(*vkContext, {worldStorageBuffer});
     terrainGeneratorPipeline.dispatch(
         *vkContext, 
         WORLD_REGIONS_X, 

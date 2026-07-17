@@ -22,10 +22,11 @@ struct HumanBase
     XY pos;
     XY oldPos;
     XY targetPos = { UINT32_MAX, UINT32_MAX };
-    uint8_t points = 100;
     BuildingType targetBuilding;
+    uint8_t points = 100;
     uint8_t moves = 0;
-    uint16_t padding;
+    uint8_t dead = 0;
+    uint8_t padding = 0;
 };
 
 /*

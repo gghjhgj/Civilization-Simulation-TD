@@ -73,14 +73,19 @@ int main() {
     army.armyInit(); std::cout << "army inited" << std::endl;
 
     worldVK.init(vkContext);
-    humanVK.init(vkContext);
+    StatsManager statsManager;
+    DirtyCellsManager dirtyManager;
+    statsManager.init(vkContext);
+    dirtyManager.init(vkContext);
+    humanVK.init(vkContext, worldVK.worldStorageBuffer, statsManager.statsBuffer, dirtyManager.dirtyBuffer);
 
 
 
     worldVK.uploadWorldGrid(world.grid);
-    worldVK.debugCheck();
-    worldVK.downloadWorldGrid(world.grid);
-    
+    //worldVK.debugCheck();
+    //worldVK.downloadWorldGrid(world.grid);
+
+    humanVK.uploadAll(human);    
 
     
 
@@ -143,7 +148,11 @@ while (renderer.isOpen())
     food.foodRespawn(world); 
     stone.stoneRespawn(world);
     tree.treeRespawn(world);
-    human.humanMove(world, civilization, food, tree, stone, human);
+
+    //human.humanMove(world, civilization, food, tree, stone, human);
+    humanVK.dispatchAll(human, worldVK.worldStorageBuffer);
+    vkQueueWaitIdle(vkContext.computeQueue);
+    statsManager.deltaStats(vkContext, food, stone, tree, civilization);
     army.armyController(monsters, renderer);
     monsters.monstersController(army, renderer);
     for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
@@ -168,9 +177,14 @@ while (renderer.isOpen())
     int leaderX = (mainIndex % Config::sizeX) * 1;
     int leaderY = (mainIndex / Config::sizeX) * 1;
 
+        humanVK.downloadAll(human);
+        worldVK.downloadWorldGrid(world.grid);
         renderer.begin(); 
+        dirtyManager.sync(vkContext, world.dirtyCells);
         renderer.render(world, human);
         renderer.end();
+        worldVK.uploadWorldGrid(world.grid);
+        humanVK.uploadAll(human);
 
         framesCount++;
     }

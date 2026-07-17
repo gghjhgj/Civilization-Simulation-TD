@@ -20,8 +20,19 @@ class VulkanComputePipeline
     VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     VkShaderModule shaderModule = VK_NULL_HANDLE;
 
-    void init(const VulkanContext& context, const std::string& shaderPath, uint32_t pushConstantSize, uint32_t workGroupSizeX = 0);
-    void bindBuffer(const VulkanContext& context, const VulkanBuffer& buffer);
+    void init(
+        const VulkanContext& context, 
+        const std::string& shaderPath, 
+        uint32_t pushConstantSize, 
+        uint32_t workGroupSizeX = 0, 
+        uint32_t bindingCount = 1
+    );
+
+    void bindBuffers(
+        const VulkanContext& context, 
+        const std::vector<VulkanBuffer>& buffers
+    );
+
     void dispatch(
         const VulkanContext& context, 
         uint32_t groupCountX, 
@@ -30,11 +41,13 @@ class VulkanComputePipeline
         const void* pushConstantData = nullptr,
         uint32_t pushConstantSize = 0
     );
+    
     void destroy(VkDevice device);
 
 
     private:
-
+    VkCommandPool commandPool = VK_NULL_HANDLE;
+    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
     std::vector<char> readFile(const std::string& filename);
     VkShaderModule createShaderModule(VkDevice device, const std::vector<char>& code);
 };

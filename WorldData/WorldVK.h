@@ -4,6 +4,8 @@
 #include "VK/VulkanBuffer.h"
 #include "VK/VulkanComputePipeline.h"
 
+#include "Humansdata/StatsManager/StatsManagerVK.h"
+
 #include "ChunkData/ChunkRegionConfig.h"
 #include "World.h"
 
@@ -36,11 +38,11 @@ class WorldVK
     const uint32_t WORLD_REGIONS_X = WorldConfig::CHUNK_REGIONS_X;
     const uint32_t WORLD_REGIONS_Y = WorldConfig::CHUNK_REGIONS_Y;
     const uint32_t WORLD_REGIONS_COUNT = WorldConfig::CHUNK_REGIONS_COUNT;
+    VulkanBuffer worldStorageBuffer;
 
     private:
 
     VulkanContext* vkContext = nullptr;
-    VulkanBuffer worldStorageBuffer;
     VulkanComputePipeline terrainGeneratorPipeline;
 
 };
