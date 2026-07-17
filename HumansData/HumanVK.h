@@ -21,18 +21,18 @@ class HumanVK
 
     void init(VulkanContext& context);
 
-    void uploadFoodCollectors(const std::vector<CollectorHuman>& foodCollectors);
-    void uploadWoodCollectors(const std::vector<CollectorHuman>& woodCollectors);
-    void uploadStoneCollectors(const std::vector<CollectorHuman>& stoneCollectors);
-    void uploadBuilders(const std::vector<HumanBuilder>& builders);
-    void uploadAssigned(const std::vector<HumanAssigned>& assigned);
+    void uploadFoodCollectors(const std::vector<HumanBase>& foodCollectors);
+    void uploadWoodCollectors(const std::vector<HumanBase>& woodCollectors);
+    void uploadStoneCollectors(const std::vector<HumanBase>& stoneCollectors);
+    void uploadBuilders(const std::vector<HumanBase>& builders);
+    void uploadAssigned(const std::vector<HumanBase>& assigned);
     void uploadDead(const std::vector<DeadHuman>& dead);
 
-    void downloadFoodCollectors(std::vector<CollectorHuman>& foodCollectors);
-    void downloadWoodCollectors(std::vector<CollectorHuman>& woodCollectors);
-    void downloadStoneCollectors(std::vector<CollectorHuman>& stoneCollectors);
-    void downloadBuilders(std::vector<HumanBuilder>& builders);
-    void downloadAssigned(std::vector<HumanAssigned>& assigned);
+    void downloadFoodCollectors(std::vector<HumanBase>& foodCollectors);
+    void downloadWoodCollectors(std::vector<HumanBase>& woodCollectors);
+    void downloadStoneCollectors(std::vector<HumanBase>& stoneCollectors);
+    void downloadBuilders(std::vector<HumanBase>& builders);
+    void downloadAssigned(std::vector<HumanBase>& assigned);
     void downloadDead(std::vector<DeadHuman>& dead);
 
     private:

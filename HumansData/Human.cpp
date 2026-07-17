@@ -18,30 +18,6 @@ void Human::createHuman(World& world, Civilization& civilization)
     {
         addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
     }
-    /*
-    uint32_t x2;
-    uint32_t y2;
-
-    int maxRange = (Config::sizeX > Config::sizeY) ? Config::sizeX : Config::sizeY;
-
-    for (int i = 0; i < Config::humanCount; i++)
-    {
-        int r = i + 1;
-        if (r > maxRange) r = maxRange;
-
-        do
-        {
-            int dx = (rand() % (2 * r + 1)) - r;
-            int dy = (rand() % (2 * r + 1)) - r;
-
-            x2 = x + dx;
-            y2 = y + dy;
-        } while (!world.isValid(x2, y2) ||
-            world.getCell(x2, y2) != TerrainType::Land);
-
-        addHuman(*this, this->foodCollectors, BuildingType::None, x2, y2);
-    }
-        */
 }
 
 void Human::humanRespawn(World& world, Civilization& civilization)

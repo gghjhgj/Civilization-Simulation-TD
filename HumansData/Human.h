@@ -28,11 +28,11 @@ public:
         construction
     };
 
-    std::vector<CollectorHuman> foodCollectors;
-    std::vector<CollectorHuman> woodCollectors;
-    std::vector<CollectorHuman> stoneCollectors;
-    std::vector<HumanBuilder> builders;
-    std::vector<HumanAssigned> assigned;
+    std::vector<HumanBase> foodCollectors;
+    std::vector<HumanBase> woodCollectors;
+    std::vector<HumanBase> stoneCollectors;
+    std::vector<HumanBase> builders;
+    std::vector<HumanBase> assigned;
     std::vector<DeadHuman> dead;
 
 

@@ -6,17 +6,17 @@
 #include <cstdint>
 class Human;
 
-template <typename T>
-void addHuman(Human &human, std::vector<T>& vec, typename T::DataType data, uint32_t x, uint32_t y)
+inline void addHuman(Human &human, std::vector<HumanBase>& vec, BuildingType data, uint32_t x, uint32_t y)
 {
-    T h{};
+    HumanBase h{};
 
     h.pos = {x, y};
     h.oldPos = {x, y};
     h.targetPos = {UINT32_MAX, UINT32_MAX};
     h.points = 100;
     h.moves = 0;
-    h.targetBuilding = BuildingType::None;
+    h.targetBuilding = data; 
+    h.padding = 0;
 
     vec.push_back(h);
     human.humansCount++;
@@ -33,34 +33,30 @@ void eraseHuman(Human &human, std::vector<T>& vec, int id)
     vec.pop_back();
 }
 
-template <typename FromType, typename ToType>
-void switchProf(Human &human, std::vector<FromType>& fromVec, int id, std::vector<ToType>& toVec, typename ToType::DataType newData)
+inline void switchProf(Human &human, std::vector<HumanBase>& fromVec, int id, std::vector<HumanBase>& toVec, BuildingType newData)
 {
     HumanBase base = fromVec[id];
+    
     if (id < static_cast<int>(fromVec.size()) - 1)
         fromVec[id] = fromVec.back();
-
     fromVec.pop_back();
-    toVec.push_back({ base, newData });
+
+    base.targetBuilding = newData;
+    base.targetPos = { UINT32_MAX, UINT32_MAX };
+
+    toVec.push_back(base);
 }
 
-template <typename FromType, typename ToType>
-void switchProfLast(
-    Human &human,
-    std::vector<FromType>& fromVec,
-    std::vector<ToType>& toVec,
-    typename ToType::DataType newData)
+inline void switchProfLast(Human &human, std::vector<HumanBase>& fromVec, std::vector<HumanBase>& toVec, BuildingType newData)
 {
     if (fromVec.empty()) return;
 
-    ToType temp{};
-
-    static_cast<HumanBase&>(temp) = static_cast<HumanBase&>(fromVec.back());
-
+    HumanBase temp = fromVec.back();
+    
     temp.targetBuilding = newData;
+    temp.targetPos = { UINT32_MAX, UINT32_MAX };
 
     toVec.push_back(temp);
-
     fromVec.pop_back();
 }
 

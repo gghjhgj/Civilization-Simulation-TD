@@ -23,10 +23,12 @@ struct HumanBase
     XY oldPos;
     XY targetPos = { UINT32_MAX, UINT32_MAX };
     uint8_t points = 100;
+    BuildingType targetBuilding;
     uint8_t moves = 0;
     uint16_t padding;
 };
 
+/*
 struct CollectorHuman : public HumanBase
 {
     using DataType = BuildingType;
@@ -44,7 +46,7 @@ struct HumanAssigned : public HumanBase
     using DataType = BuildingType;
     BuildingType targetBuilding;
 };
-
+*/
 struct DeadHuman
 {
     XY oldPos;

@@ -37,11 +37,11 @@ void HumanVK::init(VulkanContext &context)
 
     vkContext = &context;
 
-    foodCollectorsBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(CollectorHuman));
-    woodCollectorsBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(CollectorHuman));
-    stoneCollectorsBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(CollectorHuman));
-    buildersBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(HumanBuilder));
-    assignedBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(HumanAssigned));
+    foodCollectorsBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(HumanBase));
+    woodCollectorsBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(HumanBase));
+    stoneCollectorsBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(HumanBase));
+    buildersBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(HumanBase));
+    assignedBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(HumanBase));
     deadBuf.initStorage(*vkContext, MAX_HUMANS_CAPACITY * sizeof(DeadHuman));
 
     // Pipeline'y shaderów
