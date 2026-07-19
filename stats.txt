@@ -1,0 +1,40 @@
+=== STATYSTYKI SYMULACJI ===
+Ticks per second 14854
+FPS: 30
+Total Ticks: 2810202
+
+Ilosc jedzenia: 113208
+Ilosc drzew: 150000
+Ilosc kamieni: 5000
+ 
+ilosc ludzi: 16340
+ilosc ludzi na mapie: 2514
+ilosc ludzi posiadajacych dom: 16340
+ilosc ludzi w strukturach: 
+ilosc ludzi na farmach: 3128
+ilosc ludzi w tartakach: 4670
+ilosc ludzi w kopalniach 421
+
+zasoby:
+jedzenie: 391965
+drewno: 18390
+kamienie: 2707
+
+budynki:
+domy w budowie: 0
+farmy w budowie: 0
+tartaki w budowie: 0
+kopalnie w budowie: 0
+domy 3268
+farmy 327
+tartaki 63
+kopalnie 2
+armia:
+ilosc ludzi w armii: 814
+ilosc zolnierzy: 217
+ilosc lucznikow: 597
+
+potwory:
+ilosc potworow lacznie: 0
+ilosc zwyklych potworow: 0
+ilosc gigantow: 0
