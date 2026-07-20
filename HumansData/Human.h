@@ -77,6 +77,7 @@ void processHumanVector(std::vector<T>& humans, World& world, RendererSFML &rend
         tbb::blocked_range<size_t>(0, humans.size(), 256),
         [&](const tbb::blocked_range<size_t>& range)
         {
+            int threadID = tbb::this_task_arena::current_thread_index();
             for (size_t i = range.begin(); i < range.end(); i++)
             {
                 auto& h = humans[i];
@@ -85,7 +86,7 @@ void processHumanVector(std::vector<T>& humans, World& world, RendererSFML &rend
                 XY newPos;
                 bool removed = false;
 
-                if (aiLogic(h, dir, newPos, removed))
+                if (aiLogic(h, dir, newPos, removed, threadID))
                 {
                     continue;
                 }

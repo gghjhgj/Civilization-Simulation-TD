@@ -7,4 +7,10 @@ struct DirtyCells
 {
     XY coords;
     sf::Color color;
+
+     DirtyCells(uint32_t x, uint32_t y, sf::Color c)
+        :
+        coords{x,y},
+        color(c)
+    {}
 };

@@ -16,7 +16,10 @@ public:
     Monsters* monsters;
     float time = 0;
     RendererSFML(int w, int h, int cellSize);
+
     std::vector<DirtyCells> dirtyCells;
+    std::vector<std::vector<DirtyCells>> dirtyBuffers;
+
     enum Source
     {
         armyClass,
@@ -44,8 +47,34 @@ public:
     void end();
 
     sf::Color getColor(World& world, uint32_t x, uint32_t y);
-    void addToDirtyCells(World &world, uint32_t x, uint32_t y, sf::Color color);
-    void addChunkToDirtyCells(World &world, uint32_t chunkX, uint32_t chunkY, sf::Color color);
+
+    void addToDirtyBuffer(
+        World &world, 
+        uint32_t x, uint32_t y, 
+        sf::Color color, 
+        int threadID
+    );
+
+    void addChunkToDirtyBuffer(
+        World &world, 
+        uint32_t chunkX, uint32_t chunkY, 
+        sf::Color color, 
+        int threadID
+    );
+    void addToDirtyCells(
+        World &world, 
+        uint32_t x, uint32_t y, 
+        sf::Color color
+    );
+
+    void addChunkToDirtyCells(
+        World &world, 
+        uint32_t chunkX, uint32_t chunkY, 
+        sf::Color color
+    );
+
+    void mergeDirtyBuffersToDirtyCells();
+
 
 private:
     struct ArmyLayer

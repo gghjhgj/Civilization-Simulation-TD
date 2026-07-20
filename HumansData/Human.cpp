@@ -2,6 +2,7 @@
 
 #include "WorldData/World.h"
 #include <tbb/parallel_invoke.h>
+#include <tbb/task_arena.h>
 #include "Civilization.h"
 
 void Human::createHuman(World& world, Civilization& civilization)
@@ -148,7 +149,7 @@ Human::Dirs Human::humanMoveDecision(HumanBase& base)
 }
 void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, RendererSFML &renderer)
 {
-    processHumanVector(foodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    processHumanVector(foodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
             h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithFood);
@@ -165,7 +166,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 civilization.resources.food++;
 
                 world.setCell(newPos.x, newPos.y, TerrainType::Land);
-                renderer.addToDirtyCells(world, newPos.x, newPos.y, sf::Color::Green);
+                renderer.addToDirtyBuffer(world, newPos.x, newPos.y, sf::Color::Green, threadID);
             }
         }
 
@@ -173,7 +174,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
     });
 
 
-    processHumanVector(woodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    processHumanVector(woodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
             h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithTree);
@@ -190,7 +191,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 civilization.resources.wood++;
 
                 world.setCell(newPos.x, newPos.y, TerrainType::Land);
-                renderer.addToDirtyCells(world, newPos.x, newPos.y, sf::Color::Green);
+                renderer.addToDirtyBuffer(world, newPos.x, newPos.y, sf::Color::Green, threadID);
             }
         }
 
@@ -198,7 +199,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
     });
 
 
-    processHumanVector(stoneCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    processHumanVector(stoneCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
             h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::MountainWithStone);
@@ -215,7 +216,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 civilization.resources.stone++;
 
                 world.setCell(newPos.x, newPos.y, TerrainType::Mountain);
-                renderer.addToDirtyCells(world, newPos.x, newPos.y, sf::Color::White);
+                renderer.addToDirtyBuffer(world, newPos.x, newPos.y, sf::Color::White, threadID);
             }
         }
 
@@ -223,7 +224,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
     });
 
 
-    processHumanVector(builders, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    processHumanVector(builders, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
             h.targetPos = humanFindFlagChunk(world, h.pos.x, h.pos.y, ChunkFlag::Construction);
@@ -260,7 +261,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
     });
 
 
-    processHumanVector(assigned, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    processHumanVector(assigned, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
         {

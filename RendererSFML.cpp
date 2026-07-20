@@ -27,6 +27,14 @@ RendererSFML::RendererSFML(int w, int h, int cellSize)
     setArmyColors();
 
     dirtyCells.reserve(2000000);
+    int threads = tbb::this_task_arena::max_concurrency();
+
+dirtyBuffers.resize(threads);
+
+for(auto& buffer : dirtyBuffers)
+{
+    buffer.reserve(200000);
+}
 
     int maxSize = Config::maxUnits;
     for (int i = 0; i < RendererSFML::Profs::COUNT; i++)
@@ -177,6 +185,7 @@ void RendererSFML::updateHumanLayer(Human& human)
 }
 void RendererSFML::updateWorldLayer()
 {
+    mergeDirtyBuffersToDirtyCells();
     for (auto& cell : dirtyCells)
     {
         updateCellPixels(
@@ -334,6 +343,23 @@ void RendererSFML::end()
     window.display();
 }
 
+void RendererSFML::addChunkToDirtyBuffer(World &world, uint32_t chunkX, uint32_t chunkY, sf::Color color, int threadID)
+{
+    auto cells = world.getCellsInChunk(chunkX, chunkY);
+    for(auto &cell : cells)
+    {
+        addToDirtyBuffer(world, cell.x, cell.y, color, threadID);
+    }
+}
+
+void RendererSFML::addToDirtyBuffer(World &world, uint32_t x, uint32_t y, sf::Color color, int threadID)
+{
+    if(world.isValid(x,y))
+    {
+        dirtyBuffers[threadID].emplace_back(x,y,color);
+    }
+}
+
 void RendererSFML::addChunkToDirtyCells(World &world, uint32_t chunkX, uint32_t chunkY, sf::Color color)
 {
     auto cells = world.getCellsInChunk(chunkX, chunkY);
@@ -343,15 +369,34 @@ void RendererSFML::addChunkToDirtyCells(World &world, uint32_t chunkX, uint32_t 
     }
 }
 
-#include <mutex>
-
-std::mutex dirtyMutex;
-
 void RendererSFML::addToDirtyCells(World &world, uint32_t x, uint32_t y, sf::Color color)
 {
     if(world.isValid(x,y))
     {
-        std::lock_guard<std::mutex> lock(dirtyMutex);
-        dirtyCells.push_back({x,y,color});
+        dirtyCells.emplace_back(x,y,color);
+    }
+}
+
+void RendererSFML::mergeDirtyBuffersToDirtyCells()
+{
+    size_t total = dirtyCells.size();
+
+    for (auto& buffer : dirtyBuffers)
+        total += buffer.size();
+
+    dirtyCells.reserve(total);
+
+    for (auto& buffer : dirtyBuffers)
+    {
+        if (buffer.empty())
+            continue;
+
+        dirtyCells.insert(
+            dirtyCells.end(),
+            buffer.begin(),
+            buffer.end()
+        );
+
+        buffer.clear();
     }
 }
