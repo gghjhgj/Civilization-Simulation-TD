@@ -1,6 +1,8 @@
 #include "RendererSFML.h"
 #include "Army.h"
 #include "Monsters.h"
+#include "WorldData/World.h"
+#include "HumansData/Human.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -16,14 +18,15 @@ RendererSFML::RendererSFML(int w, int h, int cellSize)
 {
     if (!armyShader.loadFromFile("army.vert", sf::Shader::Type::Vertex))
     {
-        #ifdef _WIN32
-MessageBoxA(NULL, "Shader load failed", "Error", MB_OK);
+#ifdef _WIN32
+        MessageBoxA(NULL, "Shader load failed", "Error", MB_OK);
 #else
-std::cerr << "Shader load failed\n";
+        std::cerr << "Shader load failed\n";
 #endif
     }
     setArmyColors();
 
+    dirtyCells.reserve(2000000);
 
     int maxSize = Config::maxUnits;
     for (int i = 0; i < RendererSFML::Profs::COUNT; i++)
@@ -32,6 +35,8 @@ std::cerr << "Shader load failed\n";
         entry.armyVertices.reserve(maxSize);
         entry.armyLayer.create(maxSize);
     }
+    humanLayer.vertices.reserve(1000000);
+    humanLayer.buffer.create(1000000);
 
 }
 bool RendererSFML::isOpen()
@@ -131,29 +136,62 @@ sf::Color RendererSFML::getColor(World& world, uint32_t x, uint32_t y)
         return sf::Color(200, 255, 200);
     }
 }
-void RendererSFML::renderHumans(World& world, Human& human)
+void RendererSFML::updateHumanLayer(Human& human)
 {
-    renderEntities(human.foodCollectors, world);
-    renderEntities(human.woodCollectors, world);
-    renderEntities(human.stoneCollectors, world);
-    renderEntities(human.builders, world);
-    renderEntities(human.assigned, world);
+    humanLayer.vertices.clear();
 
-    for (auto& dead : human.dead)
+    auto add = [&](auto& humans)
+        {
+            for (auto& h : humans)
+            {
+                sf::Vertex v;
+
+                v.position =
+                {
+                    static_cast<float>(h.pos.x * cellSize + cellSize / 2),
+                    static_cast<float>(h.pos.y * cellSize + cellSize / 2)
+                };
+
+                v.color = sf::Color::Black;
+
+                humanLayer.vertices.push_back(v);
+            }
+        };
+
+
+    add(human.foodCollectors);
+    add(human.woodCollectors);
+    add(human.stoneCollectors);
+    add(human.builders);
+    add(human.assigned);
+
+
+    if (!humanLayer.vertices.empty())
     {
-        updateCellPixels(dead.oldPos.x, dead.oldPos.y, getColor(world, dead.oldPos.x, dead.oldPos.y));
+        humanLayer.buffer.update(
+            humanLayer.vertices.data(),
+            humanLayer.vertices.size(),
+            0
+        );
+    }
+}
+void RendererSFML::updateWorldLayer()
+{
+    for (auto& cell : dirtyCells)
+    {
+        updateCellPixels(
+            cell.coords.x,
+            cell.coords.y,
+            cell.color
+        );
     }
 
-    human.dead.clear();
+    dirtyCells.clear();
 }
 void RendererSFML::render(World& world, Human& human)
 {
-    for (auto& cell : world.dirtyCells)
-    {
-        updateCellPixels(cell.x, cell.y, getColor(world, cell.x, cell.y));
-    }
-    renderHumans(world, human);
-    world.dirtyCells.clear();
+    updateWorldLayer();
+    updateHumanLayer(human);
 }
 void RendererSFML::addProfToBuffer(int profession, Source source, int logicID)
 {
@@ -284,6 +322,36 @@ void RendererSFML::end()
         window.draw(layer.armyLayer, 0, layer.armyVertices.size(), states);
 
     }
-
+    window.draw(sprite);
+    if (!humanLayer.vertices.empty())
+    {
+        window.draw(
+            humanLayer.buffer,
+            0,
+            humanLayer.vertices.size()
+        );
+    }
     window.display();
+}
+
+void RendererSFML::addChunkToDirtyCells(World &world, uint32_t chunkX, uint32_t chunkY, sf::Color color)
+{
+    auto cells = world.getCellsInChunk(chunkX, chunkY);
+    for(auto &cell : cells)
+    {
+        addToDirtyCells(world, cell.x, cell.y, color);
+    }
+}
+
+#include <mutex>
+
+std::mutex dirtyMutex;
+
+void RendererSFML::addToDirtyCells(World &world, uint32_t x, uint32_t y, sf::Color color)
+{
+    if(world.isValid(x,y))
+    {
+        std::lock_guard<std::mutex> lock(dirtyMutex);
+        dirtyCells.push_back({x,y,color});
+    }
 }

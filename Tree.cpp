@@ -1,6 +1,6 @@
 #include "Tree.h"
 
-void Tree::createSeed(World& world, int& tr, std::mt19937& rng)
+void Tree::createSeed(World& world, RendererSFML &renderer, int& tr, std::mt19937& rng)
 {
     int seedTries = 0;
 
@@ -12,7 +12,7 @@ void Tree::createSeed(World& world, int& tr, std::mt19937& rng)
         if (world.getCell(x, y) == TerrainType::Land)
         {
             world.setCell(x, y, TerrainType::LandWithTree);
-            world.addToDirtyCells(x, y);
+            renderer.addToDirtyCells(world, x, y, sf::Color(0, 120, 0));
 
             last.x = x;
             last.y = y;
@@ -23,14 +23,14 @@ void Tree::createSeed(World& world, int& tr, std::mt19937& rng)
     }
 }
 
-void Tree::addTree(World& world, uint32_t x, uint32_t y)
+void Tree::addTree(World& world, RendererSFML &renderer, uint32_t x, uint32_t y)
 {
     world.setCell(x, y, TerrainType::LandWithTree);
-    world.addToDirtyCells(x, y);
+    renderer.addToDirtyCells(world, x, y, sf::Color(0, 120, 0));
     treesCount++;
 }
 
-void Tree::createTree(World& world)
+void Tree::createTree(World& world, RendererSFML &renderer)
 {
     std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> distDir(0, 3);
@@ -40,7 +40,7 @@ void Tree::createTree(World& world)
     for (int i = 0; i < Config::forestCount || tr < Config::treeCount; i++)
     {
         int trBefore = tr;
-        createSeed(world, tr, rng);
+        createSeed(world, renderer, tr, rng);
         if (tr == trBefore) continue;
 
         int treesPerForest = Config::treeCount / Config::forestCount;
@@ -80,7 +80,7 @@ void Tree::createTree(World& world)
             } while (!world.isValid(x, y) || world.getCell(x, y) != TerrainType::Land);
             if (k <= maxTreeSpawnTries)
             {
-                addTree(world, x, y);
+                addTree(world, renderer, x, y);
                 last.x = x;
                 last.y = y;
                 tr++;
@@ -88,14 +88,15 @@ void Tree::createTree(World& world)
             else
             {
                 trBefore = tr;
-                createSeed(world, tr, rng);
+                createSeed(world, renderer, tr, rng);
                 if (tr == trBefore) break;
+                treesCount++;
             }
         }
     }
 }
 
-void Tree::treeRespawn(World& world)
+void Tree::treeRespawn(World& world, RendererSFML &renderer)
 {
     std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> distDir(0, 3);
@@ -154,7 +155,7 @@ void Tree::treeRespawn(World& world)
         if (k <= maxTreeSpawnTries)
         {
             world.setCell(x, y, TerrainType::LandWithTree);
-            world.addToDirtyCells(x, y);
+            renderer.addToDirtyCells(world, x, y, sf::Color(0, 120, 0));
             last.x = x;
             last.y = y;
             treesCount++;
@@ -162,7 +163,7 @@ void Tree::treeRespawn(World& world)
         }
         else
         {
-            createSeed(world, treesCount, rng);
+            createSeed(world, renderer, treesCount, rng);
         }
     }
 }

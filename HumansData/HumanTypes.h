@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XY.h"
+#include "../XY/XY.h"
 #include "WorldData/ChunkData/ChunkEnums/TerrainType.h"
 #include "WorldData/ChunkData/ChunkEnums/BuildingType.h"
 
@@ -22,26 +22,8 @@ struct HumanBase
     XY pos;
     XY oldPos;
     XY targetPos = { UINT32_MAX, UINT32_MAX };
-    uint8_t points = 100;
-    uint8_t moves = 0;
-    uint16_t padding;
-};
-
-struct CollectorHuman : public HumanBase
-{
-    using DataType = BuildingType;
-    BuildingType targetBuilding;
-};
-
-struct HumanBuilder : public HumanBase
-{
-    using DataType = BuildingType;
-    BuildingType targetBuilding;
-};
-
-struct HumanAssigned : public HumanBase
-{
-    using DataType = BuildingType;
+    uint16_t points = 100;
+    uint16_t moves = 0;
     BuildingType targetBuilding;
 };
 

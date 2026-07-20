@@ -1,0 +1,51 @@
+--- Process 17000 created
+--- Process 17000 loaded C:\Windows\System32\ntdll.dll at 00007ff85afe0000
+--- Process 17000 loaded C:\Windows\System32\kernel32.dll at 00007ff85a030000
+--- Process 17000 loaded C:\Windows\System32\KernelBase.dll at 00007ff858780000
+--- Process 17000 thread 21020 created
+--- Process 17000 loaded C:\Windows\System32\msvcrt.dll at 00007ff85a370000
+--- Process 17000 thread 9968 created
+--- Process 17000 thread 7404 created
+--- Process 17000 loaded C:\Windows\System32\user32.dll at 00007ff85a900000
+--- Process 17000 loaded C:\Windows\System32\win32u.dll at 00007ff858610000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\libgcc_s_seh-1.dll at 00007ff852c70000
+--- Process 17000 loaded C:\Windows\System32\gdi32.dll at 00007ff85a000000
+--- Process 17000 loaded C:\Windows\System32\gdi32full.dll at 00007ff8584e0000
+--- Process 17000 loaded C:\msys64\mingw64\bin\libsfml-graphics-3.dll at 00007ff81aac0000
+--- Process 17000 loaded C:\msys64\mingw64\bin\libsfml-system-3.dll at 00007ff851260000
+--- Process 17000 loaded C:\Windows\System32\msvcp_win.dll at 00007ff8586d0000
+--- Process 17000 loaded C:\msys64\mingw64\bin\libsfml-window-3.dll at 00007ff8329b0000
+--- Process 17000 loaded C:\Windows\System32\ucrtbase.dll at 00007ff858200000
+--- Process 17000 loaded C:\Windows\System32\advapi32.dll at 00007ff858d30000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\libstdc++-6.dll at 00007ff81a860000
+--- Process 17000 loaded C:\Windows\System32\sechost.dll at 00007ff85ac70000
+--- Process 17000 loaded C:\Windows\System32\rpcrt4.dll at 00007ff859ed0000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\libwinpthread-1.dll at 00007ff84cb70000
+--- Process 17000 loaded C:\msys64\mingw64\bin\libtbb12.dll at 00007ff81a3b0000
+--- Process 17000 loaded C:\Windows\System32\winmm.dll at 00007ff84f8d0000
+--- Process 17000 loaded C:\msys64\mingw64\bin\libfreetype-6.dll at 00007ff818bf0000
+--- Process 17000 loaded C:\Windows\System32\opengl32.dll at 00007ff8404e0000
+--- Process 17000 loaded C:\Windows\System32\combase.dll at 00007ff85a570000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\libbz2-1.dll at 00007ff83dea0000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\libbrotlidec.dll at 00007ff843e60000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\zlib1.dll at 00007ff83a8a0000
+--- Process 17000 loaded C:\msys64\mingw64\bin\libharfbuzz-0.dll at 00007fffd6260000
+--- Process 17000 loaded C:\msys64\mingw64\bin\libpng16-16.dll at 00007ff8328c0000
+--- Process 17000 loaded C:\Windows\System32\glu32.dll at 00007ff8403a0000
+--- Process 17000 loaded C:\Windows\System32\DWrite.dll at 00007ff8536f0000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\libbrotlicommon.dll at 00007ff833830000
+--- Process 17000 loaded C:\Windows\System32\usp10.dll at 00007ff84cc90000
+--- Process 17000 loaded C:\msys64\mingw64\bin\libglib-2.0-0.dll at 00007fffd60d0000
+--- Process 17000 loaded C:\Windows\System32\ole32.dll at 00007ff85aad0000
+--- Process 17000 loaded C:\msys64\mingw64\bin\libgraphite2.dll at 00007ff832360000
+--- Process 17000 loaded C:\Windows\System32\shell32.dll at 00007ff8596e0000
+--- Process 17000 loaded C:\Windows\System32\DXCore.dll at 00007ff855100000
+--- Process 17000 loaded C:\Windows\System32\ws2_32.dll at 00007ff8594e0000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\libintl-8.dll at 00007ff81a350000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\libiconv-2.dll at 00007fffd5fb0000
+--- Process 17000 loaded C:\Program Files\Git\mingw64\bin\libpcre2-8-0.dll at 00007fffd6f70000
+--- Process 17000, exception c0000139 at 00007ff85b02182f
+--- Process 17000 thread 21020 exited with status 0xc0000139
+--- Process 17000 thread 9968 exited with status 0xc0000139
+--- Process 17000 thread 16552 exited with status 0xc0000139
+--- Process 17000 exited with status 0xc0000139

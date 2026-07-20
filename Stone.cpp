@@ -1,13 +1,13 @@
 #include "Stone.h"
 
-void Stone::addStone(World &world, uint32_t x, uint32_t y)
+void Stone::addStone(World &world, RendererSFML &renderer, uint32_t x, uint32_t y)
 {
     world.setCell(x, y, TerrainType::MountainWithStone);
-    world.addToDirtyCells(x, y);
+    renderer.addToDirtyCells(world, x, y, sf::Color::White);
     stonesCount++;
 }
 
-void Stone::createStone(World &world)
+void Stone::createStone(World &world, RendererSFML &renderer)
 {
     std::mt19937 rng(std::random_device{}());
 
@@ -22,7 +22,7 @@ void Stone::createStone(World &world)
             if(world.getCell(x, y) == TerrainType::Mountain)
             {
                 world.setCell(x, y, TerrainType::MountainWithStone);
-                world.addToDirtyCells(x, y);
+                renderer.addToDirtyCells(world, x, y, sf::Color::White);
                 stonesCount++;
                 break;
             }
@@ -31,7 +31,7 @@ void Stone::createStone(World &world)
     }
 }
 
-void Stone::stoneRespawn(World &world)
+void Stone::stoneRespawn(World &world, RendererSFML &renderer)
 {
     if (stonesCount >= Config::maxStone) return;
 
@@ -58,7 +58,7 @@ void Stone::stoneRespawn(World &world)
                 continue;
             }
             world.setCell(x, y, TerrainType::MountainWithStone);
-            world.addToDirtyCells(x, y);
+            renderer.addToDirtyCells(world, x, y, sf::Color::White);
             stonesCount++;
             break;
         }

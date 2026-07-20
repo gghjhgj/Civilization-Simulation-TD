@@ -94,11 +94,11 @@ public:
     void addChunksToPossibleVillage(World& world, uint32_t chunkX, uint32_t chunkY, int rInChunks);
     ChunkPos getBestChunkForBuilingsVillage(World& world);//git
 
-    void buildBuilding(World& world, Type type);
+    void buildBuilding(World& world, RendererSFML &renderer, Type type);
     void assignHumansToBuilding(Human& human, Type type);
     void getBuildingsGains();
 
-    void buildingDecision(World& world, Human& human, Food& food, Stone& stone, Tree& tree);
-    void startConstruction(World& world, uint32_t chunkX, uint32_t chunkY, Type type);
-    void endConstruction(World& world, Human& human, uint32_t chunkX, uint32_t chunkY, Type type);
+    void buildingDecision(World& world, RendererSFML &renderer, Human& human, Food& food, Stone& stone, Tree& tree);
+    void startConstruction(World& world, RendererSFML &renderer, uint32_t chunkX, uint32_t chunkY, Type type);
+    void endConstruction(World& world, RendererSFML &renderer, Human& human, uint32_t chunkX, uint32_t chunkY, Type type);
 };

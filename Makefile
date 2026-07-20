@@ -4,8 +4,8 @@ TARGET = app
 CXX = g++
 CLANG = clang++
 
-LIBS = -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc
-CLANG_LIBS = -lsfml-graphics -lsfml-window -lsfml-system
+LIBS = -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc -ltbb12
+CLANG_LIBS = -lsfml-graphics -lsfml-window -lsfml-system -ltbb12
 
 INCLUDE = -I.
 
@@ -40,8 +40,18 @@ debug: CXXFLAGS = -g -O0 -Wall -Wextra
 debug: build
 	@echo "Build DEBUG gotowy."
 
+# =========================
+# GENEROWANIE ASEMBLERA
+# =========================
 
-
+assembler: CXXFLAGS = $(filter-out -flto,$(COMMON_FLAGS)) -S -fverbose-asm
+assembler:
+	@echo "Generowanie czytelnego asemblera (bez LTO)..."
+	@for src in $(SOURCES) glad.c; do \
+		echo "Kompilowanie $$src..."; \
+		$(CXX) $(CXXFLAGS) $(INCLUDE) $$src -o $${src%.*}.s; \
+	done
+	@echo "Gotowe. Teraz pliki .s to zwykły tekst."
 # =========================
 # GCC PGO
 # =========================
@@ -143,7 +153,13 @@ clang-use:
 # CLEAN
 # =========================
 
+# =========================
+# CLEAN
+# =========================
+
 clean:
+	@echo "Czyszczenie projektu..."
 	rm -f $(TARGET).exe
 	rm -rf profiles
 	rm -f *.pdb
+	find . -name "*.s" -type f -delete

@@ -67,7 +67,8 @@ XY Human::humanFindResource(World& world, uint32_t x, uint32_t y, TerrainType ty
             found = world.getCell(nx, ny) == type;
 
             if (found)
-                return { static_cast<uint32_t>(nx), static_cast<uint32_t>(ny) };        }
+                return { static_cast<uint32_t>(nx), static_cast<uint32_t>(ny) };
+        }
     }
 
     return { UINT32_MAX, UINT32_MAX };
@@ -132,7 +133,7 @@ Human::Dirs Human::humanMoveDecision(HumanBase& base)
 {
     if (base.targetPos.x == UINT32_MAX || base.targetPos.y == UINT32_MAX)
     {
-        uint32_t directionIndex = rand() % 8;
+        uint32_t directionIndex = hash(base.points) & 7;
         static constexpr int lookupX[8] = { 1, 1, 0, -1, -1, -1,  0,  1 };
         static constexpr int lookupY[8] = { 0, 1, 1,  1,  0, -1, -1, -1 };
         return { static_cast<int8_t>(lookupX[directionIndex]), static_cast<int8_t>(lookupY[directionIndex]) };
@@ -145,154 +146,173 @@ Human::Dirs Human::humanMoveDecision(HumanBase& base)
 
     return { dirX, dirY };
 }
-void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, Human& human)
+void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, RendererSFML &renderer)
 {
-    processHumanVector(foodCollectors, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    processHumanVector(foodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    {
+        if (h.moves % (Config::vision + 1) == 0)
+            h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithFood);
+
+        dir = humanMoveDecision(h);
+        newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
+
+        if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
+            gotResource(newPos.x, newPos.y, h.targetPos.x, h.targetPos.y))
         {
-            if (h.moves % (Config::vision + 1) == 0)
-                h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithFood);
-
-            dir = humanMoveDecision(h);
-            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
-            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y,
-                    h.targetPos.x, h.targetPos.y))
+            if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithFood)
             {
-                if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithFood)
-                {
-                    food.foodsCount--;
-                    civilization.resources.food++;
-                    world.setCell(newPos.x, newPos.y, TerrainType::Land);
-                    world.addToDirtyCells(newPos.x, newPos.y);
-                }
+                food.foodsCount--;
+                civilization.resources.food++;
+
+                world.setCell(newPos.x, newPos.y, TerrainType::Land);
+                renderer.addToDirtyCells(world, newPos.x, newPos.y, sf::Color::Green);
             }
+        }
 
-            return false;
-        });
+        return false;
+    });
 
-    processHumanVector(woodCollectors, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+
+    processHumanVector(woodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    {
+        if (h.moves % (Config::vision + 1) == 0)
+            h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithTree);
+
+        dir = humanMoveDecision(h);
+        newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
+
+        if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
+            gotResource(newPos.x, newPos.y, h.targetPos.x, h.targetPos.y))
         {
-            if (h.moves % (Config::vision + 1) == 0)
-                h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithTree);
-
-            dir = humanMoveDecision(h);
-            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
-            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y,
-                    h.targetPos.x, h.targetPos.y))
+            if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithTree)
             {
-                if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithTree)
-                {
-                    tree.treesCount--;
-                    civilization.resources.wood++;
-                    world.setCell(newPos.x, newPos.y, TerrainType::Land);
-                    world.addToDirtyCells(newPos.x, newPos.y);
-                }
+                tree.treesCount--;
+                civilization.resources.wood++;
+
+                world.setCell(newPos.x, newPos.y, TerrainType::Land);
+                renderer.addToDirtyCells(world, newPos.x, newPos.y, sf::Color::Green);
             }
+        }
 
-            return false;
-        });
+        return false;
+    });
 
-    processHumanVector(stoneCollectors, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+
+    processHumanVector(stoneCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    {
+        if (h.moves % (Config::vision + 1) == 0)
+            h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::MountainWithStone);
+
+        dir = humanMoveDecision(h);
+        newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
+
+        if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
+            gotResource(newPos.x, newPos.y, h.targetPos.x, h.targetPos.y))
         {
-            if (h.moves % (Config::vision + 1) == 0)
-                h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::MountainWithStone);
-
-            dir = humanMoveDecision(h);
-            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
-            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y,
-                    h.targetPos.x, h.targetPos.y))
+            if (world.getCell(newPos.x, newPos.y) == TerrainType::MountainWithStone)
             {
-                if (world.getCell(newPos.x, newPos.y) == TerrainType::MountainWithStone)
-                {
-                    stone.stonesCount--;
-                    civilization.resources.stone++;
-                    world.setCell(newPos.x, newPos.y, TerrainType::Mountain);
-                    world.addToDirtyCells(newPos.x, newPos.y);
-                }
+                stone.stonesCount--;
+                civilization.resources.stone++;
+
+                world.setCell(newPos.x, newPos.y, TerrainType::Mountain);
+                renderer.addToDirtyCells(world, newPos.x, newPos.y, sf::Color::White);
             }
+        }
 
-            return false;
-        });
+        return false;
+    });
 
-    processHumanVector(builders, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+
+    processHumanVector(builders, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    {
+        if (h.moves % (Config::vision + 1) == 0)
+            h.targetPos = humanFindFlagChunk(world, h.pos.x, h.pos.y, ChunkFlag::Construction);
+
+        dir = humanMoveDecision(h);
+        newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
+
+        if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
+            gotResource(newPos.x, newPos.y, h.targetPos.x, h.targetPos.y))
         {
-            if (h.moves % (Config::vision + 1) == 0)
-                h.targetPos = humanFindFlagChunk(world, h.pos.x, h.pos.y, ChunkFlag::Construction);
+            auto ref = world.getCellRef(newPos.x, newPos.y);
 
-            dir = humanMoveDecision(h);
-            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
-            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y,
-                    h.targetPos.x, h.targetPos.y))
+            if (world.getBuilding(ref.chunkX, ref.chunkY) != BuildingType::None &&
+                world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::Construction))
             {
-                auto ref = world.getCellRef(newPos.x, newPos.y);
-                if (world.getBuilding(ref.chunkX, ref.chunkY) != BuildingType::None &&
-                    world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::Construction))
-                {
-                    BuildingType building = world.getBuilding(ref.chunkX, ref.chunkY);
-                    Type type = GetTypeBuilding(building);
-                    civilization.endConstruction(world, human, ref.chunkX, ref.chunkY, type);
-                    world.addChunkToDirtyCells(ref.chunkX, ref.chunkY);
-                }
-                else
-                {
-                    h.targetPos = { UINT32_MAX, UINT32_MAX };
-                }
+                BuildingType building = world.getBuilding(ref.chunkX, ref.chunkY);
+
+                civilization.endConstruction(
+                    world,
+                    renderer,
+                    *this,
+                    ref.chunkX,
+                    ref.chunkY,
+                    GetTypeBuilding(building)
+                );
             }
+            else
+            {
+                h.targetPos = { UINT32_MAX, UINT32_MAX };
+            }
+        }
 
-            return false;
-        });
+        return false;
+    });
 
-    processHumanVector(assigned, world, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+
+    processHumanVector(assigned, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed)
+    {
+        if (h.moves % (Config::vision + 1) == 0)
         {
-            if (h.moves % (Config::vision + 1) == 0)
-            {
-                h.targetPos = humanFindWorkingBuildingChunk(world, h.pos.x, h.pos.y, h.targetBuilding);
-            }
-            dir = humanMoveDecision(h);
-            newPos.x = h.pos.x + dir.x;
-            newPos.y = h.pos.y + dir.y;
+            h.targetPos =
+                humanFindWorkingBuildingChunk(world, h.pos.x, h.pos.y, h.targetBuilding);
+        }
 
-            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y,
-                    h.targetPos.x, h.targetPos.y))
+        dir = humanMoveDecision(h);
+
+        newPos.x = h.pos.x + dir.x;
+        newPos.y = h.pos.y + dir.y;
+
+        if (h.targetPos.x != UINT32_MAX &&
+            h.targetPos.y != UINT32_MAX &&
+            gotResource(newPos.x, newPos.y,
+                h.targetPos.x,
+                h.targetPos.y))
+        {
+            auto ref = world.getCellRef(newPos.x, newPos.y);
+
+            if (world.getBuilding(ref.chunkX, ref.chunkY) == h.targetBuilding &&
+                !world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::Construction))
             {
-                auto ref = world.getCellRef(newPos.x, newPos.y);
-                if (world.getBuilding(ref.chunkX, ref.chunkY) == h.targetBuilding &&
-                    !(world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::Construction)))
+                switch (h.targetBuilding)
                 {
-                    switch (h.targetBuilding)
-                    {
                     case BuildingType::Farm:
-                    {
                         civilization.realWorkers[FARM]++;
                         break;
-                    }
+
                     case BuildingType::Sawmill:
-                    {
                         civilization.realWorkers[SAWMILL]++;
                         break;
-                    }
+
                     case BuildingType::Mine:
-                    {
                         civilization.realWorkers[MINE]++;
                         break;
-                    }
-                    default: break;
-                    }
 
-                    size_t id = &h - &this->assigned[0];
-                    eraseHuman(*this, this->assigned, static_cast<int>(id));
-                    return true;
+                    default:
+                        break;
                 }
-                else
-                {
-                    h.targetPos = { UINT32_MAX, UINT32_MAX };
-                }
+
+                size_t id = &h - &assigned[0];
+                eraseHuman(*this, assigned, static_cast<int>(id));
+
+                return true;
             }
+            else
+            {
+                h.targetPos = { UINT32_MAX, UINT32_MAX };
+            }
+        }
 
-            return false;
-        });
+        return false;
+    });
 }

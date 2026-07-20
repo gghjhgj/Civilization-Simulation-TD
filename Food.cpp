@@ -1,13 +1,13 @@
 #include "Food.h"
 
-void Food::addFood(World& world, uint32_t x, uint32_t y)
+void Food::addFood(World& world, RendererSFML &renderer, uint32_t x, uint32_t y)
 {
     world.setCell(x, y, TerrainType::LandWithFood);
-    world.addToDirtyCells(x, y);
+    renderer.addToDirtyCells(world, x, y, sf::Color(255, 165, 0));
     foodsCount++;
 }
 
-void Food::createFood(World& world)
+void Food::createFood(World& world, RendererSFML &renderer)
 {
     std::mt19937 rng(std::random_device{}());
 
@@ -22,7 +22,7 @@ void Food::createFood(World& world)
             if (world.getCell(x, y) == TerrainType::Land)
             {
                 world.setCell(x, y, TerrainType::LandWithFood);
-                world.addToDirtyCells(x, y);
+                renderer.addToDirtyCells(world, x, y, sf::Color(255, 165, 0));
                 foodsCount++;
                 break;
             }
@@ -31,7 +31,7 @@ void Food::createFood(World& world)
     }
 }
 
-void Food::foodRespawn(World& world)
+void Food::foodRespawn(World& world, RendererSFML &renderer)
 {
     if (foodsCount >= Config::maxFood) return;
 
@@ -58,7 +58,7 @@ void Food::foodRespawn(World& world)
                 continue;
             }
             world.setCell(x, y, TerrainType::LandWithFood);
-            world.addToDirtyCells(x, y);
+            renderer.addToDirtyCells(world, x, y, sf::Color(255,165,0));
             foodsCount++;
             break;
         }

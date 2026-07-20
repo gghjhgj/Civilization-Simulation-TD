@@ -29,6 +29,12 @@ void World::writeStatsToTxt(int ticks, int FPS, Civilization& civilization, Huma
                                                 human.stoneCollectors.size() +
                                                 human.builders.size() +
                                                 human.assigned.size() << "\n";
+        statsFile << "food collectors: " << human.foodCollectors.size() << "\n";
+        statsFile << "wood collectors: " << human.woodCollectors.size() << "\n";
+        statsFile << "stone collectors: " << human.stoneCollectors.size() << "\n";
+        statsFile << "builders: " << human.builders.size() << "\n";
+        statsFile << "assigned: " << human.assigned.size() << "\n";
+
         statsFile << "ilosc ludzi posiadajacych dom: " << human.humansHavingHouseCount << "\n";
         statsFile << "ilosc ludzi w strukturach: " << "\n";
         statsFile << "ilosc ludzi na farmach: " << civilization.realWorkers[FARM] << "\n";
@@ -346,13 +352,15 @@ bool World::isEmpty(uint32_t x, uint32_t y)
 }
 
 
-void World::markAllDirty()
+void World::markAllDirty(RendererSFML &renderer)
 {
     for (uint32_t y = 0; y < Config::sizeY; y++)
     {
         for (uint32_t x = 0; x < Config::sizeX; x++)
         {
-            addToDirtyCells(x, y);
+            sf::Color color;
+            color = renderer.getColor(*this, x, y);
+            renderer.addToDirtyCells(*this, x, y, color);
         }
     }
 }
@@ -364,14 +372,14 @@ bool World::hasBuilding(uint32_t chunkX, uint32_t chunkY)
     return getBuilding(chunkX, chunkY) != BuildingType::None;
 }
 
-World::XY World::getCellInChunk(uint32_t chunkX, uint32_t chunkY)
+XY World::getCellInChunk(uint32_t chunkX, uint32_t chunkY)
 {
     uint32_t x = chunkX * ChunkConfig::CHUNK_SIZE;
     uint32_t y = chunkY * ChunkConfig::CHUNK_SIZE;
     return {x, y};
 }
 
-std::vector<World::XY> World::getCellsInChunk(uint32_t chunkX, uint32_t chunkY)
+std::vector<XY> World::getCellsInChunk(uint32_t chunkX, uint32_t chunkY)
 {
     std::vector<XY> cells;
     cells.reserve(ChunkConfig::CELL_COUNT);
@@ -393,28 +401,4 @@ std::vector<World::XY> World::getCellsInChunk(uint32_t chunkX, uint32_t chunkY)
     }
 
     return cells;
-}
-void World::addChunkToDirtyCells(uint32_t chunkX, uint32_t chunkY)
-{
-    auto cells = getCellsInChunk(chunkX, chunkY);
-    for(auto &cell : cells)
-    {
-        addToDirtyCells(cell.x, cell.y);
-    }
-}
-void World::addToDirtyCells(uint32_t x, uint32_t y)
-{
-    /*
-    if(index != -1)
-    {
-        dirtyCells.push_back(index);
-    }
-    else
-    {
-        std::cout << "got -1 id " << std::flush;
-        __builtin_trap();
-        abort();
-    }
-        */
-    dirtyCells.push_back({x, y});
 }

@@ -8,7 +8,8 @@
 #include <algorithm>
 #include <fstream>
 #include "Config.h"
-
+#include "../RendererSFML.h"
+#include "../XY/XY.h"
 #include "ChunkData/Chunk.h"
 #include "ChunkData/ChunkRegion.h"
 
@@ -35,12 +36,6 @@ class World
 {
 public:
     int allTicksCount = 0;
-    struct XY
-    {
-        uint32_t x;
-        uint32_t y;
-    };
-
 
     ChunkRegion grid[WorldConfig::CHUNK_REGIONS_COUNT];
 
@@ -183,7 +178,6 @@ public:
     }
 
 
-    std::vector <XY> dirtyCells;
     std::vector <std::pair<int, int>> possible;
 
     void writeStatsToTxt(int ticks, int FPS, Civilization& civilization, Human& human, Stone& stone, Food& food, Tree& tree, Army& army, Monsters& monsters);
@@ -203,13 +197,10 @@ public:
 
     bool isEmpty(uint32_t x, uint32_t y);
 
-    void markAllDirty();
+    void markAllDirty(RendererSFML &renderer);
 
     bool hasBuilding(uint32_t chunkX, uint32_t chunkY);
 
     XY getCellInChunk(uint32_t chunkX, uint32_t chunkY);
     std::vector<XY> getCellsInChunk(uint32_t chunkX, uint32_t chunkY);
-
-    void addChunkToDirtyCells(uint32_t chunkX, uint32_t chunkY);
-    void addToDirtyCells(uint32_t x, uint32_t y);
 };

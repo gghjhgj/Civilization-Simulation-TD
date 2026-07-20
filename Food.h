@@ -5,7 +5,7 @@ class Food
 {
     public:
     int foodsCount = 0;
-    void addFood(World &world, uint32_t x, uint32_t y);
-    void createFood(World &world);
-    void foodRespawn(World &world);
+    void addFood(World &world, RendererSFML &renderer, uint32_t x, uint32_t y);
+    void createFood(World &world, RendererSFML &renderer);
+    void foodRespawn(World &world, RendererSFML &renderer);
 };

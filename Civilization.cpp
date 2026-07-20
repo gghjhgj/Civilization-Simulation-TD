@@ -241,7 +241,7 @@ Civilization::ChunkPos Civilization::getBestChunkForBuilingsVillage(World& world
 
 
 
-void Civilization::buildBuilding(World& world, Type type)
+void Civilization::buildBuilding(World& world, RendererSFML &renderer, Type type)
 {
     if (resources.food >= buildingsCost[type].food
         && resources.stone >= buildingsCost[type].stone
@@ -250,7 +250,7 @@ void Civilization::buildBuilding(World& world, Type type)
         auto pos = getBestChunkForBuilingsVillage(world);
         if (pos.chunkX == UINT32_MAX || pos.chunkY == UINT32_MAX) return;
 
-        startConstruction(world, pos.chunkX, pos.chunkY, type);
+        startConstruction(world, renderer, pos.chunkX, pos.chunkY, type);
 
         resources.food -= buildingsCost[type].food;
         resources.wood -= buildingsCost[type].wood;
@@ -304,41 +304,72 @@ void Civilization::getBuildingsGains()
 
 
 
-void Civilization::buildingDecision(World& world, Human& human, Food& food, Stone& stone, Tree& tree)
+void Civilization::buildingDecision(World& world, RendererSFML &renderer, Human& human, Food& food, Stone& stone, Tree& tree)
 {
     if ((buildingsCount[FARM] + constructions[FARM]) * 50 < human.humansCount)
     {
-        buildBuilding(world, FARM);
+        buildBuilding(world, renderer, FARM);
     }
 
     if ((buildingsCount[SAWMILL] + constructions[SAWMILL]) * 260 < human.humansCount)
     {
-        buildBuilding(world, SAWMILL);
+        buildBuilding(world, renderer, SAWMILL);
     }
 
     if ((buildingsCount[MINE] + constructions[MINE]) * 2600 < human.humansCount)
     {
-        buildBuilding(world, MINE);
+        buildBuilding(world, renderer, MINE);
     }
 
     if (buildingsCount[HOUSE] + constructions[HOUSE] < human.humansCount / 5)
     {
-        buildBuilding(world, HOUSE);
+        buildBuilding(world, renderer, HOUSE);
     }
 }
-void Civilization::startConstruction(World& world, uint32_t chunkX, uint32_t chunkY, Type type)
+void Civilization::startConstruction(World& world, RendererSFML &renderer, uint32_t chunkX, uint32_t chunkY, Type type)
 {
     world.setChunkFlag(chunkX, chunkY, ChunkFlag::Construction);
     world.setBuilding(chunkX, chunkY, GetBuildingType(type));
-    world.addChunkToDirtyCells(chunkX, chunkY);
+    sf::Color color;
+    renderer.addChunkToDirtyCells(world, chunkX, chunkY, sf::Color(255, 128, 0));
 
     constructions[type]++;
 }
 
-void Civilization::endConstruction(World& world, Human& human, uint32_t chunkX, uint32_t chunkY, Type type)
+void Civilization::endConstruction(World& world, RendererSFML &renderer, Human& human, uint32_t chunkX, uint32_t chunkY, Type type)
 {
     world.clearChunkFlag(chunkX, chunkY, ChunkFlag::Construction);
-    world.addChunkToDirtyCells(chunkX, chunkY);
+    sf::Color color;
+    switch(type)
+    {
+        {
+        case Type::HOUSE:
+            {
+                color = sf::Color::Red;
+                break;
+            }
+
+        case Type::FARM:
+        {
+            color = sf::Color(255, 255, 150);
+            break;
+        }
+        case Type::SAWMILL:
+        {
+            color = sf::Color(165, 42, 42);
+            break;
+        }
+
+        case Type::MINE:
+        {
+            color = sf::Color(191, 0, 255);
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    renderer.addChunkToDirtyCells(world, chunkX, chunkY, color);
     constructions[type]--;
     buildingsCount[type]++;
 }

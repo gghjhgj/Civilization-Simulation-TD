@@ -1,11 +1,11 @@
 #include <glad/glad.h>
 
 #include "WorldData/World.h"
-#include "WorldData/WorldGPU.h"
 
 #include "HumansData/Human.h"
 
-
+#include <tbb/parallel_invoke.h>
+#include <thread>
 #include "Config.h"
 #include "RendererSFML.h"
 #include "Food.h"
@@ -27,6 +27,7 @@
 
 int main() {
     std::cout << "START" << std::endl;
+    std::cout << "threads " << std::thread::hardware_concurrency() << std::endl;
     #ifdef _WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
@@ -38,7 +39,6 @@ int main() {
     srand(time(NULL));
 
     World world;
-    WorldGPU worldGPU;
 
     Food food;
     Tree tree;
@@ -68,18 +68,14 @@ int main() {
     world.smoothShores(); std::cout << "shores smoothed" << std::endl;
     civilization.createCivilization(world); std::cout << "civ created" << std::endl;
     human.createHuman(world, civilization);
-    tree.createTree(world); std::cout << "tree created" << std::endl;
-    food.createFood(world); std::cout << "food created" << std::endl;
-    stone.createStone(world); std::cout << "stone created" << std::endl;
-    world.markAllDirty(); std::cout << "marked all dirty" << std::endl;
-    army.armyInit(); std::cout << "army inited" << std::endl;
+    tree.createTree(world, renderer); std::cout << "tree created" << std::endl;
+    food.createFood(world, renderer); std::cout << "food created" << std::endl;
+    stone.createStone(world, renderer); std::cout << "stone created" << std::endl;
+    world.markAllDirty(renderer); std::cout << "marked all dirty" << std::endl;
+    //army.armyInit(); std::cout << "army inited" << std::endl;
 
     
-    //worldGPU.init(world.grid);
-    //worldGPU.runShader();
-    //worldGPU.downloadData(world.grid);
-    //worldGPU.printDebugData();
-    
+
 
     sf::Clock clock;
 
@@ -106,7 +102,7 @@ while (renderer.isOpen())
 
     if(world.allTicksCount % Config::ticksForBuildingDecision == 0)
     {
-        civilization.buildingDecision(world, human, food, stone, tree);
+        civilization.buildingDecision(world, renderer, human, food, stone, tree);
     }
     if(world.allTicksCount % Config::ticksForAssigningDecision == 0)
     {
@@ -122,6 +118,7 @@ while (renderer.isOpen())
     {
         human.humanRespawn(world, civilization);
     }
+    /*
     if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForBuildingWall == 0)
     {
         if(monsters.monstersRegistry[0].monstersCount == 0)
@@ -132,22 +129,26 @@ while (renderer.isOpen())
         }
         //walls.buildWalls(world, civilization, Walls::WallsTypes::woodenWall);
     }
+        
     if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForAddingHumansToArmy == 0 && combatSystem.armiesReadyForCombat != 4) //&& army.armyRegistry[Army::ArmyProfession::soldier].index.size() < 5000 && (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
     {
         army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
     }
+        */
     civilization.assignHumansToBuilding(human, Type::HOUSE);
-    food.foodRespawn(world); 
-    stone.stoneRespawn(world);
-    tree.treeRespawn(world);
-    human.humanMove(world, civilization, food, tree, stone, human);
-    army.armyController(monsters, renderer);
-    monsters.monstersController(army, renderer);
+    food.foodRespawn(world, renderer); 
+    stone.stoneRespawn(world, renderer);
+    tree.treeRespawn(world, renderer);
+    human.humanMove(world, civilization, food, tree, stone, renderer);
+    //army.armyController(monsters, renderer);
+    //monsters.monstersController(army, renderer);
+    /*
     for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
     {
         Army::ArmyProfession profession = Army::ArmyProfession(i);
         army.armyMove(monsters, profession);
     }
+        */
     if (fileTimer >= 1.0f)
     {
         world.writeStatsToTxt(ticksCount, framesCount, civilization, human, stone, food, tree, army, monsters);
@@ -160,15 +161,17 @@ while (renderer.isOpen())
     if (renderTimer >= (1.f / Config::FPS))
     {
         renderTimer = 0.f;
-
+/*
     int mainIndex = army.armyRegistry[0].armyMainIndex;
     int leaderX = (mainIndex % Config::sizeX) * 1;
     int leaderY = (mainIndex / Config::sizeX) * 1;
+*/
 
         renderer.begin(); 
         renderer.render(world, human);
         renderer.end();
 
+    
         framesCount++;
     }
     /*
