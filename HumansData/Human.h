@@ -189,6 +189,10 @@ public:
     private:
 
     ThreadPool &threadPool;
+    std::vector<std::function<void(int)>> tasks;
+    std::vector<ThreadLocalData> threadResults;
+    std::vector<size_t> allAssignedToRemove;
+    std::vector<DataNeededForEndConstruction> allConstructionsToEnd;
 };
 
 #include "HumanLogic.hpp"
