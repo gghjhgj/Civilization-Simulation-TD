@@ -36,7 +36,6 @@ class World
 {
 public:
     int allTicksCount = 0;
-
     ChunkRegion grid[WorldConfig::CHUNK_REGIONS_COUNT];
 
     struct ChunkRef

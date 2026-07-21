@@ -1,8 +1,7 @@
 #include "Human.h"
 
 #include "WorldData/World.h"
-#include <tbb/parallel_invoke.h>
-#include <tbb/task_arena.h>
+
 #include "Civilization.h"
 
 void Human::createHuman(World& world, Civilization& civilization)
@@ -149,7 +148,11 @@ Human::Dirs Human::humanMoveDecision(HumanBase& base)
 }
 void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, RendererSFML &renderer)
 {
-    processHumanVector(foodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
+    size_t threadsCount = threadPool.getThreadCount();
+    std::vector<ThreadLocalData> threadResults(threadsCount);
+    std::vector<std::function<void(int)>> tasks;
+
+    addHumanTasks(tasks, foodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
             h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithFood);
@@ -162,8 +165,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
         {
             if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithFood)
             {
-                food.foodsCount--;
-                civilization.resources.food++;
+                threadResults[threadID].foodCollected++;
 
                 world.setCell(newPos.x, newPos.y, TerrainType::Land);
                 renderer.addToDirtyBuffer(world, newPos.x, newPos.y, sf::Color::Green, threadID);
@@ -173,8 +175,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
         return false;
     });
 
-
-    processHumanVector(woodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
+    addHumanTasks(tasks, woodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
             h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithTree);
@@ -187,8 +188,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
         {
             if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithTree)
             {
-                tree.treesCount--;
-                civilization.resources.wood++;
+                threadResults[threadID].woodCollected++;
 
                 world.setCell(newPos.x, newPos.y, TerrainType::Land);
                 renderer.addToDirtyBuffer(world, newPos.x, newPos.y, sf::Color::Green, threadID);
@@ -198,8 +198,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
         return false;
     });
 
-
-    processHumanVector(stoneCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
+    addHumanTasks(tasks, stoneCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
             h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::MountainWithStone);
@@ -212,8 +211,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
         {
             if (world.getCell(newPos.x, newPos.y) == TerrainType::MountainWithStone)
             {
-                stone.stonesCount--;
-                civilization.resources.stone++;
+                threadResults[threadID].stoneCollected++;
 
                 world.setCell(newPos.x, newPos.y, TerrainType::Mountain);
                 renderer.addToDirtyBuffer(world, newPos.x, newPos.y, sf::Color::White, threadID);
@@ -224,7 +222,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
     });
 
 
-    processHumanVector(builders, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
+    addHumanTasks(tasks, builders, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
             h.targetPos = humanFindFlagChunk(world, h.pos.x, h.pos.y, ChunkFlag::Construction);
@@ -241,15 +239,8 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::Construction))
             {
                 BuildingType building = world.getBuilding(ref.chunkX, ref.chunkY);
-
-                civilization.endConstruction(
-                    world,
-                    renderer,
-                    *this,
-                    ref.chunkX,
-                    ref.chunkY,
-                    GetTypeBuilding(building)
-                );
+                Type type = GetTypeBuilding(building);
+                threadResults[threadID].constr.push_back({ref.chunkX, ref.chunkY, type});
             }
             else
             {
@@ -261,7 +252,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
     });
 
 
-    processHumanVector(assigned, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
+    addHumanTasks(tasks, assigned, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
     {
         if (h.moves % (Config::vision + 1) == 0)
         {
@@ -288,15 +279,15 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 switch (h.targetBuilding)
                 {
                     case BuildingType::Farm:
-                        civilization.realWorkers[FARM]++;
+                        threadResults[threadID].farmWorkersDelta++;
                         break;
 
                     case BuildingType::Sawmill:
-                        civilization.realWorkers[SAWMILL]++;
+                        threadResults[threadID].sawmillWorkersDelta++;
                         break;
 
                     case BuildingType::Mine:
-                        civilization.realWorkers[MINE]++;
+                        threadResults[threadID].mineWorkersDelta++;
                         break;
 
                     default:
@@ -304,7 +295,7 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 }
 
                 size_t id = &h - &assigned[0];
-                eraseHuman(*this, assigned, static_cast<int>(id));
+                threadResults[threadID].assignedRemoveQueue.push_back(id);
 
                 return true;
             }
@@ -316,4 +307,71 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
 
         return false;
     });
+    
+    threadPool.run(tasks);
+
+    /////////////////////////////////////////////sync
+
+    std::vector<size_t> allAssignedToRemove;
+    std::vector<DataNeededForEndConstruction> allConstructionsToEnd;
+
+    for(const auto& res : threadResults)
+    {
+        food.foodsCount -= res.foodCollected;
+        civilization.resources.food += res.foodCollected;
+
+        tree.treesCount -= res.woodCollected;
+        civilization.resources.wood += res.woodCollected;
+
+        stone.stonesCount -= res.stoneCollected;
+        civilization.resources.stone += res.stoneCollected;
+
+        civilization.realWorkers[FARM] += res.farmWorkersDelta;
+        civilization.realWorkers[SAWMILL] += res.sawmillWorkersDelta;
+        civilization.realWorkers[MINE] += res.mineWorkersDelta;
+
+
+        allAssignedToRemove.insert(
+            allAssignedToRemove.end(), 
+            res.assignedRemoveQueue.begin(), 
+            res.assignedRemoveQueue.end()
+        );
+
+        allConstructionsToEnd.insert(
+            allConstructionsToEnd.end(),
+            res.constr.begin(),
+            res.constr.end()
+        );
+    }
+
+    if(!allAssignedToRemove.empty())
+    {
+        std::sort(allAssignedToRemove.rbegin(), allAssignedToRemove.rend());
+        allAssignedToRemove.erase(std::unique(allAssignedToRemove.begin(), allAssignedToRemove.end()), allAssignedToRemove.end());
+
+        for(size_t id : allAssignedToRemove)
+        {
+            if(id < assigned.size())
+            {
+                eraseHuman(*this, assigned, id);
+            }
+        }
+    }
+
+    if(!allConstructionsToEnd.empty())
+    {
+        allConstructionsToEnd.erase(std::unique(allConstructionsToEnd.begin(), allConstructionsToEnd.end()), allConstructionsToEnd.end());
+
+        for(auto constr : allConstructionsToEnd)
+        {
+            civilization.endConstruction(
+                    world,
+                    renderer,
+                    *this,
+                    constr.chunkX,
+                    constr.chunkY,
+                    constr.type
+                );
+        }
+    }
 }

@@ -3,6 +3,7 @@
 #include "WorldData/World.h"
 
 #include "HumansData/Human.h"
+#include "HumansData/ThreadPool.hpp"
 
 #include <tbb/parallel_invoke.h>
 #include <thread>
@@ -31,7 +32,7 @@ int main() {
     #ifdef _WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-    SetProcessAffinityMask(GetCurrentProcess(), 0x00000001);
+    SetProcessAffinityMask(GetCurrentProcess(), 0xFFF);
     SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
     #endif
     std::ios_base::sync_with_stdio(false);
@@ -44,7 +45,10 @@ int main() {
     Tree tree;
     Stone stone;
     Civilization civilization;
-    Human human;
+    std::cout << "threads before initing threadpool" << std::thread::hardware_concurrency() << std::endl;
+    ThreadPool pool(std::thread::hardware_concurrency());
+    //ThreadPool pool(1);
+    Human human(pool);
     //Walls walls;
     Army army;
     Monsters monsters;
@@ -84,6 +88,7 @@ float renderTimer = 0.f;
 
 int ticksCount = 0;
 int framesCount = 0; 
+std::cout << "start sim loop" << std::endl;
 while (renderer.isOpen())
 {
     float deltaTime = clock.restart().asSeconds();
