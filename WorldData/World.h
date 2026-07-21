@@ -179,7 +179,18 @@ public:
 
     std::vector <std::pair<int, int>> possible;
 
-    void writeStatsToTxt(int ticks, int FPS, Civilization& civilization, Human& human, Stone& stone, Food& food, Tree& tree, Army& army, Monsters& monsters);
+    void writeStatsToTxt(
+        int ticks,
+        int FPS,
+        int humanTicks,
+        Civilization& civilization,
+        Human& human,
+        Stone& stone,
+        Food& food,
+        Tree& tree,
+        Army& army,
+        Monsters& monsters
+    );
     void init();
     bool isValid(int x, int y);
     bool isValidChunk(uint32_t chunkX, uint32_t chunkY);
@@ -196,7 +207,7 @@ public:
 
     bool isEmpty(uint32_t x, uint32_t y);
 
-    void markAllDirty(RendererSFML &renderer);
+    void markAllDirty(RendererSFML& renderer);
 
     bool hasBuilding(uint32_t chunkX, uint32_t chunkY);
 

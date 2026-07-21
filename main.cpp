@@ -20,13 +20,14 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-
+#include "ThreadController.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
 
 int main() {
+    pinThread(0);
     std::cout << "START" << std::endl;
     std::cout << "threads " << std::thread::hardware_concurrency() << std::endl;
     #ifdef _WIN32
@@ -47,9 +48,7 @@ int main() {
     Civilization civilization;
     std::cout << "threads before initing threadpool" << std::thread::hardware_concurrency() << std::endl;
     ThreadPool pool(std::thread::hardware_concurrency());
-    //ThreadPool pool(1);
     Human human(pool);
-    //Walls walls;
     Army army;
     Monsters monsters;
     CombatSystem combatSystem;
@@ -76,10 +75,21 @@ int main() {
     food.createFood(world, renderer); std::cout << "food created" << std::endl;
     stone.createStone(world, renderer); std::cout << "stone created" << std::endl;
     world.markAllDirty(renderer); std::cout << "marked all dirty" << std::endl;
-    //army.armyInit(); std::cout << "army inited" << std::endl;
 
-    
 
+    std::thread humanThread;
+    std::atomic<bool> running = true;
+
+    humanThread = std::thread([&]()
+    {
+        pinThread(1);
+
+        while(running)
+        {
+            human.humanMove(world, civilization, food, tree, stone, renderer);
+        }
+    }
+    );
 
     sf::Clock clock;
 
@@ -89,6 +99,7 @@ float renderTimer = 0.f;
 int ticksCount = 0;
 int framesCount = 0; 
 std::cout << "start sim loop" << std::endl;
+int humanTicksBefore = 0;
 while (renderer.isOpen())
 {
     float deltaTime = clock.restart().asSeconds();
@@ -109,54 +120,20 @@ while (renderer.isOpen())
     {
         civilization.buildingDecision(world, renderer, human, food, stone, tree);
     }
-    if(world.allTicksCount % Config::ticksForAssigningDecision == 0)
-    {
-        civilization.assignHumansToBuilding(human, Type::FARM);
-        civilization.assignHumansToBuilding(human, Type::SAWMILL);
-        civilization.assignHumansToBuilding(human, Type::MINE);
-    }
     if(world.allTicksCount % Config::ticksForResourcesGainsFromBuildings == 0)
     {
         civilization.getBuildingsGains(); 
     }
-    if(world.allTicksCount % Config::ticksForNewHumans == 0) //&& (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
-    {
-        human.humanRespawn(world, civilization);
-    }
-    /*
-    if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForBuildingWall == 0)
-    {
-        if(monsters.monstersRegistry[0].monstersCount == 0)
-        {
-        monsters.spawnDecision(civilization);
-        monsters.waveInit();
-        monsters.monstersCreate(renderer);
-        }
-        //walls.buildWalls(world, civilization, Walls::WallsTypes::woodenWall);
-    }
-        
-    if(world.allTicksCount > 0 && world.allTicksCount % Config::ticksForAddingHumansToArmy == 0 && combatSystem.armiesReadyForCombat != 4) //&& army.armyRegistry[Army::ArmyProfession::soldier].index.size() < 5000 && (spawnArmy || army.armyRegistry[Army::ArmyProfession::soldier].index.size() % Config::countOfTroopsInOneLine != 0))
-    {
-        army.addHumansToArmy(world, human, civilization, renderer, Army::ArmyProfession::soldier);
-    }
-        */
+   
     civilization.assignHumansToBuilding(human, Type::HOUSE);
     food.foodRespawn(world, renderer); 
     stone.stoneRespawn(world, renderer);
     tree.treeRespawn(world, renderer);
-    human.humanMove(world, civilization, food, tree, stone, renderer);
-    //army.armyController(monsters, renderer);
-    //monsters.monstersController(army, renderer);
-    /*
-    for(int i = 0; i < Army::ArmyProfession::COUNT; i++)
-    {
-        Army::ArmyProfession profession = Army::ArmyProfession(i);
-        army.armyMove(monsters, profession);
-    }
-        */
     if (fileTimer >= 1.0f)
     {
-        world.writeStatsToTxt(ticksCount, framesCount, civilization, human, stone, food, tree, army, monsters);
+        int humanTicks = human.humanTicks - humanTicksBefore;
+        humanTicksBefore = human.humanTicks;
+        world.writeStatsToTxt(ticksCount, framesCount, humanTicks, civilization, human, stone, food, tree, army, monsters);
         fileTimer = 0.f;
         ticksCount = 0;
         framesCount = 0;
@@ -166,11 +143,6 @@ while (renderer.isOpen())
     if (renderTimer >= (1.f / Config::FPS))
     {
         renderTimer = 0.f;
-/*
-    int mainIndex = army.armyRegistry[0].armyMainIndex;
-    int leaderX = (mainIndex % Config::sizeX) * 1;
-    int leaderY = (mainIndex / Config::sizeX) * 1;
-*/
 
         renderer.begin(); 
         renderer.render(world, human);
@@ -179,27 +151,11 @@ while (renderer.isOpen())
     
         framesCount++;
     }
-    /*
-    if(world.allTicksCount > Config::ticksForBuildingWall && combatSystem.armiesReadyForCombat == 4)
-    {
-        ifdef _WIN32
-            Sleep(1);
-        endif
-    }
-    */
     world.allTicksCount++;
 }
+running = false;
+
+if (humanThread.joinable())
+    humanThread.join();
 return 0;
 }
-/*
-generate prof
-g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofile-generate -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
-
-use prof
-g++ -Ofast -march=native -flto -fgraphite-identity -floop-nest-optimize -fprofile-use -I. *.cpp glad.c -o app -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc && app.exe
-*/
-
-
-/* do profilownia jedyne co nie wywala profilera
-clang++ -O2 -march=native -fno-omit-frame-pointer -Wno-c++11-narrowing -g -gcodeview -fuse-ld=lld -Wl,-pdb=app.pdb -I. ./Army.cpp ./Civilization.cpp ./CombatSystem.cpp ./Food.cpp ./HumansData/Human.cpp ./HumansData/HumanGPU.cpp ./main.cpp ./Monsters.cpp ./notUsed/Cars.cpp ./notUsed/Streets.cpp ./RendererSFML.cpp ./Stone.cpp ./Tree.cpp ./Walls.cpp ./WorldData/World.cpp ./WorldData/WorldGPU.cpp glad.c -o app.exe -lsfml-graphics -lsfml-window -lsfml-system
-*/

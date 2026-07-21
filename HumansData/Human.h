@@ -37,7 +37,7 @@ public:
 
         return (state % 10) + 1;
     }
-
+    uint64_t humanTicks = 0;
     struct Dirs
     {
         int8_t x;
@@ -177,7 +177,7 @@ public:
         Func aiLogic
     )
     {
-        size_t GRAIN = std::max<size_t>(128, humans.size()/(threads * 6));
+        size_t GRAIN = std::max<size_t>(16, humans.size()/(threads * 6));
 
         for (size_t i = 0; i < humans.size(); i += GRAIN)
         {

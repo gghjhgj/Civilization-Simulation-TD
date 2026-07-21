@@ -8,7 +8,18 @@
 #include "Monsters.h"
 
 
-void World::writeStatsToTxt(int ticks, int FPS, Civilization& civilization, Human& human, Stone& stone, Food& food, Tree& tree, Army& army, Monsters& monsters)
+void World::writeStatsToTxt(
+    int ticks, 
+    int FPS, 
+    int humanTicks,
+    Civilization& civilization, 
+    Human& human, 
+    Stone& stone, 
+    Food& food, 
+    Tree& tree, 
+    Army& army, 
+    Monsters& monsters
+)
 {
     std::ofstream statsFile("stats.txt");
 
@@ -16,8 +27,10 @@ void World::writeStatsToTxt(int ticks, int FPS, Civilization& civilization, Huma
     {
         statsFile << "=== STATYSTYKI SYMULACJI ===\n";
         statsFile << "Ticks per second " << ticks << "\n";
+        statsFile << "Human ticks per second " << humanTicks << "\n";
         statsFile << "FPS: " << FPS << "\n";
-        statsFile << "Total Ticks: " << allTicksCount << "\n\n";
+        statsFile << "Total Ticks: " << allTicksCount << "\n";
+        statsFile << "Total human ticks: " << human.humanTicks << "\n\n";
 
         statsFile << "Ilosc jedzenia: " << food.foodsCount << "\n";
         statsFile << "Ilosc drzew: " << tree.treesCount << "\n";

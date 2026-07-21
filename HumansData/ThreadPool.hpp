@@ -6,7 +6,7 @@
 #include <memory>
 #include <functional>
 #include <immintrin.h>
-
+#include "../ThreadController.hpp"
 class ThreadPool
 {
 public:
@@ -20,7 +20,7 @@ public:
 private:
     static inline void cpuRelax(int& spins)
     {
-        if (spins < 1000)
+        if (spins < 10)
         {
             _mm_pause();
             spins++;

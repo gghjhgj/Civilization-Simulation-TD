@@ -12,14 +12,15 @@ ThreadPool::ThreadPool(size_t count)
         queues.emplace_back(std::make_unique<WorkerQueue>());
     }
     for (size_t i = 0; i < count; i++)
-    {
-        workers.emplace_back(
-            [this, i]()
-            {
-                workerLoop(static_cast<int>(i));
-            }
-        );
-    }
+{
+    workers.emplace_back(
+        [this, i]()
+        {
+            pinThread(static_cast<int>(i) + 1);
+            workerLoop(static_cast<int>(i));
+        }
+    );
+}
 }
 
 ThreadPool::~ThreadPool()

@@ -379,4 +379,24 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
         }
         allConstructionsToEnd.clear();
     }
+
+
+
+
+
+
+
+    humanTicks++;
+
+    if(humanTicks % Config::ticksForNewHumans == 0)
+    {
+       humanRespawn(world, civilization);
+    }
+    if(world.allTicksCount % Config::ticksForAssigningDecision == 0)
+    {
+        civilization.assignHumansToBuilding(*this, Type::FARM);
+        civilization.assignHumansToBuilding(*this, Type::SAWMILL);
+        civilization.assignHumansToBuilding(*this, Type::MINE);
+    }
+
 }
