@@ -57,7 +57,7 @@ class Config
     static constexpr int civilizationPlaceY = 2;
     static constexpr int civilizationPlaceHP = 30;
 
-    static constexpr int humanCount = 250;
+    static constexpr int humanCount = 10000000;
     static constexpr int humanHP = 100;
     static constexpr int humanStamina = 1000;
     static constexpr int vision = 2;

@@ -151,8 +151,12 @@ Human::Dirs Human::humanMoveDecision(HumanBase& base)
 void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, RendererSFML& renderer)
 {
     size_t threadsCount = threadPool.getThreadCount();
-    threadResults.clear();
-    threadResults.resize(threadPool.getThreadCount());
+    if (threadResults.size() != threadsCount)
+        threadResults.resize(threadsCount);
+
+    for (auto& r : threadResults)
+        r.clear();
+
     tasks.clear();
     addHumanTasks(tasks, foodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
         {
@@ -341,11 +345,6 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
             res.constr.begin(),
             res.constr.end()
         );
-    }
-    for (auto& res : threadResults)
-    {
-        res.assignedRemoveQueue.clear();
-        res.constr.clear();
     }
 
     if (!allAssignedToRemove.empty())

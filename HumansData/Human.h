@@ -20,9 +20,10 @@ class World;
 class Human
 {
 public:
-    Human(ThreadPool &pool)
+    Human(ThreadPool& pool)
         :threadPool(pool)
-        {}
+    {
+    }
     inline uint32_t random10()
     {
         thread_local uint32_t state =
@@ -81,18 +82,37 @@ public:
     };
     struct ThreadLocalData
     {
-        int foodCollected;
-        int woodCollected;
-        int stoneCollected;
-        int housesBuilt;
-        int farmsBuilt;
-        int sawmillsBuilt;
-        int minesBuilt;
-        int farmWorkersDelta;
-        int sawmillWorkersDelta;
-        int mineWorkersDelta;
+        int foodCollected = 0;
+        int woodCollected = 0;
+        int stoneCollected = 0;
+        int housesBuilt = 0;
+        int farmsBuilt = 0;
+        int sawmillsBuilt = 0;
+        int minesBuilt = 0;
+        int farmWorkersDelta = 0;
+        int sawmillWorkersDelta = 0;
+        int mineWorkersDelta = 0;
         std::vector<DataNeededForEndConstruction> constr;
         std::vector<size_t> assignedRemoveQueue;
+
+        void clear()
+        {
+            foodCollected = 0;
+            woodCollected = 0;
+            stoneCollected = 0;
+
+            housesBuilt = 0;
+            farmsBuilt = 0;
+            sawmillsBuilt = 0;
+            minesBuilt = 0;
+
+            farmWorkersDelta = 0;
+            sawmillWorkersDelta = 0;
+            mineWorkersDelta = 0;
+
+            constr.clear();
+            assignedRemoveQueue.clear();
+        }
     };
     void createHuman(World& world, Civilization& civilization);//git
     void humanRespawn(World& world, Civilization& civilization);//git
@@ -157,7 +177,7 @@ public:
         Func aiLogic
     )
     {
-        constexpr size_t GRAIN = 128;
+        size_t GRAIN = std::max<size_t>(128, humans.size()/(threads * 6));
 
         for (size_t i = 0; i < humans.size(); i += GRAIN)
         {
@@ -186,9 +206,10 @@ public:
     void humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, RendererSFML& renderer);
 
 
-    private:
+private:
 
-    ThreadPool &threadPool;
+    ThreadPool& threadPool;
+    size_t threads = threadPool.getThreadCount();
     std::vector<std::function<void(int)>> tasks;
     std::vector<ThreadLocalData> threadResults;
     std::vector<size_t> allAssignedToRemove;
