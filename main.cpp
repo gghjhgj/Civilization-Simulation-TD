@@ -1,7 +1,6 @@
 #include "WorldData/World.h"
 
 #include "HumansData/Human.h"
-#include "HumansData/ThreadPool.hpp"
 
 #include <tbb/parallel_invoke.h>
 #include <thread>
@@ -25,15 +24,21 @@
 
 
 int main() {
-    pinThread(0);
+    #ifdef _WIN32
+    printCPUTopology();
+    pinPhysicalCore(0);
+    printCurrentCPU();
+    #endif
+
     std::cout << "START" << std::endl;
     std::cout << "threads " << std::thread::hardware_concurrency() << std::endl;
+
     #ifdef _WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-    SetProcessAffinityMask(GetCurrentProcess(), 0xFFF);
     SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_AWAYMODE_REQUIRED);
     #endif
+
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
     srand(time(NULL));
@@ -45,8 +50,7 @@ int main() {
     Stone stone;
     Civilization civilization;
     std::cout << "threads before initing threadpool" << std::thread::hardware_concurrency() << std::endl;
-    ThreadPool pool(std::thread::hardware_concurrency());
-    Human human(pool);
+    Human human;
     Army army;
     Monsters monsters;
     CombatSystem combatSystem;
@@ -73,8 +77,6 @@ int main() {
 
     humanThread = std::thread([&]()
     {
-        pinThread(1);
-
         while(running)
         {
             human.humanMove(world, civilization, food, tree, stone, renderer);
@@ -100,12 +102,6 @@ while (renderer.isOpen())
     renderTimer += deltaTime;
 
     ticksCount++;
-   
-
-    if(world.allTicksCount % Config::ticksForCivilizationDecision == 0)
-    {
-        civilization.civilizationDecision(human, food, stone, tree);
-    }
 
     if(world.allTicksCount % Config::ticksForBuildingDecision == 0)
     {

@@ -11,8 +11,11 @@
 #include <tbb/parallel_invoke.h>
 #include <tbb/task_arena.h>
 #include <tbb/task_group.h>
-#include "ThreadPool.hpp"
+#include <tbb/enumerable_thread_specific.h>
 
+#include "../ThreadController.hpp"
+#include "../TBBPinObserver.hpp"
+#include <memory>
 #include <vector>
 #include <cmath>
 class Civilization;
@@ -20,16 +23,23 @@ class World;
 class Human
 {
 public:
-    Human(ThreadPool& pool)
-        :threadPool(pool)
+    tbb::task_arena aiArena{10};
+    std::unique_ptr<TBBPinObserver> aiObserver;
+
+    Human()
     {
+        aiObserver =
+            std::make_unique<TBBPinObserver>(
+                aiArena);
+        aiArena.initialize();
     }
+
     inline uint32_t random10()
     {
         thread_local uint32_t state =
             std::chrono::high_resolution_clock::now()
-            .time_since_epoch()
-            .count();
+                .time_since_epoch()
+                .count();
 
         state ^= state << 13;
         state ^= state >> 17;
@@ -58,9 +68,6 @@ public:
     std::vector<HumanBase> assigned;
     std::vector<DeadHuman> dead;
 
-
-
-
     int humansCount = 0;
     int humansHavingHouseCount = 0;
     inline uint32_t hash(uint32_t x)
@@ -78,7 +85,7 @@ public:
         uint32_t chunkY;
         Type type;
 
-        bool operator==(const DataNeededForEndConstruction&) const = default;
+        bool operator==(const DataNeededForEndConstruction &) const = default;
     };
     struct ThreadLocalData
     {
@@ -114,103 +121,83 @@ public:
             assignedRemoveQueue.clear();
         }
     };
-    void createHuman(World& world, Civilization& civilization);//git
-    void humanRespawn(World& world, Civilization& civilization);//git
-    XY humanFindResource(World& world, uint32_t x, uint32_t y, TerrainType type);
-    XY humanFindFlagChunk(World& world, uint32_t x, uint32_t y, ChunkFlag flag);
-    XY humanFindWorkingBuildingChunk(World& world, uint32_t x, uint32_t y, BuildingType type);
+    void createHuman(World &world, Civilization &civilization);  // git
+    void humanRespawn(World &world, Civilization &civilization); // git
+    XY humanFindResource(World &world, uint32_t x, uint32_t y, TerrainType type);
+    XY humanFindFlagChunk(World &world, uint32_t x, uint32_t y, ChunkFlag flag);
+    XY humanFindWorkingBuildingChunk(World &world, uint32_t x, uint32_t y, BuildingType type);
     bool gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry);
-    Dirs humanMoveDecision(HumanBase& base);
-    template<typename T, typename Func>
-    void processHumanRange(
-        std::vector<T>& humans,
-        size_t begin,
-        size_t end,
-        World& world,
-        RendererSFML& renderer,
-        Func aiLogic,
-        int threadID
-    )
+    Dirs humanMoveDecision(HumanBase &base);
+    template <typename T, typename Func>
+    void processHumanVector(
+        std::vector<T> &humans,
+        World &world,
+        RendererSFML &renderer,
+        Func aiLogic)
     {
-        for (size_t i = begin; i < end; i++)
-        {
-            auto& h = humans[i];
 
-            Dirs dir;
-            XY newPos;
-            bool removed = false;
-
-
-            if (aiLogic(h, dir, newPos, removed, threadID))
+        aiArena.execute(
+            [&]()
             {
-                continue;
-            }
+                tbb::parallel_for(
+                    tbb::blocked_range<size_t>(
+                        0,
+                        humans.size(),
+                        256),
 
+                    [&](const tbb::blocked_range<size_t> &range)
+                    {
+                        int threadID =
+                            tbb::this_task_arena::current_thread_index();
 
-            if (world.isValid(newPos.x, newPos.y) &&
-                world.getCell(newPos.x, newPos.y) != TerrainType::Water)
-            {
-                h.moves++;
-                h.pos = { newPos.x, newPos.y };
-            }
-            else
-            {
-                h.points -= random10();
-            }
+                        for (size_t i = range.begin();
+                             i < range.end();
+                             i++)
+                        {
+                            auto &h = humans[i];
 
+                            Dirs dir;
+                            XY newPos;
+                            bool removed = false;
 
-            if (h.points <= 0)
-                h.points += random10() * random10();
+                            if (aiLogic(
+                                    h,
+                                    dir,
+                                    newPos,
+                                    removed,
+                                    threadID))
+                            {
+                                continue;
+                            }
 
+                            if (world.isValid(newPos.x, newPos.y) &&
+                                world.getCell(newPos.x, newPos.y) != TerrainType::Water)
+                            {
 
-            if (random10() % 4 == 0)
-                h.points -= random10();
-        }
+                                h.moves++;
+                                h.pos =
+                                    {
+                                        newPos.x,
+                                        newPos.y};
+                            }
+                            else
+                            {
+                                h.points -= random10();
+                            }
+
+                            if (h.points <= 0)
+                                h.points += random10() * random10();
+
+                            if (random10() % 4 == 0)
+                                h.points -= random10();
+                        }
+                    });
+            });
     }
 
-    template<typename T, typename Func>
-    void addHumanTasks(
-        std::vector<std::function<void(int)>>& tasks,
-        std::vector<T>& humans,
-        World& world,
-        RendererSFML& renderer,
-        Func aiLogic
-    )
-    {
-        size_t GRAIN = std::max<size_t>(16, humans.size()/(threads * 6));
-
-        for (size_t i = 0; i < humans.size(); i += GRAIN)
-        {
-            size_t begin = i;
-
-            size_t end = std::min(i + GRAIN, humans.size());
-
-            tasks.push_back(
-                [&, begin, end, aiLogic](int threadID)
-                {
-                    processHumanRange(
-                        humans,
-                        begin,
-                        end,
-                        world,
-                        renderer,
-                        aiLogic,
-                        threadID
-                    );
-                }
-            );
-        }
-    }
-
-
-    void humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, RendererSFML& renderer);
-
+    void humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer);
 
 private:
-
-    ThreadPool& threadPool;
-    size_t threads = threadPool.getThreadCount();
-    std::vector<std::function<void(int)>> tasks;
     std::vector<ThreadLocalData> threadResults;
     std::vector<size_t> allAssignedToRemove;
     std::vector<DataNeededForEndConstruction> allConstructionsToEnd;

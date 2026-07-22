@@ -40,6 +40,9 @@ debug: CXXFLAGS = -g -O0 -Wall -Wextra
 debug: build
 	@echo "Build DEBUG gotowy."
 
+debug-fast: CXXFLAGS = -g -O1 -march=native -fno-omit-frame-pointer -Wall -Wextra
+debug-fast: build
+	@echo "Build DEBUG-FAST gotowy."
 
 # =========================
 # ASEMBLER

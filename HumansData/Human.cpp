@@ -4,16 +4,19 @@
 
 #include "Civilization.h"
 
-void Human::createHuman(World& world, Civilization& civilization)
+void Human::createHuman(World &world, Civilization &civilization)
 {
-    foodCollectors.reserve(100000);
-    woodCollectors.reserve(100000);
-    stoneCollectors.reserve(100000);
-    builders.reserve(100000);
-    assigned.reserve(100000);
+    size_t threadsCount = tbb::this_task_arena::max_concurrency();
+
+    threadResults.resize(threadsCount);
+
+
+    foodCollectors.reserve(Config::humanCount + 40000);
+    woodCollectors.reserve(Config::humanCount + 40000);
+    stoneCollectors.reserve(Config::humanCount + 40000);
+    builders.reserve(Config::humanCount + 40000);
+    assigned.reserve(Config::humanCount + 40000);
     dead.reserve(10000);
-    tasks.reserve((Config::humanCount + 100000) / 128);
-    threadResults.resize(threadPool.getThreadCount());
     uint32_t x = civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE;
     uint32_t y = civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE;
     uint32_t x2;
@@ -24,7 +27,8 @@ void Human::createHuman(World& world, Civilization& civilization)
     for (int i = 0; i < Config::humanCount; i++)
     {
         int r = i + 1;
-        if (r > maxRange) r = maxRange;
+        if (r > maxRange)
+            r = maxRange;
 
         do
         {
@@ -34,13 +38,13 @@ void Human::createHuman(World& world, Civilization& civilization)
             x2 = x + dx;
             y2 = y + dy;
         } while (!world.isValid(x2, y2) ||
-            world.getCell(x2, y2) != TerrainType::Land);
+                 world.getCell(x2, y2) != TerrainType::Land);
 
         addHuman(*this, this->foodCollectors, BuildingType::None, x2, y2);
     }
 }
 
-void Human::humanRespawn(World& world, Civilization& civilization)
+void Human::humanRespawn(World &world, Civilization &civilization)
 {
     int newPeople = static_cast<int>(std::cbrt(humansCount));
     uint32_t x = civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE;
@@ -50,7 +54,7 @@ void Human::humanRespawn(World& world, Civilization& civilization)
         addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
     }
 }
-XY Human::humanFindResource(World& world, uint32_t x, uint32_t y, TerrainType type)
+XY Human::humanFindResource(World &world, uint32_t x, uint32_t y, TerrainType type)
 {
     int startX = static_cast<int>(x);
     int startY = static_cast<int>(y);
@@ -69,13 +73,13 @@ XY Human::humanFindResource(World& world, uint32_t x, uint32_t y, TerrainType ty
             found = world.getCell(nx, ny) == type;
 
             if (found)
-                return { static_cast<uint32_t>(nx), static_cast<uint32_t>(ny) };
+                return {static_cast<uint32_t>(nx), static_cast<uint32_t>(ny)};
         }
     }
 
-    return { UINT32_MAX, UINT32_MAX };
+    return {UINT32_MAX, UINT32_MAX};
 }
-XY Human::humanFindFlagChunk(World& world, uint32_t x, uint32_t y, ChunkFlag flag)
+XY Human::humanFindFlagChunk(World &world, uint32_t x, uint32_t y, ChunkFlag flag)
 {
     auto ref = world.getCellRef(x, y);
     uint8_t vision = 1;
@@ -86,20 +90,21 @@ XY Human::humanFindFlagChunk(World& world, uint32_t x, uint32_t y, ChunkFlag fla
             int nx = ref.chunkX + dx;
             int ny = ref.chunkY + dy;
 
-            if (!world.isValidChunk(nx, ny)) continue;
+            if (!world.isValidChunk(nx, ny))
+                continue;
 
             if (world.hasChunkFlag(nx, ny, ChunkFlag::Construction))
             {
                 uint32_t posX = nx * ChunkConfig::CHUNK_SIZE;
                 uint32_t posY = ny * ChunkConfig::CHUNK_SIZE;
 
-                return{ posX, posY };
+                return {posX, posY};
             }
         }
     }
-    return{ UINT32_MAX, UINT32_MAX };
+    return {UINT32_MAX, UINT32_MAX};
 }
-XY Human::humanFindWorkingBuildingChunk(World& world, uint32_t x, uint32_t y, BuildingType type)
+XY Human::humanFindWorkingBuildingChunk(World &world, uint32_t x, uint32_t y, BuildingType type)
 {
     auto ref = world.getCellRef(x, y);
 
@@ -111,7 +116,8 @@ XY Human::humanFindWorkingBuildingChunk(World& world, uint32_t x, uint32_t y, Bu
             int nx = ref.chunkX + dx;
             int ny = ref.chunkY + dy;
 
-            if (!world.isValidChunk(nx, ny)) continue;
+            if (!world.isValidChunk(nx, ny))
+                continue;
 
             if (world.getBuilding(nx, ny) == type &&
                 !(world.hasChunkFlag(nx, ny, ChunkFlag::Construction)))
@@ -119,26 +125,27 @@ XY Human::humanFindWorkingBuildingChunk(World& world, uint32_t x, uint32_t y, Bu
                 uint32_t posX = nx * ChunkConfig::CHUNK_SIZE;
                 uint32_t posY = ny * ChunkConfig::CHUNK_SIZE;
 
-                return{ posX, posY };
+                return {posX, posY};
             }
         }
     }
-    return{ UINT32_MAX, UINT32_MAX };
+    return {UINT32_MAX, UINT32_MAX};
 }
 bool Human::gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry)
 {
-    if (hx == rx && hy == ry) return true;
+    if (hx == rx && hy == ry)
+        return true;
     return false;
 }
 
-Human::Dirs Human::humanMoveDecision(HumanBase& base)
+Human::Dirs Human::humanMoveDecision(HumanBase &base)
 {
     if (base.targetPos.x == UINT32_MAX || base.targetPos.y == UINT32_MAX)
     {
         uint32_t directionIndex = hash(base.points) & 7;
-        static constexpr int lookupX[8] = { 1, 1, 0, -1, -1, -1,  0,  1 };
-        static constexpr int lookupY[8] = { 0, 1, 1,  1,  0, -1, -1, -1 };
-        return { static_cast<int8_t>(lookupX[directionIndex]), static_cast<int8_t>(lookupY[directionIndex]) };
+        static constexpr int lookupX[8] = {1, 1, 0, -1, -1, -1, 0, 1};
+        static constexpr int lookupY[8] = {0, 1, 1, 1, 0, -1, -1, -1};
+        return {static_cast<int8_t>(lookupX[directionIndex]), static_cast<int8_t>(lookupY[directionIndex])};
     }
 
     int dx = base.targetPos.x - base.pos.x;
@@ -146,20 +153,15 @@ Human::Dirs Human::humanMoveDecision(HumanBase& base)
     int8_t dirX = (dx > 0) - (dx < 0);
     int8_t dirY = (dy > 0) - (dy < 0);
 
-    return { dirX, dirY };
+    return {dirX, dirY};
 }
-void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree& tree, Stone& stone, RendererSFML& renderer)
+void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer)
 {
-    size_t threadsCount = threadPool.getThreadCount();
-    if (threadResults.size() != threadsCount)
-        threadResults.resize(threadsCount);
-
-    for (auto& r : threadResults)
+    for (auto &r : threadResults)
         r.clear();
 
-    tasks.clear();
-    addHumanTasks(tasks, foodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
-        {
+    processHumanVector(foodCollectors, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
+                       {
             if (h.moves % (Config::vision + 1) == 0)
                 h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithFood);
 
@@ -178,11 +180,10 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 }
             }
 
-            return false;
-        });
+            return false; });
 
-    addHumanTasks(tasks, woodCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
-        {
+    processHumanVector(woodCollectors, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
+                       {
             if (h.moves % (Config::vision + 1) == 0)
                 h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithTree);
 
@@ -201,11 +202,10 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 }
             }
 
-            return false;
-        });
+            return false; });
 
-    addHumanTasks(tasks, stoneCollectors, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
-        {
+    processHumanVector(stoneCollectors, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
+                       {
             if (h.moves % (Config::vision + 1) == 0)
                 h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::MountainWithStone);
 
@@ -224,12 +224,10 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 }
             }
 
-            return false;
-        });
+            return false; });
 
-
-    addHumanTasks(tasks, builders, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
-        {
+    processHumanVector(builders, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
+                       {
             if (h.moves % (Config::vision + 1) == 0)
                 h.targetPos = humanFindFlagChunk(world, h.pos.x, h.pos.y, ChunkFlag::Construction);
 
@@ -254,12 +252,10 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 }
             }
 
-            return false;
-        });
+            return false; });
 
-
-    addHumanTasks(tasks, assigned, world, renderer, [&](auto& h, Dirs& dir, XY& newPos, bool& removed, int threadID)
-        {
+    processHumanVector(assigned, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
+                       {
             if (h.moves % (Config::vision + 1) == 0)
             {
                 h.targetPos =
@@ -311,14 +307,11 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 }
             }
 
-            return false;
-        });
+        return false; });
 
-    threadPool.run(tasks);
+    ///////////////////////////sync
 
-    ////////////////////////////////////sync
-
-    for (const auto& res : threadResults)
+    for (const auto &res : threadResults)
     {
         food.foodsCount -= res.foodCollected;
         civilization.resources.food += res.foodCollected;
@@ -333,18 +326,15 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
         civilization.realWorkers[SAWMILL] += res.sawmillWorkersDelta;
         civilization.realWorkers[MINE] += res.mineWorkersDelta;
 
-
         allAssignedToRemove.insert(
             allAssignedToRemove.end(),
             res.assignedRemoveQueue.begin(),
-            res.assignedRemoveQueue.end()
-        );
+            res.assignedRemoveQueue.end());
 
         allConstructionsToEnd.insert(
             allConstructionsToEnd.end(),
             res.constr.begin(),
-            res.constr.end()
-        );
+            res.constr.end());
     }
 
     if (!allAssignedToRemove.empty())
@@ -374,29 +364,25 @@ void Human::humanMove(World& world, Civilization& civilization, Food& food, Tree
                 *this,
                 constr.chunkX,
                 constr.chunkY,
-                constr.type
-            );
+                constr.type);
         }
         allConstructionsToEnd.clear();
     }
 
-
-
-
-
-
-
     humanTicks++;
 
-    if(humanTicks % Config::ticksForNewHumans == 0)
+    if (humanTicks % Config::ticksForNewHumans == 0)
     {
-       humanRespawn(world, civilization);
+        humanRespawn(world, civilization);
     }
-    if(world.allTicksCount % Config::ticksForAssigningDecision == 0)
+    if (world.allTicksCount % Config::ticksForAssigningDecision == 0)
     {
         civilization.assignHumansToBuilding(*this, Type::FARM);
         civilization.assignHumansToBuilding(*this, Type::SAWMILL);
         civilization.assignHumansToBuilding(*this, Type::MINE);
     }
-
+    if(humanTicks % Config::ticksForCivilizationDecision == 0)
+    {
+        civilization.civilizationDecision(*this, food, stone, tree);
+    }
 }
