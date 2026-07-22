@@ -1,5 +1,3 @@
-#include <glad/glad.h>
-
 #include "WorldData/World.h"
 
 #include "HumansData/Human.h"
@@ -53,14 +51,7 @@ int main() {
     Monsters monsters;
     CombatSystem combatSystem;
     RendererSFML renderer(Config::WindowSizeX, Config::WindowSizeY, 1);
-    if(!gladLoadGL())
-    {
-        std::cout << "GLAD juz nie" << std::endl;
-    }
-    else
-    {
-        std::cout << "GLAD dziala" << std::endl;
-    }
+    
     world.init(); std::cout << "finisted wordl init" << std::endl;
     world.createOcean(); std::cout << "ocean created" << std::endl;
     world.createLand(); std::cout << "land created" << std::endl;

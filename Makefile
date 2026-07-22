@@ -1,4 +1,4 @@
-SOURCES := $(shell find . -name "*.cpp")
+SOURCES := $(shell find . -name "*.cpp" -o -name "*.c")
 TARGET = app
 
 CXX = g++
@@ -16,8 +16,8 @@ CLANG_FLAGS = -O2 -march=native -fno-omit-frame-pointer \
 -Wl,-pdb=app.pdb
 
 
-# Profile folders
 GCC_PROFILE_DIR = profiles/gcc
+
 CLANG_PROFILE = profiles/clang/default.profraw
 CLANG_PROFDATA = profiles/clang/app.profdata
 
@@ -40,18 +40,21 @@ debug: CXXFLAGS = -g -O0 -Wall -Wextra
 debug: build
 	@echo "Build DEBUG gotowy."
 
+
 # =========================
-# GENEROWANIE ASEMBLERA
+# ASEMBLER
 # =========================
 
 assembler: CXXFLAGS = $(filter-out -flto,$(COMMON_FLAGS)) -S -fverbose-asm
+
 assembler:
-	@echo "Generowanie czytelnego asemblera (bez LTO)..."
-	@for src in $(SOURCES) glad.c; do \
+	@echo "Generowanie asemblera..."
+	@for src in $(SOURCES); do \
 		echo "Kompilowanie $$src..."; \
 		$(CXX) $(CXXFLAGS) $(INCLUDE) $$src -o $${src%.*}.s; \
 	done
-	@echo "Gotowe. Teraz pliki .s to zwykły tekst."
+
+
 # =========================
 # GCC PGO
 # =========================
@@ -60,20 +63,15 @@ generate: CXXFLAGS = $(COMMON_FLAGS) -fprofile-generate=$(GCC_PROFILE_DIR)
 
 generate:
 	@mkdir -p $(GCC_PROFILE_DIR)
-	@echo "Generowanie GCC PGO..."
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) glad.c -o $(TARGET).exe $(LIBS)
-	@echo ""
-	@echo "Odpal app.exe i wykonaj testy."
-	@echo "Profile zapiszą się w $(GCC_PROFILE_DIR)"
+	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) -o $(TARGET).exe $(LIBS)
+	@echo "Uruchom app.exe aby wygenerować profile."
 
 
 use: CXXFLAGS = $(COMMON_FLAGS) -fprofile-use=$(GCC_PROFILE_DIR) -fprofile-correction
 
 use:
-	@echo "Używanie GCC PGO..."
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) glad.c -o $(TARGET).exe $(LIBS)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) -o $(TARGET).exe $(LIBS)
 	@echo "Build GCC PGO gotowy."
-
 
 
 # =========================
@@ -82,12 +80,11 @@ use:
 
 build:
 	@echo "Kompilowanie..."
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) glad.c -o $(TARGET).exe $(LIBS)
-
+	$(CXX) $(CXXFLAGS) $(INCLUDE) $(SOURCES) -o $(TARGET).exe $(LIBS)
 
 
 # =========================
-# CLANG NORMAL
+# CLANG
 # =========================
 
 clang:
@@ -96,12 +93,10 @@ clang:
 	$(CLANG) $(CLANG_FLAGS) \
 	$(INCLUDE) \
 	$(SOURCES) \
-	glad.c \
 	-o $(TARGET).exe \
 	$(CLANG_LIBS)
 
 	@echo "Build CLANG gotowy."
-
 
 
 # =========================
@@ -111,20 +106,14 @@ clang:
 clang-generate:
 	@mkdir -p profiles/clang
 
-	@echo "Generowanie CLANG PGO..."
-
 	$(CLANG) $(CLANG_FLAGS) \
 	-fprofile-instr-generate=$(CLANG_PROFILE) \
 	$(INCLUDE) \
 	$(SOURCES) \
-	glad.c \
 	-o $(TARGET).exe \
 	$(CLANG_LIBS)
 
-	@echo ""
-	@echo "Odpal app.exe aby wygenerować:"
-	@echo "$(CLANG_PROFILE)"
-
+	@echo "Odpal app.exe."
 
 
 clang-use:
@@ -134,24 +123,17 @@ clang-use:
 	-output=$(CLANG_PROFDATA) \
 	$(CLANG_PROFILE)
 
-
-	@echo "Budowanie CLANG z PGO..."
+	@echo "Budowanie CLANG PGO..."
 
 	$(CLANG) $(CLANG_FLAGS) \
 	-fprofile-instr-use=$(CLANG_PROFDATA) \
 	$(INCLUDE) \
 	$(SOURCES) \
-	glad.c \
 	-o $(TARGET).exe \
 	$(CLANG_LIBS)
 
 	@echo "Build CLANG PGO gotowy."
 
-
-
-# =========================
-# CLEAN
-# =========================
 
 # =========================
 # CLEAN
