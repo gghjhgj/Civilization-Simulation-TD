@@ -62,12 +62,11 @@ public:
         construction
     };
 
-    std::vector<HumanBase> foodCollectors;
-    std::vector<HumanBase> woodCollectors;
-    std::vector<HumanBase> stoneCollectors;
-    std::vector<HumanBase> builders;
-    std::vector<HumanBase> assigned;
-    std::vector<DeadHuman> dead;
+    HumanBase foodCollectors;
+    HumanBase woodCollectors;
+    HumanBase stoneCollectors;
+    HumanBase builders;
+    HumanBase assigned;
 
     int humansCount = 0;
     int humansHavingHouseCount = 0;
@@ -128,9 +127,27 @@ public:
     XY humanFindFlagChunk(World &world, uint32_t x, uint32_t y, ChunkFlag flag);
     XY humanFindWorkingBuildingChunk(World &world, uint32_t x, uint32_t y, BuildingType type);
     bool gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry);
-    Dirs humanMoveDecision(HumanBase &base);
-    
+    Dirs humanMoveDecision(
+        uint32_t x, uint32_t y,
+        uint32_t targetX, uint32_t targetY,
+        uint16_t points
+    );
     void humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer);
+
+    template<typename T>
+    void reserveHumans(T& humans, size_t count)
+    {
+        humans.posX.reserve(count);
+        humans.posY.reserve(count);
+
+        humans.targetX.reserve(count);
+        humans.targetY.reserve(count);
+
+        humans.points.reserve(count);
+        humans.moves.reserve(count);
+
+        humans.targetBuilding.reserve(count);
+    }
 
 private:
     std::vector<ThreadLocalData> threadResults;

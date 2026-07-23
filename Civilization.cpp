@@ -2,7 +2,6 @@
 #include "HumansData/Human.h"
 #include "WorldData/World.h"
 #include "Walls.h"
-#include "Army.h"
 void Civilization::addCivilization(World& world, int index)
 {
     /*
@@ -98,10 +97,10 @@ void Civilization::addWorkers(Human& human, HumanType targetType)
         if (targetType == sourceType) continue;
         dispatchToVector(sourceType, human, [&](auto& srcVec)
             {
-                if (srcVec.empty() || srcVec.size() == 1) return;
+                if (srcVec.posX.empty() || srcVec.posX.size() == 1) return;
                 dispatchToVector(targetType, human, [&](auto& destVec)
                     {
-                        while (added < count && !srcVec.empty())
+                        while (added < count && !srcVec.posX.empty())
                         {
                             switchProfLast(human, srcVec, destVec, BuildingType::None);
                             added++;
@@ -124,7 +123,7 @@ void Civilization::civilizationDecision(Human& human, Food& food, Stone& stone, 
             continue;
         }
     }
-    if (areConstructions && human.builders.size() < human.humansCount/10)
+    if (areConstructions && human.builders.posX.size() < human.humansCount/10)
     {
         addWorkers(human, HumanType::Builder);
     }
@@ -281,9 +280,9 @@ void Civilization::assignHumansToBuilding(Human& human, Type type)
 
         dispatchToVector(sourceType, human, [&](auto& srcVec)
         {
-            if (srcVec.empty()) return;
+            if (srcVec.posX.empty()) return;
 
-            while (workersAssigned[type] < maxAssigned && !srcVec.empty())
+            while (workersAssigned[type] < maxAssigned && !srcVec.posX.empty())
             {
                 switchProfLast(human, srcVec, human.assigned, GetBuildingType(type));
                 workersAssigned[type]++;

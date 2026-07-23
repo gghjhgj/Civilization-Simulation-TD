@@ -6,57 +6,89 @@
 #include <cstdint>
 class Human;
 
-inline void addHuman(Human &human, std::vector<HumanBase>& vec, BuildingType data, uint32_t x, uint32_t y)
+inline void addHuman(Human &human, HumanBase& vec, BuildingType data, uint32_t x, uint32_t y)
 {
-    HumanBase h{};
+    vec.posX.push_back(x);
+    vec.posY.push_back(y);
+    
+    vec.targetX.push_back(UINT32_MAX);
+    vec.targetY.push_back(UINT32_MAX);
 
-    h.pos = {x, y};
-    h.oldPos = {x, y};
-    h.targetPos = {UINT32_MAX, UINT32_MAX};
-    h.points = 100;
-    h.moves = 0;
-    h.targetBuilding = data; 
+    vec.points.push_back(100);
+    vec.moves.push_back(0);
 
-    vec.push_back(h);
+    vec.targetBuilding.push_back(data);
+
     human.humansCount++;
 }
 
 template <typename T>
-void eraseHuman(Human &human, std::vector<T>& vec, int id)
+void eraseHuman(Human &human, T& vec, int id)
 {
-    human.dead.push_back({ vec[id].oldPos, vec[id].pos });
+    int last = static_cast<int>(vec.posX.size()) - 1;
 
-    if (id < static_cast<int>(vec.size()) - 1)
-        vec[id] = vec.back();
+    if(id != last)
+    {
+        vec.posX[id] = vec.posX[last];
+        vec.posY[id] = vec.posY[last];
 
-    vec.pop_back();
+        vec.targetX[id] = vec.targetX[last];
+        vec.targetY[id] = vec.targetY[last];
+
+        vec.points[id] = vec.points[last];
+        vec.moves[id] = vec.moves[last];
+
+        vec.targetBuilding[id] = vec.targetBuilding[last];
+    }
+
+    vec.posX.pop_back();
+    vec.posY.pop_back();
+
+    vec.targetX.pop_back();
+    vec.targetY.pop_back();
+
+    vec.points.pop_back();
+    vec.moves.pop_back();
+
+    vec.targetBuilding.pop_back();
 }
 
-inline void switchProf(Human &human, std::vector<HumanBase>& fromVec, int id, std::vector<HumanBase>& toVec, BuildingType newData)
+inline void switchProf(Human &human, HumanBase& fromVec, int id, HumanBase& toVec, BuildingType newData)
 {
-    HumanBase base = fromVec[id];
-    
-    if (id < static_cast<int>(fromVec.size()) - 1)
-        fromVec[id] = fromVec.back();
-    fromVec.pop_back();
+    toVec.posX.push_back(fromVec.posX[id]);
+    toVec.posY.push_back(fromVec.posY[id]);
 
-    base.targetBuilding = newData;
-    base.targetPos = { UINT32_MAX, UINT32_MAX };
+    toVec.targetX.push_back(UINT32_MAX);
+    toVec.targetY.push_back(UINT32_MAX);
 
-    toVec.push_back(base);
+    toVec.points.push_back(fromVec.points[id]);
+    toVec.moves.push_back(fromVec.moves[id]);
+
+    toVec.targetBuilding.push_back(newData);
+
+
+    eraseHuman(human, fromVec, id);
 }
 
-inline void switchProfLast(Human &human, std::vector<HumanBase>& fromVec, std::vector<HumanBase>& toVec, BuildingType newData)
+inline void switchProfLast(Human &human, HumanBase& fromVec, HumanBase& toVec, BuildingType newData)
 {
-    if (fromVec.empty()) return;
+    if(fromVec.posX.empty())
+        return;
 
-    HumanBase temp = fromVec.back();
-    
-    temp.targetBuilding = newData;
-    temp.targetPos = { UINT32_MAX, UINT32_MAX };
+    int id = fromVec.posX.size()-1;
 
-    toVec.push_back(temp);
-    fromVec.pop_back();
+    toVec.posX.push_back(fromVec.posX[id]);
+    toVec.posY.push_back(fromVec.posY[id]);
+
+    toVec.targetX.push_back(UINT32_MAX);
+    toVec.targetY.push_back(UINT32_MAX);
+
+    toVec.points.push_back(fromVec.points[id]);
+    toVec.moves.push_back(fromVec.moves[id]);
+
+    toVec.targetBuilding.push_back(newData);
+
+    eraseHuman(human, fromVec, id);
 }
 
 

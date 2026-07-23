@@ -1,4 +1,4 @@
-
+/*
 #pragma once
 #include <array>
 #include <vector>
@@ -116,3 +116,4 @@ class Army
 
     void armyController(Monsters &monsters, RendererSFML &renderer);
 };
+*/

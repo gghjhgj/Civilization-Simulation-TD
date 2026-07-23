@@ -1,3 +1,4 @@
+/*
 #include "Army.h"
 #include "Civilization.h"
 #include "HumansData/Human.h"
@@ -23,7 +24,7 @@ void Army::armyInit()
         else
         armyRegistry[profession].armyMainIndex = 800 * Config::sizeX + 300;
         armyRegistry[profession].armyTargetIndex = -1;
-        */
+//
        auto &entry = armyRegistry[profession];
        entry.spawnPoint = (Config::civSpawnChunkY*3)*Config::sizeX + (Config::civSpawnChunkX) + (200 * (i+1)) * Config::sizeX + 200;
        if(i == 0)
@@ -466,3 +467,4 @@ void Army::armyController(Monsters &monsters, RendererSFML &renderer)
         }
     }
 }
+*/

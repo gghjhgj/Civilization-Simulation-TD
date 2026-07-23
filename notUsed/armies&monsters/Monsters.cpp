@@ -1,3 +1,4 @@
+/*
 #include "Army.h"
 #include "Civilization.h"
 #include "Monsters.h"
@@ -21,7 +22,7 @@ void Monsters::monstersResize()
         monstersRegistry[i].damage.resize(size);
     }
 }
-*/
+//
 
 void Monsters::spawnDecision(Civilization &civ)
 {
@@ -53,7 +54,7 @@ void Monsters::spawnDecision(Civilization &civ)
 
         monstersRegistry[i].monstersSpawn = spawnY * Config::sizeX + spawnX;
     }
-     */
+     //
     for(int i = 0; i < MonstersTypes::COUNT; i++)
     {
         int x = Config::sizeX - 200 - (i * 100);
@@ -442,7 +443,7 @@ void Monsters::monstersController(Army &army, RendererSFML &renderer)
             << " leftBot: " << entry.corners.leftBot
             << " rightBot: " << entry.corners.rightBot
             << std::endl;
-            */
+            //
             continue;
         }
         if(monstersRegistry[types].states == Monsters::States::combat)
@@ -471,3 +472,4 @@ void Monsters::monstersController(Army &army, RendererSFML &renderer)
         }
     }
 }
+*/

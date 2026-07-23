@@ -10,9 +10,6 @@
 #include "Tree.h"
 #include "Stone.h"
 #include "Civilization.h"
-#include "Army.h"
-#include "Monsters.h"
-#include "CombatSystem.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -51,9 +48,6 @@ int main() {
     Civilization civilization;
     std::cout << "threads before initing threadpool" << std::thread::hardware_concurrency() << std::endl;
     Human human;
-    Army army;
-    Monsters monsters;
-    CombatSystem combatSystem;
     RendererSFML renderer(Config::WindowSizeX, Config::WindowSizeY, 1);
     
     world.init(); std::cout << "finisted wordl init" << std::endl;
@@ -120,7 +114,7 @@ while (renderer.isOpen())
     {
         int humanTicks = human.humanTicks - humanTicksBefore;
         humanTicksBefore = human.humanTicks;
-        world.writeStatsToTxt(ticksCount, framesCount, humanTicks, civilization, human, stone, food, tree, army, monsters);
+        world.writeStatsToTxt(ticksCount, framesCount, humanTicks, civilization, human, stone, food, tree);
         fileTimer = 0.f;
         ticksCount = 0;
         framesCount = 0;

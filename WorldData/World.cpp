@@ -4,8 +4,7 @@
 #include "Food.h"
 #include "Stone.h"
 #include "Tree.h"
-#include "Army.h"
-#include "Monsters.h"
+
 
 
 void World::writeStatsToTxt(
@@ -16,9 +15,7 @@ void World::writeStatsToTxt(
     Human& human, 
     Stone& stone, 
     Food& food, 
-    Tree& tree, 
-    Army& army, 
-    Monsters& monsters
+    Tree& tree
 )
 {
     std::ofstream statsFile("stats.txt");
@@ -37,16 +34,16 @@ void World::writeStatsToTxt(
         statsFile << "Ilosc kamieni: " << stone.stonesCount << "\n \n";
 
         statsFile << "ilosc ludzi: " << human.humansCount << "\n";
-        statsFile << "ilosc ludzi na mapie: " << human.foodCollectors.size() +
-                                                human.woodCollectors.size() +
-                                                human.stoneCollectors.size() +
-                                                human.builders.size() +
-                                                human.assigned.size() << "\n";
-        statsFile << "food collectors: " << human.foodCollectors.size() << "\n";
-        statsFile << "wood collectors: " << human.woodCollectors.size() << "\n";
-        statsFile << "stone collectors: " << human.stoneCollectors.size() << "\n";
-        statsFile << "builders: " << human.builders.size() << "\n";
-        statsFile << "assigned: " << human.assigned.size() << "\n";
+        statsFile << "ilosc ludzi na mapie: " << human.foodCollectors.posX.size() +
+                                                human.woodCollectors.posX.size() +
+                                                human.stoneCollectors.posX.size() +
+                                                human.builders.posX.size() +
+                                                human.assigned.posX.size() << "\n";
+        statsFile << "food collectors: " << human.foodCollectors.posX.size() << "\n";
+        statsFile << "wood collectors: " << human.woodCollectors.posX.size() << "\n";
+        statsFile << "stone collectors: " << human.stoneCollectors.posX.size() << "\n";
+        statsFile << "builders: " << human.builders.posX.size() << "\n";
+        statsFile << "assigned: " << human.assigned.posX.size() << "\n";
 
         statsFile << "ilosc ludzi posiadajacych dom: " << human.humansHavingHouseCount << "\n";
         statsFile << "ilosc ludzi w strukturach: " << "\n";
@@ -69,6 +66,7 @@ void World::writeStatsToTxt(
         statsFile << "tartaki " << civilization.buildingsCount[SAWMILL] << "\n";
         statsFile << "kopalnie " << civilization.buildingsCount[MINE] << "\n";
 
+        /*
         statsFile << "armia:\n";
         statsFile << "ilosc ludzi w armii: " << army.armyRegistry[Army::ArmyProfession::soldier].humansCount +
             army.armyRegistry[Army::ArmyProfession::archer].humansCount << "\n";
@@ -80,7 +78,7 @@ void World::writeStatsToTxt(
             monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].monstersCount << "\n";
         statsFile << "ilosc zwyklych potworow: " << monsters.monstersRegistry[Monsters::MonstersTypes::normalMonster].monstersCount << "\n";
         statsFile << "ilosc gigantow: " << monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].monstersCount << "\n";
-
+        */
 
 
         statsFile.close();

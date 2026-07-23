@@ -1,4 +1,4 @@
-
+/*
 #pragma once
 #include <array>
 #include <vector>
@@ -113,3 +113,4 @@ class Monsters
     void eraseEnemies(RendererSFML &renderer, Army &army, MonstersTypes types, int count);
     void monstersController(Army &army, RendererSFML &renderer);
 };
+*/

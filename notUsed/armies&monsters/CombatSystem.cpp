@@ -1,3 +1,4 @@
+/*
 #include "Monsters.h"
 #include "Army.h"
 #include "CombatSystem.h"
@@ -103,3 +104,4 @@ void CombatSystem::endCombat()
         instance->armiesReadyForCombat = 0;
     }
 }
+    */

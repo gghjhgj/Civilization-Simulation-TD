@@ -19,16 +19,11 @@ enum class HumanType
 };
 struct HumanBase
 {
-    XY pos;
-    XY oldPos;
-    XY targetPos = { UINT32_MAX, UINT32_MAX };
-    uint16_t points = 100;
-    uint16_t moves = 0;
-    BuildingType targetBuilding;
-};
-
-struct DeadHuman
-{
-    XY oldPos;
-    XY pos;
+    std::vector<uint32_t> posX;
+    std::vector<uint32_t> posY;
+    std::vector<uint32_t> targetX;
+    std::vector<uint32_t> targetY;
+    std::vector<uint16_t> points;
+    std::vector<uint16_t> moves;
+    std::vector<BuildingType> targetBuilding;
 };

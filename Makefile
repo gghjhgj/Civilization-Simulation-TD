@@ -1,4 +1,4 @@
-SOURCES := $(shell find . -name "*.cpp" -o -name "*.c")
+SOURCES := $(shell find . -name "*.cpp" -o -name "*.c" | grep -v "./notUsed/")
 TARGET = app
 
 CXX = g++

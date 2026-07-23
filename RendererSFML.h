@@ -7,27 +7,18 @@
 #include "DirtyCells.h"
 class World;
 class Human;
-class Army;
-class Monsters;
+
 class RendererSFML
 {
 public:
-    Army* army;
-    Monsters* monsters;
     float time = 0;
     RendererSFML(int w, int h, int cellSize);
 
     std::vector<DirtyCells> dirtyCells;
     std::vector<std::vector<DirtyCells>> dirtyBuffers;
 
-    enum Source
-    {
-        armyClass,
-        monstersClass
-    };
     bool isOpen();
     void begin();
-    void setArmyColors();
     template <typename T>
     void renderEntities(std::vector<T>& entities, World& world)
     {
@@ -41,9 +32,6 @@ public:
     void updateHumanLayer(Human &human);
     void updateWorldLayer();
     void render(World& world, Human& human);
-    void addProfToBuffer(int profession, Source source, int logicID);
-    void eraseProfFromBuffer(int profession, Source source, int logicID);
-    void reloadArmyBuffer();
     void end();
 
     sf::Color getColor(World& world, uint32_t x, uint32_t y);
@@ -77,27 +65,10 @@ public:
 
 
 private:
-    struct ArmyLayer
-    {
-        std::vector<sf::Vertex> armyVertices;
-        sf::VertexBuffer armyLayer{ sf::PrimitiveType::Points, sf::VertexBuffer::Usage::Stream };
-        sf::Color color;
-    };
-    enum Profs
-    {
-        soldier,
-        archer,
-        normalMonster,
-        giantMonster,
-
-        COUNT
-    };
-    std::map<int, ArmyLayer> armyLayers;
-    sf::Shader armyShader;
-    sf::RenderWindow window;
-    sf::Image pixelImage;
-    sf::Texture texture;
-    sf::Sprite sprite;
+sf::RenderWindow window;
+sf::Image pixelImage;
+sf::Texture texture;
+sf::Sprite sprite;
     struct HumanLayer
     {
         std::vector<sf::Vertex> vertices;

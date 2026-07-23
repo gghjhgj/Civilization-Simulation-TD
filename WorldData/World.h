@@ -18,8 +18,6 @@ class Tree;
 class Stone;
 class Human;
 class Civilization;
-class Army;
-class Monsters;
 
 namespace WorldConfig
 {
@@ -65,15 +63,12 @@ public:
             chunkY % ChunkRegionConfig::CHUNK_REGION_SIZE;
 
         uint32_t chunkRegionIndex =
-            chunkRegionY * WorldConfig::CHUNK_REGIONS_X
-            + chunkRegionX;
+            chunkRegionY * WorldConfig::CHUNK_REGIONS_X + chunkRegionX;
 
         uint32_t localChunkIndex =
-            localChunkY * ChunkRegionConfig::CHUNK_REGION_SIZE
-            + localChunkX;
+            localChunkY * ChunkRegionConfig::CHUNK_REGION_SIZE + localChunkX;
 
-        return
-        {
+        return {
             chunkRegionX,
             chunkRegionY,
 
@@ -82,8 +77,7 @@ public:
             localChunkX,
             localChunkY,
 
-            localChunkIndex
-        };
+            localChunkIndex};
     }
 
     struct CellRef
@@ -105,17 +99,14 @@ public:
             worldX / ChunkConfig::CHUNK_SIZE,
             worldY / ChunkConfig::CHUNK_SIZE);
 
-        return
-        {
+        return {
             chunkX,
             chunkY,
             chunkRef.chunkRegionIndex,
             chunkRef.localChunkIndex,
             (worldY % ChunkConfig::CHUNK_SIZE) * ChunkConfig::CHUNK_SIZE +
-            (worldX % ChunkConfig::CHUNK_SIZE)
-        };
+                (worldX % ChunkConfig::CHUNK_SIZE)};
     }
-
 
     void setCell(uint32_t x, uint32_t y, TerrainType type)
     {
@@ -176,21 +167,17 @@ public:
             .hasFlag(flag);
     }
 
-
-    std::vector <std::pair<int, int>> possible;
+    std::vector<std::pair<int, int>> possible;
 
     void writeStatsToTxt(
         int ticks,
         int FPS,
         int humanTicks,
-        Civilization& civilization,
-        Human& human,
-        Stone& stone,
-        Food& food,
-        Tree& tree,
-        Army& army,
-        Monsters& monsters
-    );
+        Civilization &civilization,
+        Human &human,
+        Stone &stone,
+        Food &food,
+        Tree &tree);
     void init();
     bool isValid(int x, int y);
     bool isValidChunk(uint32_t chunkX, uint32_t chunkY);
@@ -200,14 +187,14 @@ public:
     void createOcean();
     void createLand();
     bool addSand(int x, int y);
-    void addSandToLand();//on edges
+    void addSandToLand(); // on edges
     void smoothShores();
 
     void createStruct(TerrainType type);
 
     bool isEmpty(uint32_t x, uint32_t y);
 
-    void markAllDirty(RendererSFML& renderer);
+    void markAllDirty(RendererSFML &renderer);
 
     bool hasBuilding(uint32_t chunkX, uint32_t chunkY);
 
