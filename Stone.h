@@ -6,7 +6,7 @@ class Stone
 {
     public:
     int stonesCount = 0;
-    void addStone(World &world, RendererSFML &renderer, uint32_t x, uint32_t y);
+    void addStone(World &world, RendererSFML &renderer, uint16_t x, uint16_t y);
     void createStone(World &world, RendererSFML &renderer);
     void stoneRespawn(World &world, RendererSFML &renderer);
 };

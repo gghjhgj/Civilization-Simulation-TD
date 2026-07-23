@@ -6,8 +6,8 @@ void Tree::createSeed(World& world, RendererSFML &renderer, int& tr, std::mt1993
 
     while (seedTries < Config::maxTreeSpawnTries)
     {
-        uint32_t x = rng() % Config::sizeX;
-        uint32_t y = rng() % Config::sizeY;
+        uint16_t x = rng() % Config::sizeX;
+        uint16_t y = rng() % Config::sizeY;
 
         if (world.getCell(x, y) == TerrainType::Land)
         {
@@ -23,7 +23,7 @@ void Tree::createSeed(World& world, RendererSFML &renderer, int& tr, std::mt1993
     }
 }
 
-void Tree::addTree(World& world, RendererSFML &renderer, uint32_t x, uint32_t y)
+void Tree::addTree(World& world, RendererSFML &renderer, uint16_t x, uint16_t y)
 {
     world.setCell(x, y, TerrainType::LandWithTree);
     renderer.addToDirtyCells(world, x, y, sf::Color(0, 120, 0));

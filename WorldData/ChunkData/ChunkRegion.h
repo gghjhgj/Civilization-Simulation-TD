@@ -11,7 +11,7 @@ struct ChunkRegion
 {
     Chunk chunks[ChunkRegionConfig::CHUNKS_COUNT];
 
-    Chunk& getChunk(uint32_t x, uint32_t y)
+    Chunk& getChunk(uint16_t x, uint16_t y)
     {
         return chunks[y * ChunkRegionConfig::CHUNK_REGION_SIZE + x];
     }

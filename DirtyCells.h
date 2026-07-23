@@ -8,7 +8,7 @@ struct DirtyCells
     XY coords;
     sf::Color color;
 
-     DirtyCells(uint32_t x, uint32_t y, sf::Color c)
+     DirtyCells(uint16_t x, uint16_t y, sf::Color c)
         :
         coords{x,y},
         color(c)

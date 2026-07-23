@@ -6,15 +6,15 @@
 #include <cstdint>
 class Human;
 
-inline void addHuman(Human &human, HumanBase& vec, BuildingType data, uint32_t x, uint32_t y)
+inline void addHuman(Human &human, HumanBase& vec, BuildingType data, uint16_t x, uint16_t y)
 {
     vec.posX.push_back(x);
     vec.posY.push_back(y);
     
-    vec.targetX.push_back(UINT32_MAX);
-    vec.targetY.push_back(UINT32_MAX);
+    vec.targetX.push_back(UINT16_MAX);
+    vec.targetY.push_back(UINT16_MAX);
 
-    vec.points.push_back(100);
+    vec.points.push_back(20);
     vec.moves.push_back(0);
 
     vec.targetBuilding.push_back(data);
@@ -58,8 +58,8 @@ inline void switchProf(Human &human, HumanBase& fromVec, int id, HumanBase& toVe
     toVec.posX.push_back(fromVec.posX[id]);
     toVec.posY.push_back(fromVec.posY[id]);
 
-    toVec.targetX.push_back(UINT32_MAX);
-    toVec.targetY.push_back(UINT32_MAX);
+    toVec.targetX.push_back(UINT16_MAX);
+    toVec.targetY.push_back(UINT16_MAX);
 
     toVec.points.push_back(fromVec.points[id]);
     toVec.moves.push_back(fromVec.moves[id]);
@@ -80,8 +80,8 @@ inline void switchProfLast(Human &human, HumanBase& fromVec, HumanBase& toVec, B
     toVec.posX.push_back(fromVec.posX[id]);
     toVec.posY.push_back(fromVec.posY[id]);
 
-    toVec.targetX.push_back(UINT32_MAX);
-    toVec.targetY.push_back(UINT32_MAX);
+    toVec.targetX.push_back(UINT16_MAX);
+    toVec.targetY.push_back(UINT16_MAX);
 
     toVec.points.push_back(fromVec.points[id]);
     toVec.moves.push_back(fromVec.moves[id]);

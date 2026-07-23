@@ -1,6 +1,6 @@
 #include "Stone.h"
 
-void Stone::addStone(World &world, RendererSFML &renderer, uint32_t x, uint32_t y)
+void Stone::addStone(World &world, RendererSFML &renderer, uint16_t x, uint16_t y)
 {
     world.setCell(x, y, TerrainType::MountainWithStone);
     renderer.addToDirtyCells(world, x, y, sf::Color::White);
@@ -16,8 +16,8 @@ void Stone::createStone(World &world, RendererSFML &renderer)
         int tries = 0;
         while(tries < Config::maxStoneSpawnTries)
         {
-            uint32_t x = rng() % Config::sizeX;
-            uint32_t y = rng() % Config::sizeY;
+            uint16_t x = rng() % Config::sizeX;
+            uint16_t y = rng() % Config::sizeY;
 
             if(world.getCell(x, y) == TerrainType::Mountain)
             {
@@ -42,8 +42,8 @@ void Stone::stoneRespawn(World &world, RendererSFML &renderer)
         int tries = 0;
         while(tries < Config::maxStoneSpawnTries)
         {
-            uint32_t x = rng() % Config::sizeX;
-            uint32_t y = rng() % Config::sizeY;
+            uint16_t x = rng() % Config::sizeX;
+            uint16_t y = rng() % Config::sizeY;
 
             auto ref = world.getCellRef(x, y);
 

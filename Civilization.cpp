@@ -143,7 +143,7 @@ void Civilization::civilizationDecision(Human& human, Food& food, Stone& stone, 
 
 }
 
-void Civilization::markCloseAsCivZone(World& world, uint32_t chunkX, uint32_t chunkY, int rInChunks)
+void Civilization::markCloseAsCivZone(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks)
 {
     for (int dy = -rInChunks; dy <= rInChunks; dy++)
     {
@@ -179,7 +179,7 @@ void Civilization::markCloseAsCivZone(World& world, uint32_t chunkX, uint32_t ch
     }
 }
 
-void Civilization::addChunksToPossibleVillage(World& world, uint32_t chunkX, uint32_t chunkY, int rInChunks)
+void Civilization::addChunksToPossibleVillage(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks)
 {
     for (int dy = -rInChunks; dy <= rInChunks; dy++)
     {
@@ -192,8 +192,8 @@ void Civilization::addChunksToPossibleVillage(World& world, uint32_t chunkX, uin
             if (!(world.isChunkLand(nx, ny))) continue;
 
             bestChunksForBuildingsVillage.push_back(
-                { static_cast<uint32_t>(nx),
-                  static_cast<uint32_t>(ny) }
+                { static_cast<uint16_t>(nx),
+                  static_cast<uint16_t>(ny) }
             );
         }
     }
@@ -203,7 +203,7 @@ void Civilization::addChunksToPossibleVillage(World& world, uint32_t chunkX, uin
 Civilization::ChunkPos Civilization::getBestChunkForBuilingsVillage(World& world)
 {
     int id;
-    if (bestChunksForBuildingsVillage.empty()) return { UINT32_MAX, UINT32_MAX };
+    if (bestChunksForBuildingsVillage.empty()) return { UINT16_MAX, UINT16_MAX };
     ChunkPos pos;
     do
     {
@@ -220,7 +220,7 @@ Civilization::ChunkPos Civilization::getBestChunkForBuilingsVillage(World& world
         world.hasChunkFlag(pos.chunkX, pos.chunkY, ChunkFlag::CivZone)
         )
     {
-        return { UINT32_MAX, UINT32_MAX };
+        return { UINT16_MAX, UINT16_MAX };
     }
     addChunksToPossibleVillage(
         world,
@@ -247,7 +247,7 @@ void Civilization::buildBuilding(World& world, RendererSFML &renderer, Type type
         && resources.wood >= buildingsCost[type].wood)
     {
         auto pos = getBestChunkForBuilingsVillage(world);
-        if (pos.chunkX == UINT32_MAX || pos.chunkY == UINT32_MAX) return;
+        if (pos.chunkX == UINT16_MAX || pos.chunkY == UINT16_MAX) return;
 
         startConstruction(world, renderer, pos.chunkX, pos.chunkY, type);
 
@@ -325,7 +325,7 @@ void Civilization::buildingDecision(World& world, RendererSFML &renderer, Human&
         buildBuilding(world, renderer, HOUSE);
     }
 }
-void Civilization::startConstruction(World& world, RendererSFML &renderer, uint32_t chunkX, uint32_t chunkY, Type type)
+void Civilization::startConstruction(World& world, RendererSFML &renderer, uint16_t chunkX, uint16_t chunkY, Type type)
 {
     world.setChunkFlag(chunkX, chunkY, ChunkFlag::Construction);
     world.setBuilding(chunkX, chunkY, GetBuildingType(type));
@@ -335,7 +335,7 @@ void Civilization::startConstruction(World& world, RendererSFML &renderer, uint3
     constructions[type]++;
 }
 
-void Civilization::endConstruction(World& world, RendererSFML &renderer, Human& human, uint32_t chunkX, uint32_t chunkY, Type type)
+void Civilization::endConstruction(World& world, RendererSFML &renderer, Human& human, uint16_t chunkX, uint16_t chunkY, Type type)
 {
     world.clearChunkFlag(chunkX, chunkY, ChunkFlag::Construction);
     sf::Color color;

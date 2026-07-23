@@ -38,34 +38,34 @@ public:
 
     struct ChunkRef
     {
-        uint32_t chunkRegionX;
-        uint32_t chunkRegionY;
+        uint16_t chunkRegionX;
+        uint16_t chunkRegionY;
 
         uint32_t chunkRegionIndex;
 
-        uint32_t localChunkX;
-        uint32_t localChunkY;
+        uint16_t localChunkX;
+        uint16_t localChunkY;
 
-        uint32_t localChunkIndex;
+        uint16_t localChunkIndex;
     };
-    constexpr ChunkRef getChunkRef(uint32_t chunkX, uint32_t chunkY)
+    constexpr ChunkRef getChunkRef(uint16_t chunkX, uint16_t chunkY)
     {
-        uint32_t chunkRegionX =
+        uint16_t chunkRegionX =
             chunkX / ChunkRegionConfig::CHUNK_REGION_SIZE;
 
-        uint32_t chunkRegionY =
+        uint16_t chunkRegionY =
             chunkY / ChunkRegionConfig::CHUNK_REGION_SIZE;
 
-        uint32_t localChunkX =
+        uint16_t localChunkX =
             chunkX % ChunkRegionConfig::CHUNK_REGION_SIZE;
 
-        uint32_t localChunkY =
+        uint16_t localChunkY =
             chunkY % ChunkRegionConfig::CHUNK_REGION_SIZE;
 
-        uint32_t chunkRegionIndex =
+        uint16_t chunkRegionIndex =
             chunkRegionY * WorldConfig::CHUNK_REGIONS_X + chunkRegionX;
 
-        uint32_t localChunkIndex =
+        uint16_t localChunkIndex =
             localChunkY * ChunkRegionConfig::CHUNK_REGION_SIZE + localChunkX;
 
         return {
@@ -82,19 +82,19 @@ public:
 
     struct CellRef
     {
-        uint32_t chunkX;
-        uint32_t chunkY;
+        uint16_t chunkX;
+        uint16_t chunkY;
 
-        uint32_t chunkRegionIndex;
+        uint16_t chunkRegionIndex;
 
-        uint32_t localChunkIndex;
+        uint16_t localChunkIndex;
 
-        uint32_t localCellIndex;
+        uint16_t localCellIndex;
     };
-    constexpr CellRef getCellRef(uint32_t worldX, uint32_t worldY)
+    constexpr CellRef getCellRef(uint16_t worldX, uint16_t worldY)
     {
-        uint32_t chunkX = worldX / ChunkConfig::CHUNK_SIZE;
-        uint32_t chunkY = worldY / ChunkConfig::CHUNK_SIZE;
+        uint16_t chunkX = worldX / ChunkConfig::CHUNK_SIZE;
+        uint16_t chunkY = worldY / ChunkConfig::CHUNK_SIZE;
         auto chunkRef = getChunkRef(
             worldX / ChunkConfig::CHUNK_SIZE,
             worldY / ChunkConfig::CHUNK_SIZE);
@@ -104,25 +104,28 @@ public:
             chunkY,
             chunkRef.chunkRegionIndex,
             chunkRef.localChunkIndex,
+            static_cast<uint16_t>(
             (worldY % ChunkConfig::CHUNK_SIZE) * ChunkConfig::CHUNK_SIZE +
-                (worldX % ChunkConfig::CHUNK_SIZE)};
+            (worldX % ChunkConfig::CHUNK_SIZE)
+            )
+        };
     }
 
-    void setCell(uint32_t x, uint32_t y, TerrainType type)
+    void setCell(uint16_t x, uint16_t y, TerrainType type)
     {
         auto ref = getCellRef(x, y);
 
         grid[ref.chunkRegionIndex].chunks[ref.localChunkIndex].setCell(ref.localCellIndex, type);
     }
 
-    TerrainType getCell(uint32_t x, uint32_t y)
+    TerrainType getCell(uint16_t x, uint16_t y)
     {
         auto ref = getCellRef(x, y);
 
         return grid[ref.chunkRegionIndex].chunks[ref.localChunkIndex].getCell(ref.localCellIndex);
     }
 
-    void setBuilding(uint32_t chunkX, uint32_t chunkY, BuildingType type)
+    void setBuilding(uint16_t chunkX, uint16_t chunkY, BuildingType type)
     {
         auto ref = getChunkRef(chunkX, chunkY);
 
@@ -131,7 +134,7 @@ public:
             .setBuilding(type);
     }
 
-    BuildingType getBuilding(uint32_t chunkX, uint32_t chunkY)
+    BuildingType getBuilding(uint16_t chunkX, uint16_t chunkY)
     {
         auto ref = getChunkRef(chunkX, chunkY);
 
@@ -140,7 +143,7 @@ public:
             .getBuilding();
     }
 
-    void setChunkFlag(uint32_t chunkX, uint32_t chunkY, ChunkFlag flag)
+    void setChunkFlag(uint16_t chunkX, uint16_t chunkY, ChunkFlag flag)
     {
         auto ref = getChunkRef(chunkX, chunkY);
 
@@ -149,7 +152,7 @@ public:
             .setFlag(flag);
     }
 
-    void clearChunkFlag(uint32_t chunkX, uint32_t chunkY, ChunkFlag flag)
+    void clearChunkFlag(uint16_t chunkX, uint16_t chunkY, ChunkFlag flag)
     {
         auto ref = getChunkRef(chunkX, chunkY);
 
@@ -158,7 +161,7 @@ public:
             .clearFlag(flag);
     }
 
-    bool hasChunkFlag(uint32_t chunkX, uint32_t chunkY, ChunkFlag flag)
+    bool hasChunkFlag(uint16_t chunkX, uint16_t chunkY, ChunkFlag flag)
     {
         auto ref = getChunkRef(chunkX, chunkY);
 
@@ -180,8 +183,8 @@ public:
         Tree &tree);
     void init();
     bool isValid(int x, int y);
-    bool isValidChunk(uint32_t chunkX, uint32_t chunkY);
-    bool isChunkLand(uint32_t chunkX, uint32_t chunkY);
+    bool isValidChunk(uint16_t chunkX, uint16_t chunkY);
+    bool isChunkLand(uint16_t chunkX, uint16_t chunkY);
     void addPossible(int x, int y, TerrainType type);
 
     void createOcean();
@@ -192,12 +195,12 @@ public:
 
     void createStruct(TerrainType type);
 
-    bool isEmpty(uint32_t x, uint32_t y);
+    bool isEmpty(uint16_t x, uint16_t y);
 
     void markAllDirty(RendererSFML &renderer);
 
-    bool hasBuilding(uint32_t chunkX, uint32_t chunkY);
+    bool hasBuilding(uint16_t chunkX, uint16_t chunkY);
 
-    XY getCellInChunk(uint32_t chunkX, uint32_t chunkY);
-    std::vector<XY> getCellsInChunk(uint32_t chunkX, uint32_t chunkY);
+    XY getCellInChunk(uint16_t chunkX, uint16_t chunkY);
+    std::vector<XY> getCellsInChunk(uint16_t chunkX, uint16_t chunkY);
 };

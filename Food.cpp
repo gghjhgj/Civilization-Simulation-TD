@@ -1,6 +1,6 @@
 #include "Food.h"
 
-void Food::addFood(World& world, RendererSFML &renderer, uint32_t x, uint32_t y)
+void Food::addFood(World& world, RendererSFML &renderer, uint16_t x, uint16_t y)
 {
     world.setCell(x, y, TerrainType::LandWithFood);
     renderer.addToDirtyCells(world, x, y, sf::Color(255, 165, 0));
@@ -16,8 +16,8 @@ void Food::createFood(World& world, RendererSFML &renderer)
         int tries = 0;
         while (tries < Config::maxFoodSpawnTries)
         {
-            uint32_t x = rng() % Config::sizeX;
-            uint32_t y = rng() % Config::sizeY;
+            uint16_t x = rng() % Config::sizeX;
+            uint16_t y = rng() % Config::sizeY;
 
             if (world.getCell(x, y) == TerrainType::Land)
             {
@@ -42,8 +42,8 @@ void Food::foodRespawn(World& world, RendererSFML &renderer)
         int tries = 0;
         while (tries < Config::maxFoodSpawnTries)
         {
-            uint32_t x = rng() % Config::sizeX;
-            uint32_t y = rng() % Config::sizeY;
+            uint16_t x = rng() % Config::sizeX;
+            uint16_t y = rng() % Config::sizeY;
 
             auto ref = world.getCellRef(x, y);
 

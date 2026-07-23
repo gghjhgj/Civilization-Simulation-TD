@@ -66,7 +66,7 @@ void RendererSFML::updateCellPixels(int x, int y, sf::Color color)
     }
 }
 
-sf::Color RendererSFML::getColor(World& world, uint32_t x, uint32_t y)
+sf::Color RendererSFML::getColor(World& world, uint16_t x, uint16_t y)
 {
     auto ref = world.getCellRef(x, y);
 
@@ -203,7 +203,7 @@ void RendererSFML::end()
     window.display();
 }
 
-void RendererSFML::addChunkToDirtyBuffer(World &world, uint32_t chunkX, uint32_t chunkY, sf::Color color, int threadID)
+void RendererSFML::addChunkToDirtyBuffer(World &world, uint16_t chunkX, uint16_t chunkY, sf::Color color, int threadID)
 {
     auto cells = world.getCellsInChunk(chunkX, chunkY);
     for(auto &cell : cells)
@@ -212,7 +212,7 @@ void RendererSFML::addChunkToDirtyBuffer(World &world, uint32_t chunkX, uint32_t
     }
 }
 
-void RendererSFML::addToDirtyBuffer(World &world, uint32_t x, uint32_t y, sf::Color color, int threadID)
+void RendererSFML::addToDirtyBuffer(World &world, uint16_t x, uint16_t y, sf::Color color, int threadID)
 {
     if(world.isValid(x,y))
     {
@@ -220,7 +220,7 @@ void RendererSFML::addToDirtyBuffer(World &world, uint32_t x, uint32_t y, sf::Co
     }
 }
 
-void RendererSFML::addChunkToDirtyCells(World &world, uint32_t chunkX, uint32_t chunkY, sf::Color color)
+void RendererSFML::addChunkToDirtyCells(World &world, uint16_t chunkX, uint16_t chunkY, sf::Color color)
 {
     auto cells = world.getCellsInChunk(chunkX, chunkY);
     for(auto &cell : cells)
@@ -229,7 +229,7 @@ void RendererSFML::addChunkToDirtyCells(World &world, uint32_t chunkX, uint32_t 
     }
 }
 
-void RendererSFML::addToDirtyCells(World &world, uint32_t x, uint32_t y, sf::Color color)
+void RendererSFML::addToDirtyCells(World &world, uint16_t x, uint16_t y, sf::Color color)
 {
     if(world.isValid(x,y))
     {

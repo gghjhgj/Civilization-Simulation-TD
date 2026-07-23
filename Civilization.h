@@ -16,8 +16,8 @@ public:
     std::mt19937 rng{ std::random_device{}() };
     struct ChunkPos
     {
-        uint32_t chunkX;
-        uint32_t chunkY;
+        uint16_t chunkX;
+        uint16_t chunkY;
     };
     ChunkPos spawn;
     struct Resources
@@ -62,8 +62,8 @@ public:
 
     void civilizationDecision(Human& human, Food& food, Stone& stone, Tree& tree);//git
 
-    void markCloseAsCivZone(World& world, uint32_t chunkX, uint32_t chunkY, int rInChunks);//git
-    void addChunksToPossibleVillage(World& world, uint32_t chunkX, uint32_t chunkY, int rInChunks);
+    void markCloseAsCivZone(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks);//git
+    void addChunksToPossibleVillage(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks);
     ChunkPos getBestChunkForBuilingsVillage(World& world);//git
 
     void buildBuilding(World& world, RendererSFML &renderer, Type type);
@@ -71,6 +71,6 @@ public:
     void getBuildingsGains();
 
     void buildingDecision(World& world, RendererSFML &renderer, Human& human, Food& food, Stone& stone, Tree& tree);
-    void startConstruction(World& world, RendererSFML &renderer, uint32_t chunkX, uint32_t chunkY, Type type);
-    void endConstruction(World& world, RendererSFML &renderer, Human& human, uint32_t chunkX, uint32_t chunkY, Type type);
+    void startConstruction(World& world, RendererSFML &renderer, uint16_t chunkX, uint16_t chunkY, Type type);
+    void endConstruction(World& world, RendererSFML &renderer, Human& human, uint16_t chunkX, uint16_t chunkY, Type type);
 };

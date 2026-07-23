@@ -70,7 +70,7 @@ public:
 
     int humansCount = 0;
     int humansHavingHouseCount = 0;
-    inline uint32_t hash(uint32_t x)
+    inline uint16_t hash(uint16_t x)
     {
         x ^= x >> 16;
         x *= 0x7feb352d;
@@ -123,14 +123,14 @@ public:
     };
     void createHuman(World &world, Civilization &civilization);  // git
     void humanRespawn(World &world, Civilization &civilization); // git
-    XY humanFindResource(World &world, uint32_t x, uint32_t y, TerrainType type);
-    XY humanFindFlagChunk(World &world, uint32_t x, uint32_t y, ChunkFlag flag);
-    XY humanFindWorkingBuildingChunk(World &world, uint32_t x, uint32_t y, BuildingType type);
-    bool gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry);
+    XY humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type);
+    XY humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag flag);
+    XY humanFindWorkingBuildingChunk(World &world, uint16_t x, uint16_t y, BuildingType type);
+    bool gotResource(uint16_t hx, uint16_t hy, uint16_t rx, uint16_t ry);
     Dirs humanMoveDecision(
-        uint32_t x, uint32_t y,
-        uint32_t targetX, uint32_t targetY,
-        uint16_t points
+        uint16_t x, uint16_t y,
+        uint16_t targetX, uint16_t targetY,
+        uint8_t points
     );
     void humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer);
 

@@ -18,10 +18,11 @@ void Human::createHuman(World &world, Civilization &civilization)
     reserveHumans(builders, reserveCount);
     reserveHumans(assigned, reserveCount);
 
-    uint32_t x = civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE;
-    uint32_t y = civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE;
-    uint32_t x2;
-    uint32_t y2;
+    uint16_t x = static_cast<uint16_t>(civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE);
+    uint16_t y = static_cast<uint16_t>(civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE);
+
+    uint16_t x2;
+    uint16_t y2;
 
     int maxRange = (Config::sizeX > Config::sizeY) ? Config::sizeX : Config::sizeY;
 
@@ -43,19 +44,27 @@ void Human::createHuman(World &world, Civilization &civilization)
 
         addHuman(*this, this->foodCollectors, BuildingType::None, x2, y2);
     }
+    
+       /*
+    for (int i = 0; i < Config::humanCount; i++)
+    {
+       addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
+    }
+       */
+    
 }
 
 void Human::humanRespawn(World &world, Civilization &civilization)
 {
     int newPeople = static_cast<int>(std::cbrt(humansCount));
-    uint32_t x = civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE;
-    uint32_t y = civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE;
+    uint16_t x = static_cast<uint16_t>(civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE);
+    uint16_t y = static_cast<uint16_t>(civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE);
     for (int i = 0; i < newPeople; i++)
     {
         addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
     }
 }
-XY Human::humanFindResource(World &world, uint32_t x, uint32_t y, TerrainType type)
+XY Human::humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type)
 {
     int startX = static_cast<int>(x);
     int startY = static_cast<int>(y);
@@ -74,13 +83,16 @@ XY Human::humanFindResource(World &world, uint32_t x, uint32_t y, TerrainType ty
             found = world.getCell(nx, ny) == type;
 
             if (found)
-                return {static_cast<uint32_t>(nx), static_cast<uint32_t>(ny)};
+                return {
+                    static_cast<uint16_t>(nx), 
+                    static_cast<uint16_t>(ny)
+                };
         }
     }
 
-    return {UINT32_MAX, UINT32_MAX};
+    return {UINT16_MAX, UINT16_MAX};
 }
-XY Human::humanFindFlagChunk(World &world, uint32_t x, uint32_t y, ChunkFlag flag)
+XY Human::humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag flag)
 {
     auto ref = world.getCellRef(x, y);
     uint8_t vision = 1;
@@ -96,16 +108,16 @@ XY Human::humanFindFlagChunk(World &world, uint32_t x, uint32_t y, ChunkFlag fla
 
             if (world.hasChunkFlag(nx, ny, ChunkFlag::Construction))
             {
-                uint32_t posX = nx * ChunkConfig::CHUNK_SIZE;
-                uint32_t posY = ny * ChunkConfig::CHUNK_SIZE;
+                uint16_t posX = nx * ChunkConfig::CHUNK_SIZE;
+                uint16_t posY = ny * ChunkConfig::CHUNK_SIZE;
 
                 return {posX, posY};
             }
         }
     }
-    return {UINT32_MAX, UINT32_MAX};
+    return {UINT16_MAX, UINT16_MAX};
 }
-XY Human::humanFindWorkingBuildingChunk(World &world, uint32_t x, uint32_t y, BuildingType type)
+XY Human::humanFindWorkingBuildingChunk(World &world, uint16_t x, uint16_t y, BuildingType type)
 {
     auto ref = world.getCellRef(x, y);
 
@@ -123,16 +135,16 @@ XY Human::humanFindWorkingBuildingChunk(World &world, uint32_t x, uint32_t y, Bu
             if (world.getBuilding(nx, ny) == type &&
                 !(world.hasChunkFlag(nx, ny, ChunkFlag::Construction)))
             {
-                uint32_t posX = nx * ChunkConfig::CHUNK_SIZE;
-                uint32_t posY = ny * ChunkConfig::CHUNK_SIZE;
+                uint16_t posX = nx * ChunkConfig::CHUNK_SIZE;
+                uint16_t posY = ny * ChunkConfig::CHUNK_SIZE;
 
                 return {posX, posY};
             }
         }
     }
-    return {UINT32_MAX, UINT32_MAX};
+    return {UINT16_MAX, UINT16_MAX};
 }
-bool Human::gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry)
+bool Human::gotResource(uint16_t hx, uint16_t hy, uint16_t rx, uint16_t ry)
 {
     if (hx == rx && hy == ry)
         return true;
@@ -140,13 +152,13 @@ bool Human::gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry)
 }
 
 Human::Dirs Human::humanMoveDecision(
-    uint32_t x, uint32_t y,
-    uint32_t targetX, uint32_t targetY,
-    uint16_t points)
+    uint16_t x, uint16_t y,
+    uint16_t targetX, uint16_t targetY,
+    uint8_t points)
 {
-    if (targetX == UINT32_MAX || targetY == UINT32_MAX)
+    if (targetX == UINT16_MAX || targetY == UINT16_MAX)
     {
-        uint32_t directionIndex = hash(points) & 7;
+        uint16_t directionIndex = hash(points) & 7;
         static constexpr int lookupX[8] = {1, 1, 0, -1, -1, -1, 0, 1};
         static constexpr int lookupY[8] = {0, 1, 1, 1, 0, -1, -1, -1};
         return {
@@ -216,12 +228,12 @@ void Human::processFoodCollectors(
                             h.points[i]
                         );
 
-                        uint32_t newX = h.posX[i] + dir.x;
-                        uint32_t newY = h.posY[i] + dir.y;
+                        uint16_t newX = h.posX[i] + dir.x;
+                        uint16_t newY = h.posY[i] + dir.y;
 
 
-                        if(h.targetX[i] != UINT32_MAX &&
-                           h.targetY[i] != UINT32_MAX &&
+                        if(h.targetX[i] != UINT16_MAX &&
+                           h.targetY[i] != UINT16_MAX &&
                            gotResource(
                                newX,
                                newY,
@@ -322,12 +334,12 @@ void Human::processWoodCollectors(
                             h.points[i]);
 
 
-                        uint32_t newX = h.posX[i] + dir.x;
-                        uint32_t newY = h.posY[i] + dir.y;
+                        uint16_t newX = h.posX[i] + dir.x;
+                        uint16_t newY = h.posY[i] + dir.y;
 
 
-                        if(h.targetX[i] != UINT32_MAX &&
-                           h.targetY[i] != UINT32_MAX &&
+                        if(h.targetX[i] != UINT16_MAX &&
+                           h.targetY[i] != UINT16_MAX &&
                            gotResource(
                                newX,
                                newY,
@@ -433,12 +445,12 @@ void Human::processStoneCollectors(
                             h.points[i]);
 
 
-                        uint32_t newX = h.posX[i] + dir.x;
-                        uint32_t newY = h.posY[i] + dir.y;
+                        uint16_t newX = h.posX[i] + dir.x;
+                        uint16_t newY = h.posY[i] + dir.y;
 
 
-                        if(h.targetX[i] != UINT32_MAX &&
-                           h.targetY[i] != UINT32_MAX &&
+                        if(h.targetX[i] != UINT16_MAX &&
+                           h.targetY[i] != UINT16_MAX &&
                            gotResource(
                                newX,
                                newY,
@@ -544,12 +556,12 @@ void Human::processBuilders(
                             h.points[i]);
 
 
-                        uint32_t newX = h.posX[i] + dir.x;
-                        uint32_t newY = h.posY[i] + dir.y;
+                        uint16_t newX = h.posX[i] + dir.x;
+                        uint16_t newY = h.posY[i] + dir.y;
 
 
-                        if(h.targetX[i] != UINT32_MAX &&
-                           h.targetY[i] != UINT32_MAX &&
+                        if(h.targetX[i] != UINT16_MAX &&
+                           h.targetY[i] != UINT16_MAX &&
                            gotResource(
                                newX,
                                newY,
@@ -591,8 +603,8 @@ void Human::processBuilders(
                             }
                             else
                             {
-                                h.targetX[i] = UINT32_MAX;
-                                h.targetY[i] = UINT32_MAX;
+                                h.targetX[i] = UINT16_MAX;
+                                h.targetY[i] = UINT16_MAX;
                             }
                         }
 
@@ -674,12 +686,12 @@ void Human::processAssigned(
                             h.points[i]);
 
 
-                        uint32_t newX = h.posX[i] + dir.x;
-                        uint32_t newY = h.posY[i] + dir.y;
+                        uint16_t newX = h.posX[i] + dir.x;
+                        uint16_t newY = h.posY[i] + dir.y;
 
 
-                        if(h.targetX[i] != UINT32_MAX &&
-                           h.targetY[i] != UINT32_MAX &&
+                        if(h.targetX[i] != UINT16_MAX &&
+                           h.targetY[i] != UINT16_MAX &&
                            gotResource(
                                newX,
                                newY,
@@ -732,8 +744,8 @@ void Human::processAssigned(
                             }
                             else
                             {
-                                h.targetX[i] = UINT32_MAX;
-                                h.targetY[i] = UINT32_MAX;
+                                h.targetX[i] = UINT16_MAX;
+                                h.targetY[i] = UINT16_MAX;
                             }
                         }
 

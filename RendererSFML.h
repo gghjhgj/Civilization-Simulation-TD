@@ -34,30 +34,30 @@ public:
     void render(World& world, Human& human);
     void end();
 
-    sf::Color getColor(World& world, uint32_t x, uint32_t y);
+    sf::Color getColor(World& world, uint16_t x, uint16_t y);
 
     void addToDirtyBuffer(
         World &world, 
-        uint32_t x, uint32_t y, 
+        uint16_t x, uint16_t y, 
         sf::Color color, 
         int threadID
     );
 
     void addChunkToDirtyBuffer(
         World &world, 
-        uint32_t chunkX, uint32_t chunkY, 
+        uint16_t chunkX, uint16_t chunkY, 
         sf::Color color, 
         int threadID
     );
     void addToDirtyCells(
         World &world, 
-        uint32_t x, uint32_t y, 
+        uint16_t x, uint16_t y, 
         sf::Color color
     );
 
     void addChunkToDirtyCells(
         World &world, 
-        uint32_t chunkX, uint32_t chunkY, 
+        uint16_t chunkX, uint16_t chunkY, 
         sf::Color color
     );
 

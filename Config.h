@@ -48,8 +48,8 @@ class Config
     static constexpr int maxStoneSpawnTries = 10;
 
 
-    static constexpr uint32_t civSpawnChunkX = 20;
-    static constexpr uint32_t civSpawnChunkY = 20;
+    static constexpr uint16_t civSpawnChunkX = 20;
+    static constexpr uint16_t civSpawnChunkY = 20;
     static constexpr int partOfHumansChangingJobs = 100; // 0.01
     static constexpr int civilizationCount = 1;
     static constexpr int civilizationPlaceX = 2;

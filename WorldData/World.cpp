@@ -99,13 +99,13 @@ bool World::isValid(int x, int y)
         x < Config::sizeX &&
         y < Config::sizeY;
 }
-bool World::isValidChunk(uint32_t chunkX, uint32_t chunkY)
+bool World::isValidChunk(uint16_t chunkX, uint16_t chunkY)
 {
     return 
         chunkX < WorldConfig::CHUNKS_X &&
         chunkY < WorldConfig::CHUNKS_Y;
 }
-bool World::isChunkLand(uint32_t chunkX, uint32_t chunkY)
+bool World::isChunkLand(uint16_t chunkX, uint16_t chunkY)
 {
     for (uint32_t y = 0; y < ChunkConfig::CHUNK_SIZE; y++)
     {
@@ -244,9 +244,9 @@ void World::smoothShores()
     {
         changed = false;
         std::vector<XY> sandToWater;
-        for (uint32_t y = 0; y < Config::sizeY; y++)
+        for (uint16_t y = 0; y < Config::sizeY; y++)
         {
-            for (uint32_t x = 0; x < Config::sizeX; x++)
+            for (uint16_t x = 0; x < Config::sizeX; x++)
             {
                 if (getCell(x, y) == TerrainType::Desert)
                 {
@@ -354,7 +354,7 @@ void World::createStruct(TerrainType type)
     }
 }
 
-bool World::isEmpty(uint32_t x, uint32_t y)
+bool World::isEmpty(uint16_t x, uint16_t y)
 {
     TerrainType type = getCell(x, y);
     return type != TerrainType::MountainWithStone &&
@@ -378,31 +378,31 @@ void World::markAllDirty(RendererSFML &renderer)
 
 
 
-bool World::hasBuilding(uint32_t chunkX, uint32_t chunkY)
+bool World::hasBuilding(uint16_t chunkX, uint16_t chunkY)
 {
     return getBuilding(chunkX, chunkY) != BuildingType::None;
 }
 
-XY World::getCellInChunk(uint32_t chunkX, uint32_t chunkY)
+XY World::getCellInChunk(uint16_t chunkX, uint16_t chunkY)
 {
-    uint32_t x = chunkX * ChunkConfig::CHUNK_SIZE;
-    uint32_t y = chunkY * ChunkConfig::CHUNK_SIZE;
+    uint16_t x = chunkX * ChunkConfig::CHUNK_SIZE;
+    uint16_t y = chunkY * ChunkConfig::CHUNK_SIZE;
     return {x, y};
 }
 
-std::vector<XY> World::getCellsInChunk(uint32_t chunkX, uint32_t chunkY)
+std::vector<XY> World::getCellsInChunk(uint16_t chunkX, uint16_t chunkY)
 {
     std::vector<XY> cells;
     cells.reserve(ChunkConfig::CELL_COUNT);
 
     auto ref = getCellInChunk(chunkX, chunkY);
 
-    for (uint32_t y = 0; y < ChunkConfig::CHUNK_SIZE; y++)
+    for (uint16_t y = 0; y < ChunkConfig::CHUNK_SIZE; y++)
     {
-        for (uint32_t x = 0; x < ChunkConfig::CHUNK_SIZE; x++)
+        for (uint16_t x = 0; x < ChunkConfig::CHUNK_SIZE; x++)
         {
-            uint32_t worldX = ref.x + x;
-            uint32_t worldY = ref.y + y;
+            uint16_t worldX = ref.x + x;
+            uint16_t worldY = ref.y + y;
 
             if (worldX >= Config::sizeX || worldY >= Config::sizeY)
                 continue;
