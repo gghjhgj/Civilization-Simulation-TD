@@ -20,6 +20,7 @@
 #include <cmath>
 class Civilization;
 class World;
+
 class Human
 {
 public:
@@ -128,79 +129,44 @@ public:
     XY humanFindWorkingBuildingChunk(World &world, uint32_t x, uint32_t y, BuildingType type);
     bool gotResource(uint32_t hx, uint32_t hy, uint32_t rx, uint32_t ry);
     Dirs humanMoveDecision(HumanBase &base);
-    template <typename T, typename Func>
-    void processHumanVector(
-        std::vector<T> &humans,
-        World &world,
-        RendererSFML &renderer,
-        Func aiLogic)
-    {
-
-        aiArena.execute(
-            [&]()
-            {
-                tbb::parallel_for(
-                    tbb::blocked_range<size_t>(
-                        0,
-                        humans.size(),
-                        256),
-
-                    [&](const tbb::blocked_range<size_t> &range)
-                    {
-                        int threadID =
-                            tbb::this_task_arena::current_thread_index();
-
-                        for (size_t i = range.begin();
-                             i < range.end();
-                             i++)
-                        {
-                            auto &h = humans[i];
-
-                            Dirs dir;
-                            XY newPos;
-                            bool removed = false;
-
-                            if (aiLogic(
-                                    h,
-                                    dir,
-                                    newPos,
-                                    removed,
-                                    threadID))
-                            {
-                                continue;
-                            }
-
-                            if (world.isValid(newPos.x, newPos.y) &&
-                                world.getCell(newPos.x, newPos.y) != TerrainType::Water)
-                            {
-
-                                h.moves++;
-                                h.pos =
-                                    {
-                                        newPos.x,
-                                        newPos.y};
-                            }
-                            else
-                            {
-                                h.points -= random10();
-                            }
-
-                            if (h.points <= 0)
-                                h.points += random10() * random10();
-
-                            if (random10() % 4 == 0)
-                                h.points -= random10();
-                        }
-                    });
-            });
-    }
-
+    
     void humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer);
 
 private:
     std::vector<ThreadLocalData> threadResults;
     std::vector<size_t> allAssignedToRemove;
     std::vector<DataNeededForEndConstruction> allConstructionsToEnd;
+
+    void processFoodCollectors(
+        World &world,
+        RendererSFML &renderer
+    );
+
+    void processWoodCollectors(
+        World &world,
+        RendererSFML &renderer
+    );
+
+    void processStoneCollectors(
+        World &world,
+        RendererSFML &renderer
+    );
+
+    void processBuilders(
+        World &world,
+        RendererSFML &renderer
+    );
+
+    void processAssigned(
+        World &world,
+        RendererSFML &renderer
+    );
+
+    tbb::affinity_partitioner foodCollectorsPartitioner;
+    tbb::affinity_partitioner woodCollectorsPartitioner;
+    tbb::affinity_partitioner stoneCollectorsPartitioner;
+    tbb::affinity_partitioner buildersPartitioner;
+    tbb::affinity_partitioner assignedPartitioner;
 };
 
 #include "HumanLogic.hpp"

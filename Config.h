@@ -3,13 +3,12 @@
 class Config
 {
     public:
-    static constexpr int ticksForRender = 1500;//nie ma juz
     static constexpr float FPS = 30.f;
-    static constexpr int ticksForCivilizationDecision = 1000;
+    static constexpr int ticksForCivilizationDecision = 1000;//humanticks
     static constexpr int ticksForBuildingDecision = 10;
-    static constexpr int ticksForAssigningDecision = 20;
+    static constexpr int ticksForAssigningDecision = 1000;//humanticks
     static constexpr int ticksForResourcesGainsFromBuildings = 1000;
-    static constexpr int ticksForNewHumans = 3000;
+    static constexpr int ticksForNewHumans = 1000;//humanticks
 
     static constexpr int sizeX = 1800;
     static constexpr int sizeY = 999;
@@ -58,6 +57,7 @@ class Config
     static constexpr int civilizationPlaceHP = 30;
 
     static constexpr int humanCount = 1000000;
+    static constexpr int GRAIN = 128;
     static constexpr int humanHP = 100;
     static constexpr int humanStamina = 1000;
     static constexpr int vision = 2;

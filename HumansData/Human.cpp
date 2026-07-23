@@ -10,7 +10,6 @@ void Human::createHuman(World &world, Civilization &civilization)
 
     threadResults.resize(threadsCount);
 
-
     foodCollectors.reserve(Config::humanCount + 40000);
     woodCollectors.reserve(Config::humanCount + 40000);
     stoneCollectors.reserve(Config::humanCount + 40000);
@@ -155,159 +154,643 @@ Human::Dirs Human::humanMoveDecision(HumanBase &base)
 
     return {dirX, dirY};
 }
+
+
+
+
+
+
+void Human::processFoodCollectors(
+    World &world,
+    RendererSFML &renderer)
+{
+    aiArena.execute(
+        [&]()
+        {
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(
+                    0,
+                    foodCollectors.size(),
+                    Config::GRAIN),
+
+                [&](const tbb::blocked_range<size_t> &range)
+                {
+                    int threadID =
+                        tbb::this_task_arena::current_thread_index();
+
+                    for(size_t i = range.begin();
+                        i < range.end();
+                        i++)
+                    {
+                        auto &h = foodCollectors[i];
+
+                        Dirs dir;
+                        XY newPos;
+
+
+                        if(h.moves % (Config::vision + 1) == 0)
+                        {
+                            h.targetPos =
+                                humanFindResource(
+                                    world,
+                                    h.pos.x,
+                                    h.pos.y,
+                                    TerrainType::LandWithFood);
+                        }
+
+
+                        dir = humanMoveDecision(h);
+
+                        newPos =
+                        {
+                            h.pos.x + dir.x,
+                            h.pos.y + dir.y
+                        };
+
+
+                        if(h.targetPos.x != UINT32_MAX &&
+                           h.targetPos.y != UINT32_MAX &&
+                           gotResource(
+                               newPos.x,
+                               newPos.y,
+                               h.targetPos.x,
+                               h.targetPos.y))
+                        {
+                            if(world.getCell(newPos.x,newPos.y)
+                               == TerrainType::LandWithFood)
+                            {
+                                threadResults[threadID].foodCollected++;
+
+                                world.setCell(
+                                    newPos.x,
+                                    newPos.y,
+                                    TerrainType::Land);
+
+                                renderer.addToDirtyBuffer(
+                                    world,
+                                    newPos.x,
+                                    newPos.y,
+                                    sf::Color::Green,
+                                    threadID);
+                            }
+                        }
+
+
+                        if(world.isValid(newPos.x,newPos.y) &&
+                           world.getCell(newPos.x,newPos.y)
+                               != TerrainType::Water)
+                        {
+                            h.moves++;
+
+                            h.pos =
+                            {
+                                newPos.x,
+                                newPos.y
+                            };
+                        }
+                        else
+                        {
+                            h.points -= random10();
+                        }
+
+
+                        if(h.points <= 0)
+                            h.points += random10()*random10();
+
+                        if(random10()%4==0)
+                            h.points -= random10();
+                    }
+                }, foodCollectorsPartitioner);
+        });
+}
+
+void Human::processWoodCollectors(
+    World &world,
+    RendererSFML &renderer)
+{
+    aiArena.execute(
+        [&]()
+        {
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(
+                    0,
+                    woodCollectors.size(),
+                    Config::GRAIN),
+
+                [&](const auto &range)
+                {
+                    int threadID =
+                        tbb::this_task_arena::current_thread_index();
+
+
+                    for(size_t i=range.begin();
+                        i<range.end();
+                        i++)
+                    {
+                        auto &h = woodCollectors[i];
+
+                        Dirs dir;
+                        XY newPos;
+
+
+                        if(h.moves % (Config::vision+1)==0)
+                        {
+                            h.targetPos =
+                                humanFindResource(
+                                    world,
+                                    h.pos.x,
+                                    h.pos.y,
+                                    TerrainType::LandWithTree);
+                        }
+
+
+                        dir = humanMoveDecision(h);
+
+                        newPos =
+                        {
+                            h.pos.x+dir.x,
+                            h.pos.y+dir.y
+                        };
+
+
+                        if(h.targetPos.x != UINT32_MAX &&
+                           h.targetPos.y != UINT32_MAX &&
+                           gotResource(
+                              newPos.x,
+                              newPos.y,
+                              h.targetPos.x,
+                              h.targetPos.y))
+                        {
+                            if(world.getCell(newPos.x,newPos.y)
+                               ==TerrainType::LandWithTree)
+                            {
+                                threadResults[threadID].woodCollected++;
+
+
+                                world.setCell(
+                                    newPos.x,
+                                    newPos.y,
+                                    TerrainType::Land);
+
+
+                                renderer.addToDirtyBuffer(
+                                    world,
+                                    newPos.x,
+                                    newPos.y,
+                                    sf::Color::Green,
+                                    threadID);
+                            }
+                        }
+
+
+                        if(world.isValid(newPos.x,newPos.y) &&
+                           world.getCell(newPos.x,newPos.y)
+                              !=TerrainType::Water)
+                        {
+                            h.moves++;
+
+                            h.pos =
+                            {
+                                newPos.x,
+                                newPos.y
+                            };
+                        }
+                        else
+                        {
+                            h.points-=random10();
+                        }
+
+
+                        if(h.points<=0)
+                            h.points+=random10()*random10();
+
+                        if(random10()%4==0)
+                            h.points-=random10();
+                    }
+                }, woodCollectorsPartitioner);
+        });
+}
+
+void Human::processStoneCollectors(
+    World &world,
+    RendererSFML &renderer)
+{
+    aiArena.execute(
+        [&]()
+        {
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(
+                    0,
+                    stoneCollectors.size(),
+                    Config::GRAIN),
+
+                [&](const auto &range)
+                {
+                    int threadID =
+                        tbb::this_task_arena::current_thread_index();
+
+
+                    for(size_t i = range.begin();
+                        i < range.end();
+                        i++)
+                    {
+                        auto &h = stoneCollectors[i];
+
+                        Dirs dir;
+                        XY newPos;
+
+
+                        if(h.moves % (Config::vision + 1) == 0)
+                        {
+                            h.targetPos =
+                                humanFindResource(
+                                    world,
+                                    h.pos.x,
+                                    h.pos.y,
+                                    TerrainType::MountainWithStone);
+                        }
+
+
+                        dir = humanMoveDecision(h);
+
+                        newPos =
+                        {
+                            h.pos.x + dir.x,
+                            h.pos.y + dir.y
+                        };
+
+
+                        if(h.targetPos.x != UINT32_MAX &&
+                           h.targetPos.y != UINT32_MAX &&
+                           gotResource(
+                               newPos.x,
+                               newPos.y,
+                               h.targetPos.x,
+                               h.targetPos.y))
+                        {
+                            if(world.getCell(newPos.x, newPos.y)
+                               == TerrainType::MountainWithStone)
+                            {
+                                threadResults[threadID].stoneCollected++;
+
+
+                                world.setCell(
+                                    newPos.x,
+                                    newPos.y,
+                                    TerrainType::Mountain);
+
+
+                                renderer.addToDirtyBuffer(
+                                    world,
+                                    newPos.x,
+                                    newPos.y,
+                                    sf::Color::White,
+                                    threadID);
+                            }
+                        }
+
+
+                        if(world.isValid(newPos.x, newPos.y) &&
+                           world.getCell(newPos.x, newPos.y)
+                              != TerrainType::Water)
+                        {
+                            h.moves++;
+
+                            h.pos =
+                            {
+                                newPos.x,
+                                newPos.y
+                            };
+                        }
+                        else
+                        {
+                            h.points -= random10();
+                        }
+
+
+                        if(h.points <= 0)
+                            h.points += random10() * random10();
+
+                        if(random10() % 4 == 0)
+                            h.points -= random10();
+                    }
+                }, stoneCollectorsPartitioner);
+        });
+}
+
+void Human::processBuilders(
+    World &world,
+    RendererSFML &renderer)
+{
+    aiArena.execute(
+        [&]()
+        {
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(
+                    0,
+                    builders.size(),
+                    Config::GRAIN),
+
+                [&](const auto &range)
+                {
+                    int threadID =
+                        tbb::this_task_arena::current_thread_index();
+
+
+                    for(size_t i = range.begin();
+                        i < range.end();
+                        i++)
+                    {
+                        auto &h = builders[i];
+
+                        Dirs dir;
+                        XY newPos;
+
+
+                        if(h.moves % (Config::vision + 1) == 0)
+                        {
+                            h.targetPos =
+                                humanFindFlagChunk(
+                                    world,
+                                    h.pos.x,
+                                    h.pos.y,
+                                    ChunkFlag::Construction);
+                        }
+
+
+                        dir = humanMoveDecision(h);
+
+                        newPos =
+                        {
+                            h.pos.x + dir.x,
+                            h.pos.y + dir.y
+                        };
+
+
+                        if(h.targetPos.x != UINT32_MAX &&
+                           h.targetPos.y != UINT32_MAX &&
+                           gotResource(
+                               newPos.x,
+                               newPos.y,
+                               h.targetPos.x,
+                               h.targetPos.y))
+                        {
+                            auto ref =
+                                world.getCellRef(
+                                    newPos.x,
+                                    newPos.y);
+
+
+                            if(world.getBuilding(
+                                    ref.chunkX,
+                                    ref.chunkY)
+                                    != BuildingType::None &&
+                               world.hasChunkFlag(
+                                    ref.chunkX,
+                                    ref.chunkY,
+                                    ChunkFlag::Construction))
+                            {
+                                BuildingType building =
+                                    world.getBuilding(
+                                        ref.chunkX,
+                                        ref.chunkY);
+
+                                Type type =
+                                    GetTypeBuilding(building);
+
+
+                                threadResults[threadID]
+                                    .constr.push_back(
+                                    {
+                                        ref.chunkX,
+                                        ref.chunkY,
+                                        type
+                                    });
+                            }
+                            else
+                            {
+                                h.targetPos =
+                                {
+                                    UINT32_MAX,
+                                    UINT32_MAX
+                                };
+                            }
+                        }
+
+
+                        if(world.isValid(newPos.x,newPos.y) &&
+                           world.getCell(newPos.x,newPos.y)
+                              != TerrainType::Water)
+                        {
+                            h.moves++;
+
+                            h.pos =
+                            {
+                                newPos.x,
+                                newPos.y
+                            };
+                        }
+                        else
+                        {
+                            h.points -= random10();
+                        }
+
+
+                        if(h.points <= 0)
+                            h.points += random10()*random10();
+
+
+                        if(random10()%4 == 0)
+                            h.points -= random10();
+                    }
+                }, buildersPartitioner);
+        });
+}
+
+void Human::processAssigned(
+    World &world,
+    RendererSFML &renderer)
+{
+    aiArena.execute(
+        [&]()
+        {
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(
+                    0,
+                    assigned.size(),
+                    Config::GRAIN),
+
+                [&](const auto &range)
+                {
+                    int threadID =
+                        tbb::this_task_arena::current_thread_index();
+
+
+                    for(size_t i = range.begin();
+                        i < range.end();
+                        i++)
+                    {
+                        auto &h = assigned[i];
+
+                        Dirs dir;
+                        XY newPos;
+
+
+                        if(h.moves % (Config::vision + 1) == 0)
+                        {
+                            h.targetPos =
+                                humanFindWorkingBuildingChunk(
+                                    world,
+                                    h.pos.x,
+                                    h.pos.y,
+                                    h.targetBuilding);
+                        }
+
+
+                        dir = humanMoveDecision(h);
+
+
+                        newPos =
+                        {
+                            h.pos.x + dir.x,
+                            h.pos.y + dir.y
+                        };
+
+
+                        if(h.targetPos.x != UINT32_MAX &&
+                           h.targetPos.y != UINT32_MAX &&
+                           gotResource(
+                               newPos.x,
+                               newPos.y,
+                               h.targetPos.x,
+                               h.targetPos.y))
+                        {
+                            auto ref =
+                                world.getCellRef(
+                                    newPos.x,
+                                    newPos.y);
+
+
+                            if(world.getBuilding(
+                                    ref.chunkX,
+                                    ref.chunkY)
+                                    == h.targetBuilding &&
+                               !world.hasChunkFlag(
+                                    ref.chunkX,
+                                    ref.chunkY,
+                                    ChunkFlag::Construction))
+                            {
+
+                                switch(h.targetBuilding)
+                                {
+                                case BuildingType::Farm:
+                                    threadResults[threadID]
+                                        .farmWorkersDelta++;
+                                    break;
+
+                                case BuildingType::Sawmill:
+                                    threadResults[threadID]
+                                        .sawmillWorkersDelta++;
+                                    break;
+
+                                case BuildingType::Mine:
+                                    threadResults[threadID]
+                                        .mineWorkersDelta++;
+                                    break;
+
+                                default:
+                                    break;
+                                }
+
+
+                                size_t id =
+                                    &h - &assigned[0];
+
+
+                                threadResults[threadID]
+                                    .assignedRemoveQueue
+                                    .push_back(id);
+
+
+                                continue;
+                            }
+                            else
+                            {
+                                h.targetPos =
+                                {
+                                    UINT32_MAX,
+                                    UINT32_MAX
+                                };
+                            }
+                        }
+
+
+                        if(world.isValid(newPos.x,newPos.y) &&
+                           world.getCell(newPos.x,newPos.y)
+                              != TerrainType::Water)
+                        {
+                            h.moves++;
+
+                            h.pos =
+                            {
+                                newPos.x,
+                                newPos.y
+                            };
+                        }
+                        else
+                        {
+                            h.points -= random10();
+                        }
+
+
+                        if(h.points <= 0)
+                            h.points += random10()*random10();
+
+
+                        if(random10()%4 == 0)
+                            h.points -= random10();
+                    }
+                }, assignedPartitioner);
+        });
+}
+
+
+
+
+
 void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer)
 {
     for (auto &r : threadResults)
         r.clear();
 
-    processHumanVector(foodCollectors, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
-                       {
-            if (h.moves % (Config::vision + 1) == 0)
-                h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithFood);
+    
+    //a)
+    /*
+    processFoodCollectors(world, renderer);
+    processWoodCollectors(world, renderer);
+    processStoneCollectors(world, renderer);
+    processBuilders(world, renderer);
+    processAssigned(world, renderer);
+    humanTicks++;
+    */
 
-            dir = humanMoveDecision(h);
-            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
+    //b)
+    for(int i = 0; i < Config::ticksForNewHumans; i++)
+    {
+    tbb::parallel_invoke(
+        [&]
+        { processFoodCollectors(world, renderer); },
+        [&]
+        { processWoodCollectors(world, renderer); },
+        [&]
+        { processStoneCollectors(world, renderer); },
+        [&]
+        { processBuilders(world, renderer); },
+        [&]
+        { processAssigned(world, renderer); });
 
-            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y, h.targetPos.x, h.targetPos.y))
-            {
-                if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithFood)
-                {
-                    threadResults[threadID].foodCollected++;
-
-                    world.setCell(newPos.x, newPos.y, TerrainType::Land);
-                    renderer.addToDirtyBuffer(world, newPos.x, newPos.y, sf::Color::Green, threadID);
-                }
-            }
-
-            return false; });
-
-    processHumanVector(woodCollectors, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
-                       {
-            if (h.moves % (Config::vision + 1) == 0)
-                h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::LandWithTree);
-
-            dir = humanMoveDecision(h);
-            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
-
-            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y, h.targetPos.x, h.targetPos.y))
-            {
-                if (world.getCell(newPos.x, newPos.y) == TerrainType::LandWithTree)
-                {
-                    threadResults[threadID].woodCollected++;
-
-                    world.setCell(newPos.x, newPos.y, TerrainType::Land);
-                    renderer.addToDirtyBuffer(world, newPos.x, newPos.y, sf::Color::Green, threadID);
-                }
-            }
-
-            return false; });
-
-    processHumanVector(stoneCollectors, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
-                       {
-            if (h.moves % (Config::vision + 1) == 0)
-                h.targetPos = humanFindResource(world, h.pos.x, h.pos.y, TerrainType::MountainWithStone);
-
-            dir = humanMoveDecision(h);
-            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
-
-            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y, h.targetPos.x, h.targetPos.y))
-            {
-                if (world.getCell(newPos.x, newPos.y) == TerrainType::MountainWithStone)
-                {
-                    threadResults[threadID].stoneCollected++;
-
-                    world.setCell(newPos.x, newPos.y, TerrainType::Mountain);
-                    renderer.addToDirtyBuffer(world, newPos.x, newPos.y, sf::Color::White, threadID);
-                }
-            }
-
-            return false; });
-
-    processHumanVector(builders, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
-                       {
-            if (h.moves % (Config::vision + 1) == 0)
-                h.targetPos = humanFindFlagChunk(world, h.pos.x, h.pos.y, ChunkFlag::Construction);
-
-            dir = humanMoveDecision(h);
-            newPos = { h.pos.x + dir.x, h.pos.y + dir.y };
-
-            if (h.targetPos.x != UINT32_MAX && h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y, h.targetPos.x, h.targetPos.y))
-            {
-                auto ref = world.getCellRef(newPos.x, newPos.y);
-
-                if (world.getBuilding(ref.chunkX, ref.chunkY) != BuildingType::None &&
-                    world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::Construction))
-                {
-                    BuildingType building = world.getBuilding(ref.chunkX, ref.chunkY);
-                    Type type = GetTypeBuilding(building);
-                    threadResults[threadID].constr.push_back({ ref.chunkX, ref.chunkY, type });
-                }
-                else
-                {
-                    h.targetPos = { UINT32_MAX, UINT32_MAX };
-                }
-            }
-
-            return false; });
-
-    processHumanVector(assigned, world, renderer, [&](auto &h, Dirs &dir, XY &newPos, bool &removed, int threadID)
-                       {
-            if (h.moves % (Config::vision + 1) == 0)
-            {
-                h.targetPos =
-                    humanFindWorkingBuildingChunk(world, h.pos.x, h.pos.y, h.targetBuilding);
-            }
-
-            dir = humanMoveDecision(h);
-
-            newPos.x = h.pos.x + dir.x;
-            newPos.y = h.pos.y + dir.y;
-
-            if (h.targetPos.x != UINT32_MAX &&
-                h.targetPos.y != UINT32_MAX &&
-                gotResource(newPos.x, newPos.y,
-                    h.targetPos.x,
-                    h.targetPos.y))
-            {
-                auto ref = world.getCellRef(newPos.x, newPos.y);
-
-                if (world.getBuilding(ref.chunkX, ref.chunkY) == h.targetBuilding &&
-                    !world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::Construction))
-                {
-                    switch (h.targetBuilding)
-                    {
-                    case BuildingType::Farm:
-                        threadResults[threadID].farmWorkersDelta++;
-                        break;
-
-                    case BuildingType::Sawmill:
-                        threadResults[threadID].sawmillWorkersDelta++;
-                        break;
-
-                    case BuildingType::Mine:
-                        threadResults[threadID].mineWorkersDelta++;
-                        break;
-
-                    default:
-                        break;
-                    }
-
-                    size_t id = &h - &assigned[0];
-                    threadResults[threadID].assignedRemoveQueue.push_back(id);
-
-                    return true;
-                }
-                else
-                {
-                    h.targetPos = { UINT32_MAX, UINT32_MAX };
-                }
-            }
-
-        return false; });
+        humanTicks++;
+    }
 
     ///////////////////////////sync
 
@@ -369,8 +852,6 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
         allConstructionsToEnd.clear();
     }
 
-    humanTicks++;
-
     if (humanTicks % Config::ticksForNewHumans == 0)
     {
         humanRespawn(world, civilization);
@@ -381,7 +862,7 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
         civilization.assignHumansToBuilding(*this, Type::SAWMILL);
         civilization.assignHumansToBuilding(*this, Type::MINE);
     }
-    if(humanTicks % Config::ticksForCivilizationDecision == 0)
+    if (humanTicks % Config::ticksForCivilizationDecision == 0)
     {
         civilization.civilizationDecision(*this, food, stone, tree);
     }
