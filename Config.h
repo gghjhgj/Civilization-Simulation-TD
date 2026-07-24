@@ -56,11 +56,11 @@ class Config
     static constexpr int civilizationPlaceY = 2;
     static constexpr int civilizationPlaceHP = 30;
 
-    static constexpr int humanCount = 1000000;
+    static constexpr int humanCount = 100000;
     static constexpr int GRAIN = 128;
     static constexpr int humanHP = 100;
     static constexpr int humanStamina = 1000;
-    static constexpr int vision = 2;
+    static constexpr int vision = 1;
     static constexpr int chanceToChangeDir = 10; //%
     static constexpr int chanceForRandomMoveHavingTarget = 30; // %
 

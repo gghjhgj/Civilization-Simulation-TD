@@ -45,7 +45,7 @@ int main() {
     Food food;
     Tree tree;
     Stone stone;
-    Civilization civilization;
+    Civilization civilization(food, stone, tree);
     std::cout << "threads before initing threadpool" << std::thread::hardware_concurrency() << std::endl;
     Human human;
     RendererSFML renderer(Config::WindowSizeX, Config::WindowSizeY, 1);

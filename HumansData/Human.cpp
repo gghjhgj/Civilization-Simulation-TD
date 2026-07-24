@@ -44,14 +44,13 @@ void Human::createHuman(World &world, Civilization &civilization)
 
         addHuman(*this, this->foodCollectors, BuildingType::None, x2, y2);
     }
-    
-       /*
-    for (int i = 0; i < Config::humanCount; i++)
-    {
-       addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
-    }
-       */
-    
+
+    /*
+ for (int i = 0; i < Config::humanCount; i++)
+ {
+    addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
+ }
+    */
 }
 
 void Human::humanRespawn(World &world, Civilization &civilization)
@@ -66,29 +65,30 @@ void Human::humanRespawn(World &world, Civilization &civilization)
 }
 XY Human::humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type)
 {
-    int startX = static_cast<int>(x);
-    int startY = static_cast<int>(y);
-
-    for (int dy = -Config::vision; dy <= Config::vision; dy++)
+    if(!world.isValid(x, y))
     {
-        for (int dx = -Config::vision; dx <= Config::vision; dx++)
-        {
-            int nx = startX + dx;
-            int ny = startY + dy;
-
-            if (!world.isValid(nx, ny))
-                continue;
-
-            bool found = false;
-            found = world.getCell(nx, ny) == type;
-
-            if (found)
-                return {
-                    static_cast<uint16_t>(nx), 
-                    static_cast<uint16_t>(ny)
-                };
-        }
+        return {UINT16_MAX, UINT16_MAX};
     }
+    
+    auto ref = world.getCellRef(x, y);
+    
+    uint16_t cell =
+        world.grid[ref.chunkRegionIndex]
+            .chunks[ref.localChunkIndex]
+            .whereType(type);
+
+
+    if(cell != ChunkConfig::CELL_COUNT)
+    {
+        int localX = cell % 3;
+        int localY = cell / 3;
+
+        return {
+            static_cast<uint16_t>(ref.chunkX * 3 + localX),
+            static_cast<uint16_t>(ref.chunkY * 3 + localY)
+        };
+    }
+
 
     return {UINT16_MAX, UINT16_MAX};
 }
@@ -96,15 +96,23 @@ XY Human::humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag fla
 {
     auto ref = world.getCellRef(x, y);
     uint8_t vision = 1;
+
+    int maxX = ref.chunkX + vision;
+    int maxY = ref.chunkY + vision;
+    int minX = ref.chunkX - vision;
+    int minY = ref.chunkY - vision;
+
+    if (!world.isValidChunk(maxX, maxY) || !world.isValidChunk(minX, minY))
+    {
+        return {UINT16_MAX, UINT16_MAX};
+    }
+
     for (int dy = -vision; dy <= vision; dy++)
     {
+        int ny = ref.chunkY + dy;
         for (int dx = -vision; dx <= vision; dx++)
         {
             int nx = ref.chunkX + dx;
-            int ny = ref.chunkY + dy;
-
-            if (!world.isValidChunk(nx, ny))
-                continue;
 
             if (world.hasChunkFlag(nx, ny, ChunkFlag::Construction))
             {
@@ -120,17 +128,24 @@ XY Human::humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag fla
 XY Human::humanFindWorkingBuildingChunk(World &world, uint16_t x, uint16_t y, BuildingType type)
 {
     auto ref = world.getCellRef(x, y);
-
     uint8_t vision = 1;
+
+    int maxX = ref.chunkX + vision;
+    int maxY = ref.chunkY + vision;
+    int minX = ref.chunkX - vision;
+    int minY = ref.chunkY - vision;
+
+    if (!world.isValidChunk(maxX, maxY) || !world.isValidChunk(minX, minY))
+    {
+        return {UINT16_MAX, UINT16_MAX};
+    }
+
     for (int dy = -vision; dy <= vision; dy++)
     {
+        int ny = ref.chunkY + dy;
         for (int dx = -vision; dx <= vision; dx++)
         {
             int nx = ref.chunkX + dx;
-            int ny = ref.chunkY + dy;
-
-            if (!world.isValidChunk(nx, ny))
-                continue;
 
             if (world.getBuilding(nx, ny) == type &&
                 !(world.hasChunkFlag(nx, ny, ChunkFlag::Construction)))
@@ -144,7 +159,7 @@ XY Human::humanFindWorkingBuildingChunk(World &world, uint16_t x, uint16_t y, Bu
     }
     return {UINT16_MAX, UINT16_MAX};
 }
-bool Human::gotResource(uint16_t hx, uint16_t hy, uint16_t rx, uint16_t ry)
+inline bool Human::gotResource(uint16_t hx, uint16_t hy, uint16_t rx, uint16_t ry)
 {
     if (hx == rx && hy == ry)
         return true;
@@ -156,15 +171,15 @@ Human::Dirs Human::humanMoveDecision(
     uint16_t targetX, uint16_t targetY,
     uint8_t points)
 {
+    int a;
     if (targetX == UINT16_MAX || targetY == UINT16_MAX)
     {
-        uint16_t directionIndex = hash(points) & 7;
+        uint8_t directionIndex = points % 8;
         static constexpr int lookupX[8] = {1, 1, 0, -1, -1, -1, 0, 1};
         static constexpr int lookupY[8] = {0, 1, 1, 1, 0, -1, -1, -1};
         return {
-            static_cast<int8_t>(lookupX[directionIndex]), 
-            static_cast<int8_t>(lookupY[directionIndex])
-        };
+            static_cast<int8_t>(lookupX[directionIndex]),
+            static_cast<int8_t>(lookupY[directionIndex])};
     }
 
     int dx = targetX - x;
@@ -174,11 +189,6 @@ Human::Dirs Human::humanMoveDecision(
 
     return {dirX, dirY};
 }
-
-
-
-
-
 
 void Human::processFoodCollectors(
     World &world,
@@ -198,15 +208,15 @@ void Human::processFoodCollectors(
                     int threadID =
                         tbb::this_task_arena::current_thread_index();
 
-                    for(size_t i = range.begin();
-                        i < range.end();
-                        i++)
+                    for (size_t i = range.begin();
+                         i < range.end();
+                         i++)
                     {
                         auto &h = foodCollectors;
 
                         Dirs dir;
 
-                        if(h.moves[i] % (Config::vision + 1) == 0)
+                        if (h.moves[i] % 3 == 0)
                         {
                             XY target =
                                 humanFindResource(
@@ -219,30 +229,29 @@ void Human::processFoodCollectors(
                             h.targetY[i] = target.y;
                         }
 
-
                         dir = humanMoveDecision(
                             h.posX[i],
                             h.posY[i],
                             h.targetX[i],
                             h.targetY[i],
-                            h.points[i]
-                        );
+                            i + h.points[i]);
 
                         uint16_t newX = h.posX[i] + dir.x;
                         uint16_t newY = h.posY[i] + dir.y;
 
-
-                        if(h.targetX[i] != UINT16_MAX &&
-                           h.targetY[i] != UINT16_MAX &&
-                           gotResource(
-                               newX,
-                               newY,
-                               h.targetX[i],
-                               h.targetY[i]))
+                        if (h.targetX[i] != UINT16_MAX &&
+                            h.targetY[i] != UINT16_MAX &&
+                            gotResource(
+                                newX,
+                                newY,
+                                h.targetX[i],
+                                h.targetY[i]))
                         {
-                            if(world.getCell(newX,newY)
-                               == TerrainType::LandWithFood)
+                            h.targetX[i] = UINT16_MAX;
+                            h.targetY[i] = UINT16_MAX;
+                            if (world.getCell(newX, newY) == TerrainType::LandWithFood)
                             {
+                                h.points[i] += h.moves[i];
                                 threadResults[threadID].foodCollected++;
 
                                 world.setCell(
@@ -259,29 +268,20 @@ void Human::processFoodCollectors(
                             }
                         }
 
-
-                        if(world.isValid(newX,newY) &&
-                           world.getCell(newX,newY)
-                               != TerrainType::Water)
+                        if (world.isValid(newX, newY) &&
+                            world.getCell(newX, newY) != TerrainType::Water)
                         {
                             h.moves[i]++;
-
                             h.posX[i] = newX;
                             h.posY[i] = newY;
                         }
                         else
                         {
-                            h.points[i] -= random10();
+                            h.points[i] -= 4;
                         }
-
-
-                        if(h.points[i] <= 0)
-                            h.points[i] += random10()*random10();
-
-                        if(random10()%4==0)
-                            h.points[i] -= random10();
                     }
-                }, foodCollectorsPartitioner);
+                },
+                foodCollectorsPartitioner);
         });
 }
 
@@ -303,16 +303,15 @@ void Human::processWoodCollectors(
                     int threadID =
                         tbb::this_task_arena::current_thread_index();
 
-                    for(size_t i = range.begin();
-                        i < range.end();
-                        i++)
+                    for (size_t i = range.begin();
+                         i < range.end();
+                         i++)
                     {
                         auto &h = woodCollectors;
 
                         Dirs dir;
 
-
-                        if(h.moves[i] % (Config::vision + 1) == 0)
+                        if (h.moves[i] % 3 == 0)
                         {
                             XY target =
                                 humanFindResource(
@@ -325,39 +324,38 @@ void Human::processWoodCollectors(
                             h.targetY[i] = target.y;
                         }
 
-
                         dir = humanMoveDecision(
                             h.posX[i],
                             h.posY[i],
                             h.targetX[i],
                             h.targetY[i],
-                            h.points[i]);
-
+                            i + h.points[i]);
 
                         uint16_t newX = h.posX[i] + dir.x;
                         uint16_t newY = h.posY[i] + dir.y;
 
-
-                        if(h.targetX[i] != UINT16_MAX &&
-                           h.targetY[i] != UINT16_MAX &&
-                           gotResource(
-                               newX,
-                               newY,
-                               h.targetX[i],
-                               h.targetY[i]))
+                        if (h.targetX[i] != UINT16_MAX &&
+                            h.targetY[i] != UINT16_MAX &&
+                            gotResource(
+                                newX,
+                                newY,
+                                h.targetX[i],
+                                h.targetY[i]))
                         {
-                            if(world.getCell(newX,newY)
-                               == TerrainType::LandWithTree)
+                            h.targetX[i] = UINT16_MAX;
+                            h.targetY[i] = UINT16_MAX;
+
+                            if (world.getCell(newX, newY) == TerrainType::LandWithTree)
                             {
+                                h.points[i] += h.moves[i];
+
                                 threadResults[threadID]
                                     .woodCollected++;
-
 
                                 world.setCell(
                                     newX,
                                     newY,
                                     TerrainType::Land);
-
 
                                 renderer.addToDirtyBuffer(
                                     world,
@@ -368,10 +366,8 @@ void Human::processWoodCollectors(
                             }
                         }
 
-
-                        if(world.isValid(newX,newY) &&
-                           world.getCell(newX,newY)
-                              != TerrainType::Water)
+                        if (world.isValid(newX, newY) &&
+                            world.getCell(newX, newY) != TerrainType::Water)
                         {
                             h.moves[i]++;
 
@@ -380,15 +376,8 @@ void Human::processWoodCollectors(
                         }
                         else
                         {
-                            h.points[i] -= random10();
+                            h.points[i] -= 4;
                         }
-
-
-                        if(h.points[i] <= 0)
-                            h.points[i] += random10()*random10();
-
-                        if(random10()%4 == 0)
-                            h.points[i] -= random10();
                     }
                 },
                 woodCollectorsPartitioner);
@@ -413,17 +402,15 @@ void Human::processStoneCollectors(
                     int threadID =
                         tbb::this_task_arena::current_thread_index();
 
-
-                    for(size_t i = range.begin();
-                        i < range.end();
-                        i++)
+                    for (size_t i = range.begin();
+                         i < range.end();
+                         i++)
                     {
                         auto &h = stoneCollectors;
 
                         Dirs dir;
 
-
-                        if(h.moves[i] % (Config::vision + 1) == 0)
+                        if (h.moves[i] % 3 == 0)
                         {
                             XY target =
                                 humanFindResource(
@@ -436,53 +423,50 @@ void Human::processStoneCollectors(
                             h.targetY[i] = target.y;
                         }
 
-
                         dir = humanMoveDecision(
                             h.posX[i],
                             h.posY[i],
                             h.targetX[i],
                             h.targetY[i],
-                            h.points[i]);
-
+                            i + h.points[i]);
 
                         uint16_t newX = h.posX[i] + dir.x;
                         uint16_t newY = h.posY[i] + dir.y;
 
-
-                        if(h.targetX[i] != UINT16_MAX &&
-                           h.targetY[i] != UINT16_MAX &&
-                           gotResource(
-                               newX,
-                               newY,
-                               h.targetX[i],
-                               h.targetY[i]))
+                        if (h.targetX[i] != UINT16_MAX &&
+                            h.targetY[i] != UINT16_MAX &&
+                            gotResource(
+                                newX,
+                                newY,
+                                h.targetX[i],
+                                h.targetY[i]))
                         {
-                            if(world.getCell(newX,newY)
-                               == TerrainType::MountainWithStone)
+                            h.targetX[i] = UINT16_MAX;
+                            h.targetY[i] = UINT16_MAX;
+
+                            if (world.getCell(newX, newY) == TerrainType::MountainWithStone)
                             {
+                                h.points[i] += h.moves[i];
+
                                 threadResults[threadID]
                                     .stoneCollected++;
-
 
                                 world.setCell(
                                     newX,
                                     newY,
                                     TerrainType::Mountain);
 
-
                                 renderer.addToDirtyBuffer(
                                     world,
                                     newX,
                                     newY,
-                                    sf::Color::White,
+                                    sf::Color(120, 120, 120),
                                     threadID);
                             }
                         }
 
-
-                        if(world.isValid(newX,newY) &&
-                           world.getCell(newX,newY)
-                              != TerrainType::Water)
+                        if (world.isValid(newX, newY) &&
+                            world.getCell(newX, newY) != TerrainType::Water)
                         {
                             h.moves[i]++;
 
@@ -491,15 +475,8 @@ void Human::processStoneCollectors(
                         }
                         else
                         {
-                            h.points[i] -= random10();
+                            h.points[i] -= 4;
                         }
-
-
-                        if(h.points[i] <= 0)
-                            h.points[i] += random10()*random10();
-
-                        if(random10()%4 == 0)
-                            h.points[i] -= random10();
                     }
                 },
                 stoneCollectorsPartitioner);
@@ -524,17 +501,15 @@ void Human::processBuilders(
                     int threadID =
                         tbb::this_task_arena::current_thread_index();
 
-
-                    for(size_t i = range.begin();
-                        i < range.end();
-                        i++)
+                    for (size_t i = range.begin();
+                         i < range.end();
+                         i++)
                     {
                         auto &h = builders;
 
                         Dirs dir;
 
-
-                        if(h.moves[i] % (Config::vision + 1) == 0)
+                        if (h.moves[i] % 9 == 0)
                         {
                             XY target =
                                 humanFindFlagChunk(
@@ -547,38 +522,35 @@ void Human::processBuilders(
                             h.targetY[i] = target.y;
                         }
 
-
                         dir = humanMoveDecision(
                             h.posX[i],
                             h.posY[i],
                             h.targetX[i],
                             h.targetY[i],
-                            h.points[i]);
-
+                            i + h.points[i]);
 
                         uint16_t newX = h.posX[i] + dir.x;
                         uint16_t newY = h.posY[i] + dir.y;
 
-
-                        if(h.targetX[i] != UINT16_MAX &&
-                           h.targetY[i] != UINT16_MAX &&
-                           gotResource(
-                               newX,
-                               newY,
-                               h.targetX[i],
-                               h.targetY[i]))
+                        if (h.targetX[i] != UINT16_MAX &&
+                            h.targetY[i] != UINT16_MAX &&
+                            gotResource(
+                                newX,
+                                newY,
+                                h.targetX[i],
+                                h.targetY[i]))
                         {
+                            h.points[i]++;
+
                             auto ref =
                                 world.getCellRef(
                                     newX,
                                     newY);
 
-
-                            if(world.getBuilding(
+                            if (world.getBuilding(
                                     ref.chunkX,
-                                    ref.chunkY)
-                                    != BuildingType::None &&
-                               world.hasChunkFlag(
+                                    ref.chunkY) != BuildingType::None &&
+                                world.hasChunkFlag(
                                     ref.chunkX,
                                     ref.chunkY,
                                     ChunkFlag::Construction))
@@ -588,18 +560,14 @@ void Human::processBuilders(
                                         ref.chunkX,
                                         ref.chunkY);
 
-
                                 Type type =
                                     GetTypeBuilding(building);
 
-
                                 threadResults[threadID]
                                     .constr.push_back(
-                                    {
-                                        ref.chunkX,
-                                        ref.chunkY,
-                                        type
-                                    });
+                                        {ref.chunkX,
+                                         ref.chunkY,
+                                         type});
                             }
                             else
                             {
@@ -608,10 +576,8 @@ void Human::processBuilders(
                             }
                         }
 
-
-                        if(world.isValid(newX,newY) &&
-                           world.getCell(newX,newY)
-                              != TerrainType::Water)
+                        if (world.isValid(newX, newY) &&
+                            world.getCell(newX, newY) != TerrainType::Water)
                         {
                             h.moves[i]++;
 
@@ -620,16 +586,8 @@ void Human::processBuilders(
                         }
                         else
                         {
-                            h.points[i] -= random10();
+                            h.points[i] -= 4;
                         }
-
-
-                        if(h.points[i] <= 0)
-                            h.points[i] += random10()*random10();
-
-
-                        if(random10()%4 == 0)
-                            h.points[i] -= random10();
                     }
                 },
                 buildersPartitioner);
@@ -654,17 +612,15 @@ void Human::processAssigned(
                     int threadID =
                         tbb::this_task_arena::current_thread_index();
 
-
-                    for(size_t i = range.begin();
-                        i < range.end();
-                        i++)
+                    for (size_t i = range.begin();
+                         i < range.end();
+                         i++)
                     {
                         auto &h = assigned;
 
                         Dirs dir;
 
-
-                        if(h.moves[i] % (Config::vision + 1) == 0)
+                        if (h.moves[i] % 9 == 0)
                         {
                             XY target =
                                 humanFindWorkingBuildingChunk(
@@ -677,44 +633,40 @@ void Human::processAssigned(
                             h.targetY[i] = target.y;
                         }
 
-
                         dir = humanMoveDecision(
                             h.posX[i],
                             h.posY[i],
                             h.targetX[i],
                             h.targetY[i],
-                            h.points[i]);
-
+                            i + h.points[i]);
 
                         uint16_t newX = h.posX[i] + dir.x;
                         uint16_t newY = h.posY[i] + dir.y;
 
-
-                        if(h.targetX[i] != UINT16_MAX &&
-                           h.targetY[i] != UINT16_MAX &&
-                           gotResource(
-                               newX,
-                               newY,
-                               h.targetX[i],
-                               h.targetY[i]))
+                        if (h.targetX[i] != UINT16_MAX &&
+                            h.targetY[i] != UINT16_MAX &&
+                            gotResource(
+                                newX,
+                                newY,
+                                h.targetX[i],
+                                h.targetY[i]))
                         {
+                            h.points[i]++;
+
                             auto ref =
                                 world.getCellRef(
                                     newX,
                                     newY);
 
-
-                            if(world.getBuilding(
+                            if (world.getBuilding(
                                     ref.chunkX,
-                                    ref.chunkY)
-                                    == h.targetBuilding[i] &&
-                               !world.hasChunkFlag(
+                                    ref.chunkY) == h.targetBuilding[i] &&
+                                !world.hasChunkFlag(
                                     ref.chunkX,
                                     ref.chunkY,
                                     ChunkFlag::Construction))
                             {
-
-                                switch(h.targetBuilding[i])
+                                switch (h.targetBuilding[i])
                                 {
                                 case BuildingType::Farm:
                                     threadResults[threadID]
@@ -735,7 +687,6 @@ void Human::processAssigned(
                                     break;
                                 }
 
-
                                 threadResults[threadID]
                                     .assignedRemoveQueue
                                     .push_back(i);
@@ -749,10 +700,8 @@ void Human::processAssigned(
                             }
                         }
 
-
-                        if(world.isValid(newX,newY) &&
-                           world.getCell(newX,newY)
-                              != TerrainType::Water)
+                        if (world.isValid(newX, newY) &&
+                            world.getCell(newX, newY) != TerrainType::Water)
                         {
                             h.moves[i]++;
 
@@ -761,33 +710,20 @@ void Human::processAssigned(
                         }
                         else
                         {
-                            h.points[i] -= random10();
+                            h.points[i] -= 4;
                         }
-
-
-                        if(h.points[i] <= 0)
-                            h.points[i] += random10()*random10();
-
-
-                        if(random10()%4 == 0)
-                            h.points[i] -= random10();
                     }
                 },
                 assignedPartitioner);
         });
 }
 
-
-
-
-
 void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer)
 {
     for (auto &r : threadResults)
         r.clear();
 
-    
-    //a)
+    // a)
     /*
     processFoodCollectors(world, renderer);
     processWoodCollectors(world, renderer);
@@ -797,20 +733,20 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
     humanTicks++;
     */
 
-    //b)
-    for(int i = 0; i < Config::ticksForNewHumans; i++)
+    // b)
+    for (int i = 0; i < Config::ticksForNewHumans; i++)
     {
-    tbb::parallel_invoke(
-        [&]
-        { processFoodCollectors(world, renderer); },
-        [&]
-        { processWoodCollectors(world, renderer); },
-        [&]
-        { processStoneCollectors(world, renderer); },
-        [&]
-        { processBuilders(world, renderer); },
-        [&]
-        { processAssigned(world, renderer); });
+        tbb::parallel_invoke(
+            [&]
+            { processFoodCollectors(world, renderer); },
+            [&]
+            { processWoodCollectors(world, renderer); },
+            [&]
+            { processStoneCollectors(world, renderer); },
+            [&]
+            { processBuilders(world, renderer); },
+            [&]
+            { processAssigned(world, renderer); });
 
         humanTicks++;
     }

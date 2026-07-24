@@ -413,3 +413,55 @@ std::vector<XY> World::getCellsInChunk(uint16_t chunkX, uint16_t chunkY)
 
     return cells;
 }
+
+
+void World::cleanChunkResources(
+        Food &food, Tree &tree, Stone &stone,
+        uint16_t chunkX,
+        uint16_t chunkY,
+        Civilization &civ)
+    {
+        auto ref = getChunkRef(chunkX, chunkY);
+
+        auto &chunk =
+            grid[ref.chunkRegionIndex]
+                .chunks[ref.localChunkIndex];
+
+        for (uint16_t i = 0; i < ChunkConfig::CELL_COUNT; i++)
+        {
+            TerrainType type = chunk.getCell(i);
+
+            switch (type)
+            {
+            case TerrainType::LandWithFood:
+            {
+                civ.resources.food++;
+                food.foodsCount--;
+
+                chunk.setCell(i, TerrainType::Land);
+                break;
+            }
+
+            case TerrainType::LandWithTree:
+            {
+                civ.resources.wood++;
+                tree.treesCount--;
+
+                chunk.setCell(i, TerrainType::Land);
+                break;
+            }
+
+            case TerrainType::MountainWithStone:
+            {
+                civ.resources.stone++;
+                stone.stonesCount--;
+
+                chunk.setCell(i, TerrainType::Mountain);
+                break;
+            }
+
+            default:
+                break;
+            }
+        }
+    }

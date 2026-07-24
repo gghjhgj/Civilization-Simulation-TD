@@ -7,8 +7,8 @@
 #include <cassert>
 namespace ChunkConfig
 {
-    constexpr uint16_t CHUNK_SIZE = 3;//(3x3=)
-    constexpr uint16_t CELL_COUNT = CHUNK_SIZE * CHUNK_SIZE;//(=9)
+    constexpr uint16_t CHUNK_SIZE = 3;                       //(3x3=)
+    constexpr uint16_t CELL_COUNT = CHUNK_SIZE * CHUNK_SIZE; //(=9)
     constexpr uint32_t BITS_PER_CELL = 3;
     constexpr uint32_t TERRAIN_BITS = CELL_COUNT * BITS_PER_CELL;
     constexpr uint32_t CELL_MASK = 0x7;
@@ -22,7 +22,25 @@ namespace ChunkConfig
 struct Chunk
 {
     uint32_t data = 0;
+    uint32_t getData() const
+    {
+        return data;
+    }
+    uint16_t whereType(TerrainType type) const
+    {
+        for (uint16_t i = 0; i < ChunkConfig::CELL_COUNT; i++)
+        {
+            uint32_t value =
+                (data >> (i * ChunkConfig::BITS_PER_CELL)) & ChunkConfig::CELL_MASK;
 
+            if (value == static_cast<uint32_t>(type))
+            {
+                return i;
+            }
+        }
+
+        return ChunkConfig::CELL_COUNT; // czyli 9 = brak
+    }
     void setCell(uint32_t index, TerrainType type)
     {
         assert(index < ChunkConfig::CELL_COUNT);
@@ -41,7 +59,7 @@ struct Chunk
         uint32_t value = (data >> shift) & ChunkConfig::CELL_MASK;
         return static_cast<TerrainType>(value);
     }
-    
+
     void setBuilding(BuildingType type)
     {
         uint32_t value = static_cast<uint32_t>(type);
@@ -53,7 +71,6 @@ struct Chunk
         uint32_t value = (data >> ChunkConfig::BUILDING_SHIFT) & ChunkConfig::BUILDING_MASK;
         return static_cast<BuildingType>(value);
     }
-
 
     void setFlag(ChunkFlag flag)
     {

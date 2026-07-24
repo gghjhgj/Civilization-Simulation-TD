@@ -13,6 +13,18 @@ class Army;
 class Civilization
 {
 public:
+    Food &food;
+    Stone &stone;
+    Tree &tree;
+    Civilization(
+        Food &f,
+        Stone &s,
+        Tree &t)
+        :
+        food(f),
+        stone(s),
+        tree(t)
+    {}
     std::mt19937 rng{ std::random_device{}() };
     struct ChunkPos
     {

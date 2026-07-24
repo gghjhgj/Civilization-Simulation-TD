@@ -35,19 +35,6 @@ public:
         aiArena.initialize();
     }
 
-    inline uint32_t random10()
-    {
-        thread_local uint32_t state =
-            std::chrono::high_resolution_clock::now()
-                .time_since_epoch()
-                .count();
-
-        state ^= state << 13;
-        state ^= state >> 17;
-        state ^= state << 5;
-
-        return (state % 10) + 1;
-    }
     uint64_t humanTicks = 0;
     struct Dirs
     {
@@ -130,12 +117,18 @@ public:
     Dirs humanMoveDecision(
         uint16_t x, uint16_t y,
         uint16_t targetX, uint16_t targetY,
-        uint8_t points
-    );
+        uint8_t points);
+    struct SearchCell
+    {
+        uint16_t region;
+        uint16_t chunk;
+        uint16_t cell;
+        uint16_t x;
+        uint16_t y;
+    };
     void humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer);
-
-    template<typename T>
-    void reserveHumans(T& humans, size_t count)
+    template <typename T>
+    void reserveHumans(T &humans, size_t count)
     {
         humans.posX.reserve(count);
         humans.posY.reserve(count);
@@ -156,28 +149,23 @@ private:
 
     void processFoodCollectors(
         World &world,
-        RendererSFML &renderer
-    );
+        RendererSFML &renderer);
 
     void processWoodCollectors(
         World &world,
-        RendererSFML &renderer
-    );
+        RendererSFML &renderer);
 
     void processStoneCollectors(
         World &world,
-        RendererSFML &renderer
-    );
+        RendererSFML &renderer);
 
     void processBuilders(
         World &world,
-        RendererSFML &renderer
-    );
+        RendererSFML &renderer);
 
     void processAssigned(
         World &world,
-        RendererSFML &renderer
-    );
+        RendererSFML &renderer);
 
     tbb::affinity_partitioner foodCollectorsPartitioner;
     tbb::affinity_partitioner woodCollectorsPartitioner;

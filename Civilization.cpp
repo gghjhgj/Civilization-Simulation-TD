@@ -327,10 +327,13 @@ void Civilization::buildingDecision(World& world, RendererSFML &renderer, Human&
 }
 void Civilization::startConstruction(World& world, RendererSFML &renderer, uint16_t chunkX, uint16_t chunkY, Type type)
 {
+    world.cleanChunkResources(food, tree, stone, chunkX, chunkY, *this);
     world.setChunkFlag(chunkX, chunkY, ChunkFlag::Construction);
     world.setBuilding(chunkX, chunkY, GetBuildingType(type));
-    sf::Color color;
-    renderer.addChunkToDirtyCells(world, chunkX, chunkY, sf::Color(255, 128, 0));
+    uint16_t x = chunkX * ChunkConfig::CHUNK_SIZE;
+    uint16_t y = chunkY * ChunkConfig::CHUNK_SIZE;
+    sf::Color color = renderer.getColor(world, x, y);
+    renderer.addChunkToDirtyCells(world, chunkX, chunkY, color);
 
     constructions[type]++;
 }
@@ -338,36 +341,9 @@ void Civilization::startConstruction(World& world, RendererSFML &renderer, uint1
 void Civilization::endConstruction(World& world, RendererSFML &renderer, Human& human, uint16_t chunkX, uint16_t chunkY, Type type)
 {
     world.clearChunkFlag(chunkX, chunkY, ChunkFlag::Construction);
-    sf::Color color;
-    switch(type)
-    {
-        {
-        case Type::HOUSE:
-            {
-                color = sf::Color::Red;
-                break;
-            }
-
-        case Type::FARM:
-        {
-            color = sf::Color(255, 255, 150);
-            break;
-        }
-        case Type::SAWMILL:
-        {
-            color = sf::Color(165, 42, 42);
-            break;
-        }
-
-        case Type::MINE:
-        {
-            color = sf::Color(191, 0, 255);
-            break;
-        }
-        default:
-            break;
-        }
-    }
+    uint16_t x = chunkX * ChunkConfig::CHUNK_SIZE;
+    uint16_t y = chunkY * ChunkConfig::CHUNK_SIZE;
+    sf::Color color = renderer.getColor(world, x, y);
     renderer.addChunkToDirtyCells(world, chunkX, chunkY, color);
     constructions[type]--;
     buildingsCount[type]++;

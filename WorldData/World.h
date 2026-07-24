@@ -80,6 +80,21 @@ public:
             localChunkIndex};
     }
 
+    constexpr uint32_t getChunkRegionIndex(uint16_t chunkX, uint16_t chunkY)
+    {
+        uint16_t regionX = chunkX / ChunkRegionConfig::CHUNK_REGION_SIZE;
+        uint16_t regionY = chunkY / ChunkRegionConfig::CHUNK_REGION_SIZE;
+
+        return regionY * WorldConfig::CHUNK_REGIONS_X + regionX;
+    }
+    constexpr uint16_t getLocalChunkIndex(uint16_t chunkX, uint16_t chunkY)
+    {
+        uint16_t localX = chunkX % ChunkRegionConfig::CHUNK_REGION_SIZE;
+        uint16_t localY = chunkY % ChunkRegionConfig::CHUNK_REGION_SIZE;
+
+        return localY * ChunkRegionConfig::CHUNK_REGION_SIZE + localX;
+    }
+
     struct CellRef
     {
         uint16_t chunkX;
@@ -96,8 +111,8 @@ public:
         uint16_t chunkX = worldX / ChunkConfig::CHUNK_SIZE;
         uint16_t chunkY = worldY / ChunkConfig::CHUNK_SIZE;
         auto chunkRef = getChunkRef(
-            worldX / ChunkConfig::CHUNK_SIZE,
-            worldY / ChunkConfig::CHUNK_SIZE);
+            chunkX,
+            chunkY);
 
         return {
             chunkX,
@@ -105,10 +120,15 @@ public:
             chunkRef.chunkRegionIndex,
             chunkRef.localChunkIndex,
             static_cast<uint16_t>(
-            (worldY % ChunkConfig::CHUNK_SIZE) * ChunkConfig::CHUNK_SIZE +
-            (worldX % ChunkConfig::CHUNK_SIZE)
-            )
-        };
+                (worldY % ChunkConfig::CHUNK_SIZE) * ChunkConfig::CHUNK_SIZE +
+                (worldX % ChunkConfig::CHUNK_SIZE))};
+    }
+
+    inline uint32_t getChunkData(
+        uint32_t region,
+        uint16_t chunk)
+    {
+        return grid[region].chunks[chunk].data;
     }
 
     void setCell(uint16_t x, uint16_t y, TerrainType type)
@@ -123,6 +143,15 @@ public:
         auto ref = getCellRef(x, y);
 
         return grid[ref.chunkRegionIndex].chunks[ref.localChunkIndex].getCell(ref.localCellIndex);
+    }
+    inline TerrainType getCellFast(
+        uint16_t chunkRegionIndex,
+        uint16_t localChunkIndex,
+        uint16_t localCellIndex)
+    {
+        return grid[chunkRegionIndex]
+            .chunks[localChunkIndex]
+            .getCell(localCellIndex);
     }
 
     void setBuilding(uint16_t chunkX, uint16_t chunkY, BuildingType type)
@@ -169,6 +198,12 @@ public:
             .chunks[ref.localChunkIndex]
             .hasFlag(flag);
     }
+
+    void cleanChunkResources(
+        Food &food, Tree &tree, Stone &stone,
+        uint16_t chunkX,
+        uint16_t chunkY,
+        Civilization &civ);
 
     std::vector<std::pair<int, int>> possible;
 
