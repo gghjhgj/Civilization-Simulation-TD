@@ -24,6 +24,5 @@ struct HumanBase
     std::vector<uint16_t> targetX;
     std::vector<uint16_t> targetY;
     std::vector<uint8_t> points;
-    std::vector<uint8_t> moves;
     std::vector<BuildingType> targetBuilding;
 };

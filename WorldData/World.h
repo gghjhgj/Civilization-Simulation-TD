@@ -131,6 +131,13 @@ public:
         return grid[region].chunks[chunk].data;
     }
 
+    inline Chunk &getChunkFromRegion(
+        uint32_t regionIndex,
+        uint16_t localChunkIndex)
+    {
+        return grid[regionIndex].chunks[localChunkIndex];
+    }
+
     void setCell(uint16_t x, uint16_t y, TerrainType type)
     {
         auto ref = getCellRef(x, y);
@@ -172,6 +179,15 @@ public:
             .getBuilding();
     }
 
+    inline BuildingType getBuildingFast(
+        uint32_t chunkRegionIndex,
+        uint16_t localChunkIndex)
+    {
+        return grid[chunkRegionIndex]
+            .chunks[localChunkIndex]
+            .getBuilding();
+    }
+
     void setChunkFlag(uint16_t chunkX, uint16_t chunkY, ChunkFlag flag)
     {
         auto ref = getChunkRef(chunkX, chunkY);
@@ -196,6 +212,16 @@ public:
 
         return grid[ref.chunkRegionIndex]
             .chunks[ref.localChunkIndex]
+            .hasFlag(flag);
+    }
+
+    inline bool hasChunkFlagFast(
+        uint32_t chunkRegionIndex,
+        uint16_t localChunkIndex,
+        ChunkFlag flag)
+    {
+        return grid[chunkRegionIndex]
+            .chunks[localChunkIndex]
             .hasFlag(flag);
     }
 

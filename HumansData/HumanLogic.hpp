@@ -29,7 +29,6 @@ inline void addHuman(Human &human, HumanBase &vec, BuildingType data, uint16_t x
     vec.targetY.push_back(UINT16_MAX);
 
     vec.points.push_back(random100());
-    vec.moves.push_back(0);
 
     vec.targetBuilding.push_back(data);
 
@@ -50,7 +49,6 @@ void eraseHuman(Human &human, T &vec, int id)
         vec.targetY[id] = vec.targetY[last];
 
         vec.points[id] = vec.points[last];
-        vec.moves[id] = vec.moves[last];
 
         vec.targetBuilding[id] = vec.targetBuilding[last];
     }
@@ -62,7 +60,6 @@ void eraseHuman(Human &human, T &vec, int id)
     vec.targetY.pop_back();
 
     vec.points.pop_back();
-    vec.moves.pop_back();
 
     vec.targetBuilding.pop_back();
 }
@@ -76,7 +73,6 @@ inline void switchProf(Human &human, HumanBase &fromVec, int id, HumanBase &toVe
     toVec.targetY.push_back(UINT16_MAX);
 
     toVec.points.push_back(fromVec.points[id]);
-    toVec.moves.push_back(fromVec.moves[id]);
 
     toVec.targetBuilding.push_back(newData);
 
@@ -97,7 +93,6 @@ inline void switchProfLast(Human &human, HumanBase &fromVec, HumanBase &toVec, B
     toVec.targetY.push_back(UINT16_MAX);
 
     toVec.points.push_back(fromVec.points[id]);
-    toVec.moves.push_back(fromVec.moves[id]);
 
     toVec.targetBuilding.push_back(newData);
 

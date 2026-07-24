@@ -137,7 +137,6 @@ public:
         humans.targetY.reserve(count);
 
         humans.points.reserve(count);
-        humans.moves.reserve(count);
 
         humans.targetBuilding.reserve(count);
     }
