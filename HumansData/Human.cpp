@@ -140,7 +140,6 @@ XY Human::humanFindWorkingBuildingChunk(
     {
         return {UINT16_MAX, UINT16_MAX};
     }
-
     auto ref = world.getCellRef(x, y);
 
     auto &region = world.grid[ref.chunkRegionIndex];
@@ -637,7 +636,7 @@ void Human::processAssigned(
                     0,
                     assigned.posX.size(),
                     Config::GRAIN),
-
+                    
                 [&](const tbb::blocked_range<size_t> &range)
                 {
                     int threadID =
@@ -754,7 +753,9 @@ void Human::processAssigned(
 void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer)
 {
     for (auto &r : threadResults)
+    {
         r.clear();
+    }
 
     // a)
     /*
@@ -767,8 +768,7 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
     */
 
     // b)
-    for (int i = 0; i < Config::ticksForNewHumans; i++)
-    {
+    
         tbb::parallel_invoke(
             [&]
             { processFoodCollectors(world, renderer); },
@@ -782,8 +782,6 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
             { processAssigned(world, renderer); });
 
         humanTicks++;
-    }
-
     ///////////////////////////sync
 
     for (const auto &res : threadResults)
@@ -796,7 +794,6 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
 
         stone.stonesCount -= res.stoneCollected;
         civilization.resources.stone += res.stoneCollected;
-
         civilization.realWorkers[FARM] += res.farmWorkersDelta;
         civilization.realWorkers[SAWMILL] += res.sawmillWorkersDelta;
         civilization.realWorkers[MINE] += res.mineWorkersDelta;
@@ -811,7 +808,6 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
             res.constr.begin(),
             res.constr.end());
     }
-
     if (!allAssignedToRemove.empty())
     {
         std::sort(allAssignedToRemove.rbegin(), allAssignedToRemove.rend());
@@ -819,16 +815,18 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
 
         for (size_t id : allAssignedToRemove)
         {
-            if (id < assigned.posX.size())
+            if (id >= assigned.posX.size())
             {
-                eraseHuman(*this, assigned, id);
+                continue;
             }
+            eraseHuman(*this, assigned, id);
         }
         allAssignedToRemove.clear();
     }
-
+    
     if (!allConstructionsToEnd.empty())
     {
+        std::sort(allConstructionsToEnd.begin(), allConstructionsToEnd.end());
         allConstructionsToEnd.erase(std::unique(allConstructionsToEnd.begin(), allConstructionsToEnd.end()), allConstructionsToEnd.end());
 
         for (auto constr : allConstructionsToEnd)
@@ -848,7 +846,7 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
     {
         humanRespawn(world, civilization);
     }
-    if (world.allTicksCount % Config::ticksForAssigningDecision == 0)
+    if (humanTicks % Config::ticksForAssigningDecision == 0)
     {
         civilization.assignHumansToBuilding(*this, Type::FARM);
         civilization.assignHumansToBuilding(*this, Type::SAWMILL);

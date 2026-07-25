@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <ctime>
 #include "ThreadController.hpp"
+#include "CrashHandler.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -22,6 +23,7 @@
 
 int main() {
     #ifdef _WIN32
+    //SetUnhandledExceptionFilter(crashHandler);
     printCPUTopology();
     pinPhysicalCore(0);
     printCurrentCPU();

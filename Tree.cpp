@@ -11,6 +11,17 @@ void Tree::createSeed(World& world, RendererSFML &renderer, int& tr, std::mt1993
 
         if (world.getCell(x, y) == TerrainType::Land)
         {
+            if (!world.isValid(x, y))
+                continue;
+
+            auto ref = world.getCellRef(x, y);
+
+            if (world.getCell(x, y) != TerrainType::Land)
+                return;
+
+            if (world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::CivZone))
+                return;
+                
             world.setCell(x, y, TerrainType::LandWithTree);
             renderer.addToDirtyCells(world, x, y, sf::Color(0, 120, 0));
 

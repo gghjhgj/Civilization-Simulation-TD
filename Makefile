@@ -4,8 +4,8 @@ TARGET = app
 CXX = g++
 CLANG = clang++
 
-LIBS = -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc -ltbb12
-CLANG_LIBS = -lsfml-graphics -lsfml-window -lsfml-system -ltbb12
+LIBS = -lsfml-graphics -lsfml-window -lsfml-system -lmimalloc -ltbb12 -ldbghelp
+CLANG_LIBS = -lsfml-graphics -lsfml-window -lsfml-system -ltbb12 -ldbghelp
 
 INCLUDE = -I.
 
@@ -44,6 +44,25 @@ debug-fast: CXXFLAGS = -g -O1 -march=native -fno-omit-frame-pointer -Wall -Wextr
 debug-fast: build
 	@echo "Build DEBUG-FAST gotowy."
 
+# =========================
+# CLANG SANITIZE / DEBUG
+# =========================
+
+clang-debug:
+	@echo "Build CLANG DEBUG..."
+
+	$(CLANG) \
+	-O0 \
+	-g \
+	-gcodeview \
+	-fno-omit-frame-pointer \
+	-Wno-c++11-narrowing \
+	$(INCLUDE) \
+	$(SOURCES) \
+	-o $(TARGET).exe \
+	$(CLANG_LIBS)
+
+	@echo "Build CLANG DEBUG gotowy."
 # =========================
 # ASEMBLER
 # =========================

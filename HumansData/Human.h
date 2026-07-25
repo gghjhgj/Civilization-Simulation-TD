@@ -72,7 +72,23 @@ public:
         uint32_t chunkY;
         Type type;
 
-        bool operator==(const DataNeededForEndConstruction &) const = default;
+        bool operator==(const DataNeededForEndConstruction &other) const
+        {
+            return chunkX == other.chunkX &&
+                   chunkY == other.chunkY &&
+                   type == other.type;
+        }
+
+        bool operator<(const DataNeededForEndConstruction &other) const
+        {
+            if (chunkX != other.chunkX)
+                return chunkX < other.chunkX;
+
+            if (chunkY != other.chunkY)
+                return chunkY < other.chunkY;
+
+            return type < other.type;
+        }
     };
     struct ThreadLocalData
     {
