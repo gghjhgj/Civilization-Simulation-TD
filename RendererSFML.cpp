@@ -214,10 +214,7 @@ void RendererSFML::addChunkToDirtyBuffer(World &world, uint16_t chunkX, uint16_t
 
 void RendererSFML::addToDirtyBuffer(World &world, uint16_t x, uint16_t y, sf::Color color, int threadID)
 {
-    if(world.isValid(x,y))
-    {
         dirtyBuffers[threadID].emplace_back(x,y,color);
-    }
 }
 
 void RendererSFML::addChunkToDirtyCells(World &world, uint16_t chunkX, uint16_t chunkY, sf::Color color)

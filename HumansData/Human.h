@@ -18,6 +18,8 @@
 #include <memory>
 #include <vector>
 #include <cmath>
+#include <immintrin.h>
+
 class Civilization;
 class World;
 
@@ -124,6 +126,9 @@ public:
             assignedRemoveQueue.clear();
         }
     };
+    uint32_t ticksToDo = 1;
+    uint32_t actionsToDo = 0;
+    uint32_t ticksLeft = 0;
     void createHuman(World &world, Civilization &civilization);  // git
     void humanRespawn(World &world, Civilization &civilization); // git
     XY humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type);
@@ -176,7 +181,8 @@ private:
 
     void processBuilders(
         World &world,
-        RendererSFML &renderer);
+        RendererSFML &renderer,
+        Civilization &civilization);
 
     void processAssigned(
         World &world,
