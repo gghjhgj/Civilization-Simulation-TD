@@ -60,7 +60,7 @@ void Human::humanRespawn(World &world, Civilization &civilization)
     uint16_t y = static_cast<uint16_t>(civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE);
     for (int i = 0; i < newPeople; i++)
     {
-        addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
+        addHuman(*this, this->foodCollectors, BuildingType::None, x, y);//x+random100(), y+random100());
     }
 }
 XY Human::humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type)
@@ -805,9 +805,8 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
     {
         r.clear();
     }
-
-    ticksToDo = 50000000 /
-                (foodCollectors.posX.size() + woodCollectors.posX.size() + stoneCollectors.posX.size() + builders.posX.size() + assigned.posX.size());
+    constexpr uint32_t t = 1000000 + Config::humanCount * 10;
+    ticksToDo = t / (foodCollectors.posX.size() + woodCollectors.posX.size() + stoneCollectors.posX.size() + builders.posX.size() + assigned.posX.size());
     
     actionsToDo = (ticksToDo + ticksLeft) / Config::ticksForNewHumans;
     ticksLeft = (ticksToDo + ticksLeft) % Config::ticksForNewHumans;
