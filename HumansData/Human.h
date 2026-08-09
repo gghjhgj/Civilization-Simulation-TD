@@ -167,9 +167,29 @@ private:
     std::vector<size_t> allAssignedToRemove;
     std::vector<DataNeededForEndConstruction> allConstructionsToEnd;
 
+    void processFoodCollector(
+        World &world,
+        RendererSFML &renderer,
+        size_t i,
+        int threadID
+    );
+
+    void processFoodCollectorBatch(
+        World& world,
+        RendererSFML& renderer,
+        size_t begin,
+        int threadID
+    );
+
     void processFoodCollectors(
         World &world,
-        RendererSFML &renderer);
+        RendererSFML &renderer
+    );
+
+
+
+
+
 
     void processWoodCollectors(
         World &world,
