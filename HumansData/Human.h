@@ -162,34 +162,15 @@ public:
         humans.targetBuilding.reserve(count);
     }
 
-private:
     std::vector<ThreadLocalData> threadResults;
     std::vector<size_t> allAssignedToRemove;
     std::vector<DataNeededForEndConstruction> allConstructionsToEnd;
 
-    void processFoodCollector(
-        World &world,
-        RendererSFML &renderer,
-        size_t i,
-        int threadID
-    );
-
-    void processFoodCollectorBatch(
-        World& world,
-        RendererSFML& renderer,
-        size_t begin,
-        int threadID
-    );
+private:
 
     void processFoodCollectors(
         World &world,
-        RendererSFML &renderer
-    );
-
-
-
-
-
+        RendererSFML &renderer);
 
     void processWoodCollectors(
         World &world,
@@ -216,3 +197,5 @@ private:
 };
 
 #include "HumanLogic.hpp"
+#include "HumanProcessing.hpp"
+#include "HumanRange.hpp"
