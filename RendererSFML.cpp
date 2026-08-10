@@ -613,7 +613,7 @@ void RendererSFML::updateHumanLayer(
     humanLayer.vertices.clear();
 
     auto add =
-        [&](auto &humans)
+        [&](auto &humans, sf::Color color)
     {
         for (size_t i = 0;
              i < humans.posX.size();
@@ -644,19 +644,47 @@ void RendererSFML::updateHumanLayer(
                         y * cellSize +
                         cellSize / 2)};
 
-            vertex.color =
-                sf::Color::Black;
+            vertex.color = color;
 
             humanLayer.vertices.push_back(
                 vertex);
         }
     };
 
-    add(human.foodCollectors);
-    add(human.woodCollectors);
-    add(human.stoneCollectors);
-    add(human.builders);
-    add(human.assigned);
+    add(
+        human.foodCollectors,
+        sf::Color(
+            255,
+            0,
+            0));
+
+    add(
+        human.woodCollectors,
+        sf::Color(
+            139,
+            69,
+            19));
+
+    add(
+        human.stoneCollectors,
+        sf::Color(
+            0,
+            100,
+            255));
+
+    add(
+        human.builders,
+        sf::Color(
+            255,
+            128,
+            0));
+
+    add(
+        human.assigned,
+        sf::Color(
+            160,
+            32,
+            240));
 
     if (!humanLayer.vertices.empty())
     {

@@ -18,13 +18,13 @@ void Human::createHuman(World &world, Civilization &civilization)
     reserveHumans(builders, reserveCount);
     reserveHumans(assigned, reserveCount);
 
-    uint16_t x = static_cast<uint16_t>(civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE);
-    uint16_t y = static_cast<uint16_t>(civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE);
+    uint16_t x = static_cast<uint16_t>(civilization.spawnXY.x);
+    uint16_t y = static_cast<uint16_t>(civilization.spawnXY.y);
 
     uint16_t x2;
     uint16_t y2;
 
-    int maxRange = (Config::sizeX > Config::sizeY) ? Config::sizeX : Config::sizeY;
+    int maxRange = Config::maxHumansSpawnRange;
 
     for (int i = 0; i < Config::humanCount; i++)
     {
@@ -39,8 +39,7 @@ void Human::createHuman(World &world, Civilization &civilization)
 
             x2 = x + dx;
             y2 = y + dy;
-        } while (!world.isValid(x2, y2) ||
-                 world.getCell(x2, y2) != TerrainType::Land);
+        } while (!world.isValid(x2, y2));
 
         addHuman(*this, this->foodCollectors, BuildingType::None, x2, y2);
     }
@@ -56,11 +55,11 @@ void Human::createHuman(World &world, Civilization &civilization)
 void Human::humanRespawn(World &world, Civilization &civilization)
 {
     int newPeople = static_cast<int>(std::cbrt(humansCount));
-    uint16_t x = static_cast<uint16_t>(civilization.spawn.chunkX * ChunkConfig::CHUNK_SIZE);
-    uint16_t y = static_cast<uint16_t>(civilization.spawn.chunkY * ChunkConfig::CHUNK_SIZE);
+    uint16_t x = static_cast<uint16_t>(civilization.spawnXY.x);
+    uint16_t y = static_cast<uint16_t>(civilization.spawnXY.y);
     for (int i = 0; i < newPeople; i++)
     {
-        addHuman(*this, this->foodCollectors, BuildingType::None, x, y); // x+random100(), y+random100());
+        addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
     }
 }
 XY Human::humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type)
@@ -228,7 +227,8 @@ inline Human::Dirs Human::humanMoveDecision(
 
 void Human::processFoodCollectors(
     World &world,
-    RendererSFML &renderer)
+    RendererSFML &renderer,
+    Civilization &civilization)
 {
     aiArena.execute(
         [&]()
@@ -250,6 +250,19 @@ void Human::processFoodCollectors(
                         {
                             for (size_t i = range.begin(); i < range.end(); i++)
                             {
+                                if (!isInCivRange(
+                                        h.posX[i],
+                                        h.posY[i],
+                                        civilization))
+                                {
+                                    setWorkerTargetAsCivRangeBoundary(
+                                        civilization,
+                                        h,
+                                        i);
+
+                                    continue;
+                                }
+
                                 XY target =
                                     humanFindResource(
                                         world,
@@ -266,6 +279,7 @@ void Human::processFoodCollectors(
                             foodCollectors,
                             world,
                             renderer,
+                            civilization,
                             range.begin(),
                             range.end(),
                             threadID);
@@ -277,7 +291,8 @@ void Human::processFoodCollectors(
 
 void Human::processWoodCollectors(
     World &world,
-    RendererSFML &renderer)
+    RendererSFML &renderer,
+    Civilization &civilization)
 {
     aiArena.execute(
         [&]()
@@ -303,6 +318,19 @@ void Human::processWoodCollectors(
                                  i < range.end();
                                  i++)
                             {
+                                if (!isInCivRange(
+                                        h.posX[i],
+                                        h.posY[i],
+                                        civilization))
+                                {
+                                    setWorkerTargetAsCivRangeBoundary(
+                                        civilization,
+                                        h,
+                                        i);
+
+                                    continue;
+                                }
+
                                 XY target =
                                     humanFindResource(
                                         world,
@@ -320,6 +348,7 @@ void Human::processWoodCollectors(
                             woodCollectors,
                             world,
                             renderer,
+                            civilization,
                             range.begin(),
                             range.end(),
                             threadID);
@@ -331,7 +360,8 @@ void Human::processWoodCollectors(
 
 void Human::processStoneCollectors(
     World &world,
-    RendererSFML &renderer)
+    RendererSFML &renderer,
+    Civilization &civilization)
 {
     aiArena.execute(
         [&]()
@@ -357,6 +387,18 @@ void Human::processStoneCollectors(
                                  i < range.end();
                                  i++)
                             {
+                                if (!isOnMountain(
+                                        world,
+                                        h.posX[i],
+                                        h.posY[i]))
+                                {
+                                    setStoneCollectorMountainTarget(
+                                        world,
+                                        h,
+                                        i);
+
+                                        continue;
+                                }
                                 XY target =
                                     humanFindResource(
                                         world,
@@ -374,6 +416,7 @@ void Human::processStoneCollectors(
                             stoneCollectors,
                             world,
                             renderer,
+                            civilization,
                             range.begin(),
                             range.end(),
                             threadID);
@@ -412,6 +455,19 @@ void Human::processBuilders(
                                  i < range.end();
                                  i++)
                             {
+                                if (!isInCivZone(
+                                        h.posX[i],
+                                        h.posY[i],
+                                        civilization))
+                                {
+                                    setWorkerTargetAsCivSpawn(
+                                        civilization,
+                                        h,
+                                        i);
+
+                                    continue;
+                                }
+
                                 XY target =
                                     humanFindFlagChunk(
                                         world,
@@ -429,6 +485,7 @@ void Human::processBuilders(
                             builders,
                             world,
                             renderer,
+                            civilization,
                             range.begin(),
                             range.end(),
                             threadID);
@@ -479,7 +536,8 @@ void Human::processBuilders(
 
 void Human::processAssigned(
     World &world,
-    RendererSFML &renderer)
+    RendererSFML &renderer,
+    Civilization &civilization)
 {
     for (int i = 0; i < ticksToDo; i++)
     {
@@ -505,6 +563,18 @@ void Human::processAssigned(
                                  i < range.end();
                                  i++)
                             {
+                                if (!isInCivZone(
+                                        h.posX[i],
+                                        h.posY[i],
+                                        civilization))
+                                {
+                                    setWorkerTargetAsCivSpawn(
+                                        civilization,
+                                        h,
+                                        i);
+
+                                    continue;
+                                }
                                 XY target =
                                     humanFindWorkingBuildingChunk(
                                         world,
@@ -522,6 +592,7 @@ void Human::processAssigned(
                             assigned,
                             world,
                             renderer,
+                            civilization,
                             range.begin(),
                             range.end(),
                             threadID);
@@ -586,15 +657,15 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
 
     tbb::parallel_invoke(
         [&]
-        { processFoodCollectors(world, renderer); },
+        { processFoodCollectors(world, renderer, civilization); },
         [&]
-        { processWoodCollectors(world, renderer); },
+        { processWoodCollectors(world, renderer, civilization); },
         [&]
-        { processStoneCollectors(world, renderer); },
+        { processStoneCollectors(world, renderer, civilization); },
         [&]
         { processBuilders(world, renderer, civilization); },
         [&]
-        { processAssigned(world, renderer); });
+        { processAssigned(world, renderer, civilization); });
 
     humanTicks += ticksToDo;
     ///////////////////////////sync

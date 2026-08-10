@@ -3,6 +3,7 @@
 #include "HumanTypes.h"
 #include "immintrin.h"
 #include "../WorldData/World.h"
+#include "HumanHelpers.hpp"
 
 class Human;
 
@@ -12,6 +13,7 @@ inline void processHumanTypeBatch(
     HumanBase &h,
     World &world,
     RendererSFML &renderer,
+    Civilization &civilization,
     size_t begin,
     int threadID)
 {
@@ -267,9 +269,9 @@ inline void processHumanTypeBatch(
                 }
             }
 
-            if (!valid)
+            if (!valid || !isInCivRange(fx, fy, civilization))
             {
-                h.points[i] -= 4;
+                h.points[i] -= 3;
             }
         }
 
@@ -309,9 +311,9 @@ inline void processHumanTypeBatch(
                 }
             }
 
-            if (!valid)
+            if (!valid || !isInCivRange(fx, fy, civilization))
             {
-                h.points[i] -= 4;
+                h.points[i] -= 3;
             }
         }
 
@@ -351,9 +353,9 @@ inline void processHumanTypeBatch(
                 }
             }
 
-            if (!valid)
+            if (!valid || (!isOnMountain(world, fx, fy) && h.targetX[i] != UINT16_MAX))
             {
-                h.points[i] -= 4;
+                h.points[i] -= 3;
             }
         }
 
@@ -367,8 +369,6 @@ inline void processHumanTypeBatch(
                     h.targetX[i],
                     h.targetY[i]))
             {
-                h.points[i]++;
-
                 auto ref =
                     world.getCellRef(fx, fy);
 
@@ -380,6 +380,7 @@ inline void processHumanTypeBatch(
                         ref.chunkY,
                         ChunkFlag::Construction))
                 {
+                    h.points[i]++;
                     BuildingType building =
                         world.getBuilding(
                             ref.chunkX,
@@ -400,9 +401,9 @@ inline void processHumanTypeBatch(
                 h.targetY[i] = UINT16_MAX;
             }
 
-            if (!valid)
+            if (!valid || !isInCivZone(fx, fy, civilization))
             {
-                h.points[i] -= 4;
+                h.points[i] -= 3;
             }
         }
 
@@ -416,8 +417,6 @@ inline void processHumanTypeBatch(
                     h.targetX[i],
                     h.targetY[i]))
             {
-                h.points[i]++;
-
                 auto ref =
                     world.getCellRef(fx, fy);
 
@@ -464,9 +463,9 @@ inline void processHumanTypeBatch(
                 }
             }
 
-            if (!valid)
+            if (!valid || !isInCivZone(fx, fy, civilization))
             {
-                h.points[i] -= 4;
+                h.points[i] -= 3;
             }
         }
     }
@@ -478,6 +477,7 @@ inline void processHumanType(
     HumanBase &h,
     World &world,
     RendererSFML &renderer,
+    Civilization &civilization,
     size_t i,
     int threadID)
 {
@@ -712,13 +712,48 @@ inline void processHumanType(
         }
     }
 
-    if (world.isValid(newX, newY))
+    if constexpr (
+        HType == HumanType::Builder ||
+        HType == HumanType::Assigned)
     {
-        h.posX[i] = newX;
-        h.posY[i] = newY;
+        if (world.isValid(newX, newY) &&
+            isInCivZone(newX, newY, civilization))
+        {
+            h.posX[i] = newX;
+            h.posY[i] = newY;
+        }
+        else
+        {
+            h.points[i] -= 3;
+        }
     }
-    else
+    else if constexpr (
+        HType == HumanType::FoodCollector ||
+        HType == HumanType::WoodCollector)
     {
-        h.points[i] -= 4;
+        if (world.isValid(newX, newY) &&
+            isInCivRange(newX, newY, civilization))
+        {
+            h.posX[i] = newX;
+            h.posY[i] = newY;
+        }
+        else
+        {
+            h.points[i] -= 3;
+        }
+    }
+    else if constexpr (
+        HType == HumanType::StoneCollector
+    )
+    {
+        if (world.isValid(newX, newY) && (isOnMountain(world, newX, newY) || h.targetX[i] != UINT16_MAX))
+        {
+            h.posX[i] = newX;
+            h.posY[i] = newY;
+        }
+        else
+        {
+            h.points[i] -= 3;
+        }
     }
 }

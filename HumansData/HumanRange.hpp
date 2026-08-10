@@ -12,6 +12,7 @@ inline void processHumanRange(
     HumanBase& h,
     World& world,
     RendererSFML& renderer,
+    Civilization &civilization,
     size_t begin,
     size_t end,
     int threadID)
@@ -31,6 +32,7 @@ inline void processHumanRange(
             h,
             world,
             renderer,
+            civilization,
             batch,
             threadID);
     }
@@ -44,6 +46,7 @@ inline void processHumanRange(
             h,
             world,
             renderer,
+            civilization,
             i,
             threadID);
     }

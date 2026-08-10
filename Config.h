@@ -40,11 +40,10 @@ class Config
     static constexpr int treeRespawn = 10;
     static constexpr int maxTreeSpawnTries = 5;
 
-    static constexpr int stoneCount = 100000;
-    static constexpr int maxStone = 200000;
-    static constexpr int StoneRespawn = 2;
-    static constexpr int StoneHP = 20;
-    static constexpr int maxStoneSpawnTries = 10;
+    static constexpr int stoneCount = 20000;
+    static constexpr int maxStone = 50000;
+    static constexpr int StoneRespawn = 1;
+    static constexpr int maxStoneSpawnTries = 1;
 
 
     static constexpr uint16_t civSpawnChunkX = 20;
@@ -56,16 +55,13 @@ class Config
     static constexpr int humanCount = 1000000;
     static constexpr int GRAIN = 128;
     static constexpr int humanHP = 100;
-    static constexpr int humanStamina = 1000;
-    static constexpr int vision = 1;
-    static constexpr int chanceToChangeDir = 10; //%
-    static constexpr int chanceForRandomMoveHavingTarget = 30; // %
+    static constexpr int range = 1000;
+    static constexpr int maxHumansSpawnRange = 1500;
+
 
     static constexpr int stoneNeededForHouse = 10;
     static constexpr int woodNeededForHouse = 100;
     static constexpr int maxHumansInHouse = 5;
-
-    static constexpr float outskirts = 0.75;
 
     static constexpr int foodNeededForFarm = 100;
     static constexpr int woodNeededForFarm = 50;
@@ -84,8 +80,6 @@ class Config
     static constexpr int maxMineSpawnTries = 5;
     static constexpr int maxMineWorkersInMine  = 1000;
     static constexpr float stonePerMineWorker = 0.01;
-
-    static constexpr int maxUnits = 500000;
 
     static constexpr int MAX_THREAD_COUNT = 12;
 };

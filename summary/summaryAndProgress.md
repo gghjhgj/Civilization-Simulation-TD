@@ -10,9 +10,10 @@
     - spadek ticksow na s przy duzej liczbie zasobow// jest
     - poprawic spawn kamienia// jest
     - cos z liczbami budynkow znowu sie psuje// jest
-    - wielka scina na poczatku ale no to nie krytyczne moze zostac i to samo przy pierwszym wsadzie (chyba)
+    - wielka scina na poczatku ale no to nie krytyczne moze zostac i jeszcze czasem raz zacina sie
 3) Ludzie:
-    - po zmianie wielkosci swiata trzeba bedzie poprawic ich decission making zeby nie lazily po calej mapie losowo bo mi cache missy wywali i zdechnie program
+    - po zmianie wielkosci swiata trzeba bedzie poprawic ich decission making zeby nie lazily po calej mapie losowo bo mi cache missy wywali i zdechnie program// jest
+    - zwiekszyc inteligencje ludzi szczegolnie szukanie kamienia// jest 
     - przesledzic wtedy ruchy - czy dalej robia dziwne rzeczy jesli chodzi o tworzenie paskow etc
 
 4) Cywilizacja:

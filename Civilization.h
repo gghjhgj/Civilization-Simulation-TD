@@ -31,7 +31,8 @@ public:
         uint16_t chunkX;
         uint16_t chunkY;
     };
-    ChunkPos spawn;
+    ChunkPos spawnChunk;
+    XY spawnXY;
     struct Resources
     {
         long long int food = 0;
@@ -59,10 +60,17 @@ public:
 
     std::vector<ChunkPos> bestChunksForBuildingsVillage;
 
-    int mostEastCivZone = -1;
-    int mostWestCivZone = -1;
-    int mostNorthCivZone = -1;
-    int mostSouthCivZone = -1;
+    struct CivZone
+    {
+        int mostEastCivZone = -1;
+        int mostWestCivZone = -1;
+        int mostNorthCivZone = -1;
+        int mostSouthCivZone = -1;
+    };
+    CivZone civZoneChunks;
+    CivZone civZoneTiles;
+    CivZone ranges;
+
 
 
     void addCivilization(World& world, int index);//git

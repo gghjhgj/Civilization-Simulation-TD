@@ -120,8 +120,9 @@ public:
     uint32_t ticksToDo = 1;
     uint32_t actionsToDo = 0;
     uint32_t ticksLeft = 0;
-    void createHuman(World &world, Civilization &civilization);  // git
-    void humanRespawn(World &world, Civilization &civilization); // git
+
+    void createHuman(World &world, Civilization &civilization);
+    void humanRespawn(World &world, Civilization &civilization);
     XY humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type);
     XY humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag flag);
     XY humanFindWorkingBuildingChunk(World &world, uint16_t x, uint16_t y, BuildingType type);
@@ -158,18 +159,20 @@ public:
     std::vector<DataNeededForEndConstruction> allConstructionsToEnd;
 
 private:
-
     void processFoodCollectors(
         World &world,
-        RendererSFML &renderer);
+        RendererSFML &renderer,
+        Civilization &civilization);
 
     void processWoodCollectors(
         World &world,
-        RendererSFML &renderer);
+        RendererSFML &renderer,
+        Civilization &civilization);
 
     void processStoneCollectors(
         World &world,
-        RendererSFML &renderer);
+        RendererSFML &renderer,
+        Civilization &civilization);
 
     void processBuilders(
         World &world,
@@ -178,7 +181,8 @@ private:
 
     void processAssigned(
         World &world,
-        RendererSFML &renderer);
+        RendererSFML &renderer,
+        Civilization &civilization);
 
     tbb::affinity_partitioner foodCollectorsPartitioner;
     tbb::affinity_partitioner woodCollectorsPartitioner;
@@ -190,3 +194,4 @@ private:
 #include "HumanLogic.hpp"
 #include "HumanProcessing.hpp"
 #include "HumanRange.hpp"
+#include "HumanHelpers.hpp"
