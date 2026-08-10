@@ -10,11 +10,11 @@ class Config
     static constexpr int ticksForResourcesGainsFromBuildings = 1000;
     static constexpr int ticksForNewHumans = 1000;//humanticks
 
-    static constexpr int sizeX = 1800;
-    static constexpr int sizeY = 999;
+    static constexpr int sizeX = 2400;
+    static constexpr int sizeY = 1500;
     
-    static constexpr int WindowSizeX = sizeX;
-    static constexpr int WindowSizeY = sizeY;
+    static constexpr int WindowSizeX = 1920;
+    static constexpr int WindowSizeY = 1080;
 
     //surface configs
     static constexpr int landPercent = 100;
