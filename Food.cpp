@@ -22,7 +22,6 @@ void Food::createFood(World& world, RendererSFML &renderer)
             if (world.getCell(x, y) == TerrainType::Land)
             {
                 world.setCell(x, y, TerrainType::LandWithFood);
-                renderer.addToDirtyCells(world, x, y, sf::Color(255, 165, 0));
                 foodsCount++;
                 break;
             }
@@ -57,8 +56,7 @@ void Food::foodRespawn(World& world, RendererSFML &renderer)
                 tries++;
                 continue;
             }
-            world.setCell(x, y, TerrainType::LandWithFood);
-            renderer.addToDirtyCells(world, x, y, sf::Color(255,165,0));
+            addFood(world, renderer, x, y);
             foodsCount++;
             break;
         }

@@ -1,11 +1,16 @@
 ~~ToDo symulacja
 
-1) Render:
-    1) ruch kamery i zmiana view przy nim i tego co renderujemy
-    2) render i dirty render tylko sf::view
+1) Render://caly zrobiony
+    1) ruch kamery i zmiana view przy nim i tego co renderujemy// jest
+    2) render i dirty render tylko sf::view// jest 
 
-2) World:
-    - zwiekszyc rozmiar swiata do 3-4mld pol i przeniesc go na heapa
+2) World://caly zrobiony
+    - zwiekszyc rozmiar swiata do 3-4mld pol i przeniesc go na heapa//jest
+2.5) bledy:
+    - spadek ticksow na s przy duzej liczbie zasobow// jest
+    - poprawic spawn kamienia// jest
+    - cos z liczbami budynkow znowu sie psuje// jest
+    - wielka scina na poczatku ale no to nie krytyczne moze zostac i to samo przy pierwszym wsadzie (chyba)
 3) Ludzie:
     - po zmianie wielkosci swiata trzeba bedzie poprawic ich decission making zeby nie lazily po calej mapie losowo bo mi cache missy wywali i zdechnie program
     - przesledzic wtedy ruchy - czy dalej robia dziwne rzeczy jesli chodzi o tworzenie paskow etc

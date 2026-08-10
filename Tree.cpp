@@ -1,6 +1,6 @@
 #include "Tree.h"
 
-void Tree::createSeed(World& world, RendererSFML &renderer, int& tr, std::mt19937& rng)
+void Tree::createSeed(World& world, RendererSFML &renderer, int& tr, std::mt19937& rng, bool addToDirty)
 {
     int seedTries = 0;
 
@@ -23,7 +23,8 @@ void Tree::createSeed(World& world, RendererSFML &renderer, int& tr, std::mt1993
                 return;
                 
             world.setCell(x, y, TerrainType::LandWithTree);
-            renderer.addToDirtyCells(world, x, y, sf::Color(0, 120, 0));
+            if(addToDirty)
+                renderer.addToDirtyCells(world, x, y, sf::Color(0, 120, 0));
 
             last.x = x;
             last.y = y;
@@ -34,10 +35,11 @@ void Tree::createSeed(World& world, RendererSFML &renderer, int& tr, std::mt1993
     }
 }
 
-void Tree::addTree(World& world, RendererSFML &renderer, uint16_t x, uint16_t y)
+void Tree::addTree(World& world, RendererSFML &renderer, uint16_t x, uint16_t y, bool addToDirty)
 {
     world.setCell(x, y, TerrainType::LandWithTree);
-    renderer.addToDirtyCells(world, x, y, sf::Color(0, 120, 0));
+    if(addToDirty)
+        renderer.addToDirtyCells(world, x, y, sf::Color(0, 120, 0));
     treesCount++;
 }
 
@@ -51,7 +53,7 @@ void Tree::createTree(World& world, RendererSFML &renderer)
     for (int i = 0; i < Config::forestCount || tr < Config::treeCount; i++)
     {
         int trBefore = tr;
-        createSeed(world, renderer, tr, rng);
+        createSeed(world, renderer, tr, rng, false);
         if (tr == trBefore) continue;
 
         int treesPerForest = Config::treeCount / Config::forestCount;
@@ -91,7 +93,7 @@ void Tree::createTree(World& world, RendererSFML &renderer)
             } while (!world.isValid(x, y) || world.getCell(x, y) != TerrainType::Land);
             if (k <= maxTreeSpawnTries)
             {
-                addTree(world, renderer, x, y);
+                addTree(world, renderer, x, y, false);
                 last.x = x;
                 last.y = y;
                 tr++;
@@ -99,7 +101,7 @@ void Tree::createTree(World& world, RendererSFML &renderer)
             else
             {
                 trBefore = tr;
-                createSeed(world, renderer, tr, rng);
+                createSeed(world, renderer, tr, rng, true);
                 if (tr == trBefore) break;
                 treesCount++;
             }
@@ -174,7 +176,7 @@ void Tree::treeRespawn(World& world, RendererSFML &renderer)
         }
         else
         {
-            createSeed(world, renderer, treesCount, rng);
+            createSeed(world, renderer, treesCount, rng, true);
         }
     }
 }

@@ -51,12 +51,11 @@ public:
     BuildingResources buildingsGains[COUNT]{};
     int buildingsCount[COUNT]{};
     int maxHumans[COUNT]{};
-    int hitsForBuilding[COUNT]{};
 
     int workersAssigned[COUNT]{};
     int realWorkers[COUNT]{};
 
-    int constructions[COUNT];
+    int constructions[COUNT]{};
 
     std::vector<ChunkPos> bestChunksForBuildingsVillage;
 

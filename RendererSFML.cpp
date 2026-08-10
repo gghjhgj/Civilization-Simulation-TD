@@ -7,50 +7,40 @@ RendererSFML::RendererSFML(
     int w,
     int h,
     int cellSize)
-    :
-    window(
-        sf::VideoMode({
-            static_cast<unsigned>(
-                w * cellSize),
+    : window(
+          sf::VideoMode({static_cast<unsigned>(
+                             w * cellSize),
 
-            static_cast<unsigned>(
-                h * cellSize)
-        }),
-        "Simulation"
-    ),
+                         static_cast<unsigned>(
+                             h * cellSize)}),
+          "Simulation"),
 
-    windowWidth(
-        static_cast<unsigned>(
-            w * cellSize)),
+      windowWidth(
+          static_cast<unsigned>(
+              w * cellSize)),
 
-    windowHeight(
-        static_cast<unsigned>(
-            h * cellSize)),
+      windowHeight(
+          static_cast<unsigned>(
+              h * cellSize)),
 
-    cellSize(cellSize),
+      cellSize(cellSize),
 
-    pixelImage(
-        {
-            static_cast<unsigned>(
-                w * cellSize),
+      pixelImage(
+          {static_cast<unsigned>(
+               w * cellSize),
 
-            static_cast<unsigned>(
-                h * cellSize)
-        },
-        sf::Color::Black
-    ),
+           static_cast<unsigned>(
+               h * cellSize)},
+          sf::Color::Black),
 
-    texture(
-        {
-            static_cast<unsigned>(
-                w * cellSize),
+      texture(
+          {static_cast<unsigned>(
+               w * cellSize),
 
-            static_cast<unsigned>(
-                h * cellSize)
-        }
-    ),
+           static_cast<unsigned>(
+               h * cellSize)}),
 
-    sprite(texture)
+      sprite(texture)
 {
     const float viewWidth =
         static_cast<float>(
@@ -61,15 +51,10 @@ RendererSFML::RendererSFML(
             windowHeight);
 
     view = sf::View(
-        {
-            viewWidth / 2.f,
-            viewHeight / 2.f
-        },
-        {
-            viewWidth,
-            viewHeight
-        }
-    );
+        {viewWidth / 2.f,
+         viewHeight / 2.f},
+        {viewWidth,
+         viewHeight});
 
     window.setView(view);
 
@@ -77,21 +62,21 @@ RendererSFML::RendererSFML(
 
     updateViewport();
 
-    dirtyCells.reserve(2000000);
+    dirtyCells.reserve(10000000);
 
     const int threads =
         tbb::this_task_arena::max_concurrency();
 
     dirtyBuffers.resize(threads);
 
-    for (auto& buffer : dirtyBuffers)
+    for (auto &buffer : dirtyBuffers)
     {
-        buffer.reserve(200000);
+        buffer.reserve(1000000);
     }
 
-    humanLayer.vertices.reserve(1000000);
+    humanLayer.vertices.reserve(Config::humanCount + 500000);
 
-    humanLayer.buffer.create(1000000);
+    humanLayer.buffer.create(Config::humanCount + 500000);
 
     updateSpritePosition();
 }
@@ -108,122 +93,78 @@ void RendererSFML::handleCameraInput()
         if (event->is<sf::Event::Closed>())
         {
             window.close();
-
             continue;
-        }
-
-        if (const auto* key =
-                event->getIf<sf::Event::KeyPressed>())
-        {
-            bool moved = false;
-
-            switch (key->code)
-            {
-            case sf::Keyboard::Key::W:
-
-                view.move(
-                    {
-                        0.f,
-                        -cameraStep
-                    });
-
-                moved = true;
-
-                break;
-
-            case sf::Keyboard::Key::S:
-
-                view.move(
-                    {
-                        0.f,
-                        cameraStep
-                    });
-
-                moved = true;
-
-                break;
-
-            case sf::Keyboard::Key::A:
-
-                view.move(
-                    {
-                        -cameraStep,
-                        0.f
-                    });
-
-                moved = true;
-
-                break;
-
-            case sf::Keyboard::Key::D:
-
-                view.move(
-                    {
-                        cameraStep,
-                        0.f
-                    });
-
-                moved = true;
-
-                break;
-
-            default:
-
-                break;
-            }
-
-            if (moved)
-            {
-                viewChanged = true;
-
-                window.setView(view);
-            }
         }
 
         if (const auto* resized =
                 event->getIf<sf::Event::Resized>())
         {
-            windowWidth =
-                resized->size.x;
-
-            windowHeight =
-                resized->size.y;
+            windowWidth = resized->size.x;
+            windowHeight = resized->size.y;
 
             sf::Vector2f newSize(
-                static_cast<float>(
-                    windowWidth),
-
-                static_cast<float>(
-                    windowHeight)
-            );
+                static_cast<float>(windowWidth),
+                static_cast<float>(windowHeight));
 
             view.setSize(newSize);
 
             window.setView(view);
 
             pixelImage = sf::Image(
-                {
-                    windowWidth,
-                    windowHeight
-                },
-                sf::Color::Black
-            );
+                {windowWidth, windowHeight},
+                sf::Color::Black);
 
             texture = sf::Texture(
-                {
-                    windowWidth,
-                    windowHeight
-                }
-            );
+                {windowWidth, windowHeight});
 
             sprite = sf::Sprite(texture);
 
             viewChanged = true;
-
             textureDirty = true;
 
             updateViewport();
         }
+    }
+
+    const float dt =
+        cameraClock.restart().asSeconds();
+
+    sf::Vector2f movement{0.f, 0.f};
+
+    if (sf::Keyboard::isKeyPressed(
+            sf::Keyboard::Key::W))
+    {
+        movement.y -= cameraSpeed * dt;
+    }
+
+    if (sf::Keyboard::isKeyPressed(
+            sf::Keyboard::Key::S))
+    {
+        movement.y += cameraSpeed * dt;
+    }
+
+    if (sf::Keyboard::isKeyPressed(
+            sf::Keyboard::Key::A))
+    {
+        movement.x -= cameraSpeed * dt;
+    }
+
+    if (sf::Keyboard::isKeyPressed(
+            sf::Keyboard::Key::D))
+    {
+        movement.x += cameraSpeed * dt;
+    }
+
+    if (movement.x != 0.f ||
+        movement.y != 0.f)
+    {
+        view.move(movement);
+
+        clampCameraToWorld();
+
+        viewChanged = true;
+
+        window.setView(view);
     }
 }
 
@@ -239,6 +180,8 @@ void RendererSFML::begin()
 
 void RendererSFML::updateViewport()
 {
+    clampCameraToWorld();
+
     const sf::Vector2f center =
         view.getCenter();
 
@@ -249,17 +192,13 @@ void RendererSFML::updateViewport()
         static_cast<int>(
             std::floor(
                 center.x -
-                size.x / 2.f
-            )
-        );
+                size.x / 2.f));
 
     viewportTop =
         static_cast<int>(
             std::floor(
                 center.y -
-                size.y / 2.f
-            )
-        );
+                size.y / 2.f));
 
     calculateVisibleCells();
 
@@ -286,9 +225,7 @@ void RendererSFML::calculateVisibleCells()
                 static_cast<float>(
                     viewportLeft) /
                 static_cast<float>(
-                    cellSize)
-            )
-        );
+                    cellSize)));
 
     visibleMinY =
         static_cast<int>(
@@ -296,9 +233,7 @@ void RendererSFML::calculateVisibleCells()
                 static_cast<float>(
                     viewportTop) /
                 static_cast<float>(
-                    cellSize)
-            )
-        );
+                    cellSize)));
 
     visibleMaxX =
         static_cast<int>(
@@ -306,9 +241,8 @@ void RendererSFML::calculateVisibleCells()
                 static_cast<float>(
                     right) /
                 static_cast<float>(
-                    cellSize)
-            )
-        ) - 1;
+                    cellSize))) -
+        1;
 
     visibleMaxY =
         static_cast<int>(
@@ -316,33 +250,79 @@ void RendererSFML::calculateVisibleCells()
                 static_cast<float>(
                     bottom) /
                 static_cast<float>(
-                    cellSize)
-            )
-        ) - 1;
+                    cellSize))) -
+        1;
+}
+
+void RendererSFML::clampCameraToWorld()
+{
+    const float worldWidth =
+        static_cast<float>(Config::sizeX * cellSize);
+
+    const float worldHeight =
+        static_cast<float>(Config::sizeY * cellSize);
+
+    const sf::Vector2f size =
+        view.getSize();
+
+    sf::Vector2f center =
+        view.getCenter();
+
+    const float halfWidth =
+        size.x / 2.f;
+
+    const float halfHeight =
+        size.y / 2.f;
+
+    if (size.x <= worldWidth)
+    {
+        center.x =
+            std::clamp(
+                center.x,
+                halfWidth,
+                worldWidth - halfWidth);
+    }
+    else
+    {
+        center.x =
+            worldWidth / 2.f;
+    }
+
+    if (size.y <= worldHeight)
+    {
+        center.y =
+            std::clamp(
+                center.y,
+                halfHeight,
+                worldHeight - halfHeight);
+    }
+    else
+    {
+        center.y =
+            worldHeight / 2.f;
+    }
+
+    view.setCenter(center);
 }
 
 void RendererSFML::updateSpritePosition()
 {
     sprite.setPosition(
-        {
-            static_cast<float>(
-                viewportLeft),
+        {static_cast<float>(
+             viewportLeft),
 
-            static_cast<float>(
-                viewportTop)
-        }
-    );
+         static_cast<float>(
+             viewportTop)});
 }
 
 bool RendererSFML::isCellVisible(
     int x,
     int y) const
 {
-    return
-        x >= visibleMinX &&
-        x <= visibleMaxX &&
-        y >= visibleMinY &&
-        y <= visibleMaxY;
+    return x >= visibleMinX &&
+           x <= visibleMaxX &&
+           y >= visibleMinY &&
+           y <= visibleMaxY;
 }
 
 bool RendererSFML::isCellVisible(
@@ -351,8 +331,7 @@ bool RendererSFML::isCellVisible(
 {
     return isCellVisible(
         static_cast<int>(x),
-        static_cast<int>(y)
-    );
+        static_cast<int>(y));
 }
 
 void RendererSFML::updateCellPixels(
@@ -390,7 +369,7 @@ void RendererSFML::updateCellPixels(
                 windowWidth),
 
             localStartX +
-            cellSize);
+                cellSize);
 
     const int endY =
         std::min(
@@ -398,7 +377,7 @@ void RendererSFML::updateCellPixels(
                 windowHeight),
 
             localStartY +
-            cellSize);
+                cellSize);
 
     if (beginX >= endX ||
         beginY >= endY)
@@ -415,16 +394,13 @@ void RendererSFML::updateCellPixels(
              ++px)
         {
             pixelImage.setPixel(
-                {
-                    static_cast<unsigned>(
-                        px),
+                {static_cast<unsigned>(
+                     px),
 
-                    static_cast<unsigned>(
-                        py)
-                },
+                 static_cast<unsigned>(
+                     py)},
 
-                color
-            );
+                color);
         }
     }
 
@@ -432,7 +408,7 @@ void RendererSFML::updateCellPixels(
 }
 
 sf::Color RendererSFML::getColor(
-    World& world,
+    World &world,
     uint16_t x,
     uint16_t y)
 {
@@ -537,15 +513,12 @@ sf::Color RendererSFML::getColor(
 }
 
 void RendererSFML::rebuildVisibleWorld(
-    World& world)
+    World &world)
 {
     pixelImage = sf::Image(
-        {
-            windowWidth,
-            windowHeight
-        },
-        sf::Color::Black
-    );
+        {windowWidth,
+         windowHeight},
+        sf::Color::Black);
 
     for (int y = visibleMinY;
          y <= visibleMaxY;
@@ -592,7 +565,7 @@ void RendererSFML::rebuildVisibleWorld(
 }
 
 void RendererSFML::updateWorldLayer(
-    World& world)
+    World &world)
 {
     if (viewChanged)
     {
@@ -602,7 +575,7 @@ void RendererSFML::updateWorldLayer(
 
         dirtyCells.clear();
 
-        for (auto& buffer : dirtyBuffers)
+        for (auto &buffer : dirtyBuffers)
         {
             buffer.clear();
         }
@@ -610,7 +583,7 @@ void RendererSFML::updateWorldLayer(
 
     mergeDirtyBuffersToDirtyCells();
 
-    for (auto& cell : dirtyCells)
+    for (auto &cell : dirtyCells)
     {
         if (!isDirtyCellVisible(cell))
         {
@@ -627,7 +600,7 @@ void RendererSFML::updateWorldLayer(
 }
 
 bool RendererSFML::isDirtyCellVisible(
-    const DirtyCells& cell) const
+    const DirtyCells &cell) const
 {
     return isCellVisible(
         cell.coords.x,
@@ -635,12 +608,12 @@ bool RendererSFML::isDirtyCellVisible(
 }
 
 void RendererSFML::updateHumanLayer(
-    Human& human)
+    Human &human)
 {
     humanLayer.vertices.clear();
 
     auto add =
-        [&](auto& humans)
+        [&](auto &humans)
     {
         for (size_t i = 0;
              i < humans.posX.size();
@@ -662,15 +635,14 @@ void RendererSFML::updateHumanLayer(
             sf::Vertex vertex;
 
             vertex.position =
-            {
-                static_cast<float>(
-                    x * cellSize +
-                    cellSize / 2),
+                {
+                    static_cast<float>(
+                        x * cellSize +
+                        cellSize / 2),
 
-                static_cast<float>(
-                    y * cellSize +
-                    cellSize / 2)
-            };
+                    static_cast<float>(
+                        y * cellSize +
+                        cellSize / 2)};
 
             vertex.color =
                 sf::Color::Black;
@@ -700,14 +672,14 @@ void RendererSFML::mergeDirtyBuffersToDirtyCells()
     size_t total =
         dirtyCells.size();
 
-    for (auto& buffer : dirtyBuffers)
+    for (auto &buffer : dirtyBuffers)
     {
         total += buffer.size();
     }
 
     dirtyCells.reserve(total);
 
-    for (auto& buffer : dirtyBuffers)
+    for (auto &buffer : dirtyBuffers)
     {
         if (buffer.empty())
         {
@@ -724,7 +696,7 @@ void RendererSFML::mergeDirtyBuffersToDirtyCells()
 }
 
 void RendererSFML::addToDirtyBuffer(
-    World& world,
+    World &world,
     uint16_t x,
     uint16_t y,
     sf::Color color,
@@ -738,7 +710,7 @@ void RendererSFML::addToDirtyBuffer(
 }
 
 void RendererSFML::addChunkToDirtyBuffer(
-    World& world,
+    World &world,
     uint16_t chunkX,
     uint16_t chunkY,
     sf::Color color,
@@ -749,7 +721,7 @@ void RendererSFML::addChunkToDirtyBuffer(
             chunkX,
             chunkY);
 
-    for (auto& cell : cells)
+    for (auto &cell : cells)
     {
         addToDirtyBuffer(
             world,
@@ -761,7 +733,7 @@ void RendererSFML::addChunkToDirtyBuffer(
 }
 
 void RendererSFML::addToDirtyCells(
-    World& world,
+    World &world,
     uint16_t x,
     uint16_t y,
     sf::Color color)
@@ -780,7 +752,7 @@ void RendererSFML::addToDirtyCells(
 }
 
 void RendererSFML::addChunkToDirtyCells(
-    World& world,
+    World &world,
     uint16_t chunkX,
     uint16_t chunkY,
     sf::Color color)
@@ -790,7 +762,7 @@ void RendererSFML::addChunkToDirtyCells(
             chunkX,
             chunkY);
 
-    for (auto& cell : cells)
+    for (auto &cell : cells)
     {
         addToDirtyCells(
             world,
@@ -801,8 +773,8 @@ void RendererSFML::addChunkToDirtyCells(
 }
 
 void RendererSFML::render(
-    World& world,
-    Human& human)
+    World &world,
+    Human &human)
 {
     updateWorldLayer(world);
 

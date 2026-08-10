@@ -59,20 +59,14 @@ int main()
 
     world.init();
     std::cout << "finisted wordl init" << std::endl;
-    world.createOcean();
-    std::cout << "ocean created" << std::endl;
     world.createLand();
     std::cout << "land created" << std::endl;
-    world.createStruct(TerrainType::Water);
-    std::cout << "water created" << std::endl;
     world.createStruct(TerrainType::Desert);
     std::cout << "desert created" << std::endl;
     world.createStruct(TerrainType::Mountain);
     std::cout << "mountain created" << std::endl;
     world.addSandToLand();
     std::cout << "sand added to land" << std::endl;
-    world.smoothShores();
-    std::cout << "shores smoothed" << std::endl;
     civilization.createCivilization(world);
     std::cout << "civ created" << std::endl;
     human.createHuman(world, civilization);
@@ -82,8 +76,6 @@ int main()
     std::cout << "food created" << std::endl;
     stone.createStone(world, renderer);
     std::cout << "stone created" << std::endl;
-    world.markAllDirty(renderer);
-    std::cout << "marked all dirty" << std::endl;
 
     std::thread humanThread;
     std::atomic<bool> running = true;

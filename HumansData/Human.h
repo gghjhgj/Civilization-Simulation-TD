@@ -97,10 +97,6 @@ public:
         int foodCollected = 0;
         int woodCollected = 0;
         int stoneCollected = 0;
-        int housesBuilt = 0;
-        int farmsBuilt = 0;
-        int sawmillsBuilt = 0;
-        int minesBuilt = 0;
         int farmWorkersDelta = 0;
         int sawmillWorkersDelta = 0;
         int mineWorkersDelta = 0;
@@ -112,11 +108,6 @@ public:
             foodCollected = 0;
             woodCollected = 0;
             stoneCollected = 0;
-
-            housesBuilt = 0;
-            farmsBuilt = 0;
-            sawmillsBuilt = 0;
-            minesBuilt = 0;
 
             farmWorkersDelta = 0;
             sawmillWorkersDelta = 0;

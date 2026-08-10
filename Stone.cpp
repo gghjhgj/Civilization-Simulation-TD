@@ -1,65 +1,152 @@
 #include "Stone.h"
 
-void Stone::addStone(World &world, RendererSFML &renderer, uint16_t x, uint16_t y)
+void Stone::addStone(
+    World &world,
+    RendererSFML &renderer,
+    uint16_t x,
+    uint16_t y)
 {
-    world.setCell(x, y, TerrainType::MountainWithStone);
-    renderer.addToDirtyCells(world, x, y, sf::Color::White);
+    world.setCell(
+        x,
+        y,
+        TerrainType::MountainWithStone);
+
+    renderer.addToDirtyCells(
+        world,
+        x,
+        y,
+        sf::Color::White);
+
     stonesCount++;
 }
 
-void Stone::createStone(World &world, RendererSFML &renderer)
+void Stone::createStone(
+    World &world,
+    RendererSFML &renderer)
 {
-    std::mt19937 rng(std::random_device{}());
+    std::mt19937 rng(
+        std::random_device{}());
 
-    for(int i = 0; i < Config::stoneCount; i++)
+    std::uniform_int_distribution<int> mountainDist(
+        0,
+        Config::numberOfMountains - 1);
+
+    std::uniform_int_distribution<uint16_t> coordDist;
+
+    for (int i = 0;
+         i < Config::stoneCount;
+         ++i)
     {
         int tries = 0;
-        while(tries < Config::maxStoneSpawnTries)
-        {
-            uint16_t x = rng() % Config::sizeX;
-            uint16_t y = rng() % Config::sizeY;
 
-            if(world.getCell(x, y) == TerrainType::Mountain)
+        while (tries < Config::maxStoneSpawnTries)
+        {
+            const int mountainID =
+                mountainDist(rng);
+
+            const auto &mountain =
+                world.mountainsRanges[mountainID];
+
+            const uint16_t x =
+                coordDist(
+                    rng,
+                    decltype(coordDist)::param_type{
+                        mountain.minX,
+                        mountain.maxX});
+
+            const uint16_t y =
+                coordDist(
+                    rng,
+                    decltype(coordDist)::param_type{
+                        mountain.minY,
+                        mountain.maxY});
+
+            if (world.getCell(x, y) ==
+                TerrainType::Mountain)
             {
-                world.setCell(x, y, TerrainType::MountainWithStone);
-                renderer.addToDirtyCells(world, x, y, sf::Color::White);
-                stonesCount++;
+                addStone(
+                    world,
+                    renderer,
+                    x,
+                    y);
+
                 break;
             }
-            tries++;
+
+            ++tries;
         }
     }
 }
 
-void Stone::stoneRespawn(World &world, RendererSFML &renderer)
+void Stone::stoneRespawn(
+    World &world,
+    RendererSFML &renderer)
 {
-    if (stonesCount >= Config::maxStone) return;
+    if (stonesCount >= Config::maxStone)
+        return;
 
-    std::mt19937 rng(std::random_device{}());
+    std::mt19937 rng(
+        std::random_device{}());
 
-    for(int i = 0; i < Config::StoneRespawn; i++)
+    std::uniform_int_distribution<int> mountainDist(
+        0,
+        Config::numberOfMountains - 1);
+
+    std::uniform_int_distribution<uint16_t> coordDist;
+
+    for (int i = 0;
+         i < Config::StoneRespawn;
+         ++i)
     {
         int tries = 0;
-        while(tries < Config::maxStoneSpawnTries)
+
+        while (tries < Config::maxStoneSpawnTries)
         {
-            uint16_t x = rng() % Config::sizeX;
-            uint16_t y = rng() % Config::sizeY;
+            const int mountainID =
+                mountainDist(rng);
 
-            auto ref = world.getCellRef(x, y);
+            const auto &mountain =
+                world.mountainsRanges[mountainID];
 
-            if(world.hasChunkFlag(ref.chunkX, ref.chunkY, ChunkFlag::CivZone))
+            const uint16_t x =
+                coordDist(
+                    rng,
+                    decltype(coordDist)::param_type{
+                        mountain.minX,
+                        mountain.maxX});
+
+            const uint16_t y =
+                coordDist(
+                    rng,
+                    decltype(coordDist)::param_type{
+                        mountain.minY,
+                        mountain.maxY});
+
+            const auto ref =
+                world.getCellRef(x, y);
+
+            if (world.hasChunkFlag(
+                    ref.chunkX,
+                    ref.chunkY,
+                    ChunkFlag::CivZone))
             {
-                tries++;
+                ++tries;
                 continue;
             }
-            if(world.getCell(x, y) != TerrainType::Mountain)
+
+            if (world.getCell(x, y) !=
+                TerrainType::Mountain)
             {
-                tries++;
+                ++tries;
                 continue;
             }
-            world.setCell(x, y, TerrainType::MountainWithStone);
-            renderer.addToDirtyCells(world, x, y, sf::Color::White);
-            stonesCount++;
+
+            addStone(
+                world,
+                renderer,
+                x,
+                y);
+
             break;
         }
     }

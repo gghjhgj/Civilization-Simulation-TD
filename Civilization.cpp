@@ -47,44 +47,28 @@ void Civilization::initBuildings()
     auto& cost = buildingsCost;
     auto& gains = buildingsGains;
 
-    hitsForBuilding[HOUSE] = Config::hitsForBuildingHouse;
     cost[HOUSE].food = 0;
     cost[HOUSE].stone = Config::stoneNeededForHouse;
     cost[HOUSE].wood = Config::woodNeededForHouse;
     maxHumans[HOUSE] = Config::maxHumansInHouse;
 
-    hitsForBuilding[FARM] = Config::hitsForBuildingFarm;
     cost[FARM].food = Config::foodNeededForFarm;
     cost[FARM].stone = 0;
     cost[FARM].wood = Config::woodNeededForFarm;
     maxHumans[FARM] = Config::maxFarmWorkersOnFarm;
     gains[FARM].food = Config::foodPerFarmWorker;
 
-    hitsForBuilding[SAWMILL] = Config::hitsForBuildingSawmill;
     cost[SAWMILL].food = 0;
     cost[SAWMILL].stone = Config::stoneNeededForSawmill;
     cost[SAWMILL].wood = Config::woodNeededForSawmill;
     maxHumans[SAWMILL] = Config::maxSawmillWorkersInSawmill;
     gains[SAWMILL].wood = Config::woodPerSawmillWorker;
 
-    hitsForBuilding[MINE] = Config::hitsForBuildingMine;
     cost[MINE].food = 0;
     cost[MINE].stone = Config::stoneNeededForMine;
     cost[MINE].wood = Config::woodNeededForMine;
     maxHumans[MINE] = Config::maxMineWorkersInMine;
     gains[MINE].stone = Config::stonePerMineWorker;
-
-    /*
-    hitsForBuilding[woodWall] = Config::hitsForBuildingWoodWall;
-    cost[woodWall].food = 0;
-    cost[woodWall].stone = 0;
-    cost[woodWall].wood = Config::woodNeededForWoodWall;
-
-    hitsForBuilding[stoneWall] = Config::hitsForBuildingStoneWall;
-    cost[stoneWall].food = 0;
-    cost[stoneWall].stone = Config::stoneNeededForStoneWall;
-    cost[stoneWall].wood = 0;
-    */
 }
 
 void Civilization::addWorkers(Human& human, HumanType targetType)
@@ -340,6 +324,8 @@ void Civilization::startConstruction(World& world, RendererSFML &renderer, uint1
 
 void Civilization::endConstruction(World& world, RendererSFML &renderer, Human& human, uint16_t chunkX, uint16_t chunkY, Type type)
 {
+    if(!world.hasChunkFlag(chunkX, chunkY, ChunkFlag::Construction)) return;
+    
     world.clearChunkFlag(chunkX, chunkY, ChunkFlag::Construction);
     uint16_t x = chunkX * ChunkConfig::CHUNK_SIZE;
     uint16_t y = chunkY * ChunkConfig::CHUNK_SIZE;

@@ -7,6 +7,7 @@
 #include <random>
 #include <algorithm>
 #include <fstream>
+#include <memory>
 #include "Config.h"
 #include "../RendererSFML.h"
 #include "../XY/XY.h"
@@ -33,8 +34,9 @@ namespace WorldConfig
 class World
 {
 public:
+    World();
     int allTicksCount = 0;
-    ChunkRegion grid[WorldConfig::CHUNK_REGIONS_COUNT];
+    std::unique_ptr<ChunkRegion[]> grid;
 
     struct ChunkRef
     {
@@ -62,7 +64,7 @@ public:
         uint16_t localChunkY =
             chunkY % ChunkRegionConfig::CHUNK_REGION_SIZE;
 
-        uint16_t chunkRegionIndex =
+        uint32_t chunkRegionIndex =
             chunkRegionY * WorldConfig::CHUNK_REGIONS_X + chunkRegionX;
 
         uint16_t localChunkIndex =
@@ -100,7 +102,7 @@ public:
         uint16_t chunkX;
         uint16_t chunkY;
 
-        uint16_t chunkRegionIndex;
+        uint32_t chunkRegionIndex;
 
         uint16_t localChunkIndex;
 
@@ -152,7 +154,7 @@ public:
         return grid[ref.chunkRegionIndex].chunks[ref.localChunkIndex].getCell(ref.localCellIndex);
     }
     inline TerrainType getCellFast(
-        uint16_t chunkRegionIndex,
+        uint32_t chunkRegionIndex,
         uint16_t localChunkIndex,
         uint16_t localCellIndex)
     {
@@ -242,23 +244,29 @@ public:
         Stone &stone,
         Food &food,
         Tree &tree);
+
+    struct MountainRanges
+    {
+        uint16_t maxX;
+        uint16_t minX;
+        uint16_t minY;
+        uint16_t maxY;
+    };
+    MountainRanges mountainsRanges[Config::numberOfMountains];
     void init();
     bool isValid(int x, int y);
     bool isValidChunk(uint16_t chunkX, uint16_t chunkY);
     bool isChunkLand(uint16_t chunkX, uint16_t chunkY);
     void addPossible(int x, int y, TerrainType type);
 
-    void createOcean();
     void createLand();
     bool addSand(int x, int y);
-    void addSandToLand(); // on edges
-    void smoothShores();
+    void addSandToLand();
 
+    void updateMountainRange(int mountainID, uint16_t x, uint16_t y);
     void createStruct(TerrainType type);
 
     bool isEmpty(uint16_t x, uint16_t y);
-
-    void markAllDirty(RendererSFML &renderer);
 
     bool hasBuilding(uint16_t chunkX, uint16_t chunkY);
 

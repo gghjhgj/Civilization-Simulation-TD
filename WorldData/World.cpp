@@ -5,18 +5,22 @@
 #include "Stone.h"
 #include "Tree.h"
 
-
+World::World()
+    : grid(
+          std::make_unique<ChunkRegion[]>(
+              WorldConfig::CHUNK_REGIONS_COUNT))
+{
+}
 
 void World::writeStatsToTxt(
-    int ticks, 
-    int FPS, 
+    int ticks,
+    int FPS,
     int humanTicks,
-    Civilization& civilization, 
-    Human& human, 
-    Stone& stone, 
-    Food& food, 
-    Tree& tree
-)
+    Civilization &civilization,
+    Human &human,
+    Stone &stone,
+    Food &food,
+    Tree &tree)
 {
     std::ofstream statsFile("stats.txt");
 
@@ -34,11 +38,7 @@ void World::writeStatsToTxt(
         statsFile << "Ilosc kamieni: " << stone.stonesCount << "\n \n";
 
         statsFile << "ilosc ludzi: " << human.humansCount << "\n";
-        statsFile << "ilosc ludzi na mapie: " << human.foodCollectors.posX.size() +
-                                                human.woodCollectors.posX.size() +
-                                                human.stoneCollectors.posX.size() +
-                                                human.builders.posX.size() +
-                                                human.assigned.posX.size() << "\n";
+        statsFile << "ilosc ludzi na mapie: " << human.foodCollectors.posX.size() + human.woodCollectors.posX.size() + human.stoneCollectors.posX.size() + human.builders.posX.size() + human.assigned.posX.size() << "\n";
         statsFile << "food collectors: " << human.foodCollectors.posX.size() << "\n";
         statsFile << "wood collectors: " << human.woodCollectors.posX.size() << "\n";
         statsFile << "stone collectors: " << human.stoneCollectors.posX.size() << "\n";
@@ -80,30 +80,32 @@ void World::writeStatsToTxt(
         statsFile << "ilosc gigantow: " << monsters.monstersRegistry[Monsters::MonstersTypes::giantMonster].monstersCount << "\n";
         */
 
-
         statsFile.close();
     }
 }
 void World::init()
 {
-    //popularityRanking.clear();
-    //popularityRanking.resize(1);
-    for (auto& chunk : grid)
+    // popularityRanking.clear();
+    // popularityRanking.resize(1);
+    /*
+    for (uint32_t i = 0; i < WorldConfig::CHUNK_REGIONS_COUNT; ++i)
     {
-        //chunk.chunks.data = 0;
+        auto& chunk = grid[i];
+
+        // chunk.chunks.data = 0;
     }
+        */
 }
 bool World::isValid(int x, int y)
 {
     return x >= 0 && y >= 0 &&
-        x < Config::sizeX &&
-        y < Config::sizeY;
+           x < Config::sizeX &&
+           y < Config::sizeY;
 }
 bool World::isValidChunk(uint16_t chunkX, uint16_t chunkY)
 {
-    return 
-        chunkX < WorldConfig::CHUNKS_X &&
-        chunkY < WorldConfig::CHUNKS_Y;
+    return chunkX < WorldConfig::CHUNKS_X &&
+           chunkY < WorldConfig::CHUNKS_Y;
 }
 bool World::isChunkLand(uint16_t chunkX, uint16_t chunkY)
 {
@@ -126,12 +128,10 @@ bool World::isChunkLand(uint16_t chunkX, uint16_t chunkY)
 void World::addPossible(int x, int y, TerrainType type)
 {
     static const int dirs[8][2] =
-    {
-        {1,0}, {-1,0}, {0,1}, {0,-1},
-        {1,1}, {-1,-1}, {-1,1}, {1,-1}
-    };
+        {
+            {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {-1, 1}, {1, -1}};
 
-    for (auto& d : dirs)
+    for (auto &d : dirs)
     {
         int nx = x + d[0];
         int ny = y + d[1];
@@ -141,81 +141,36 @@ void World::addPossible(int x, int y, TerrainType type)
 
         if (getCell(nx, ny) == type)
         {
-            possible.push_back({ nx, ny });
+            possible.push_back({nx, ny});
         }
     }
 }
-void World::createOcean()
+
+void World::createLand()
 {
     for (int y = 0; y < Config::sizeY; y++)
     {
         for (int x = 0; x < Config::sizeX; x++)
         {
-            setCell(x, y, TerrainType::Water);
-        }
-    }
-}
-void World::createLand()
-{
-    int totalCells = Config::sizeX * Config::sizeY;
-    int totalLand = (totalCells * Config::landPercent) / 100;
-    int landCount = totalLand / Config::numberOfLands;
-    int landAdded = 0;
-
-    for (int i = 0; i < Config::numberOfLands; i++)
-    {
-        int x;
-        int y;
-        possible.clear();
-        do
-        {
-            x = rand() % Config::sizeX;
-            y = rand() % Config::sizeY;
-        } while (getCell(x, y) != TerrainType::Water);
-        landAdded++;
-        setCell(x, y, TerrainType::Land);
-        addPossible(x, y, TerrainType::Water);
-
-        for (int j = 0; j < landCount; )
-        {
-            if (possible.empty())
-            {
-                break;
-            }
-
-            int posID = rand() % possible.size();
-
-            auto [x, y] = possible[posID];
-
-            possible[posID] = possible.back();
-            possible.pop_back();
-
-            if (getCell(x, y) != TerrainType::Water)
-            {
-                continue;
-            }
-            j++;
-            landAdded++;
             setCell(x, y, TerrainType::Land);
-            addPossible(x, y, TerrainType::Water);
         }
     }
-    std::cout << landAdded << std::endl;
 }
 bool World::addSand(int x, int y)
 {
     static const int dirs[8][2] =
-    {
-        {1,0}, {-1,0}, {0,1}, {0,-1},
-        {1,1}, {-1,-1}, {-1,1}, {1,-1}
-    };
-    if (getCell(x, y) != TerrainType::Water) return false;
-    for (auto& d : dirs)
+        {
+            {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {-1, 1}, {1, -1}};
+    if (getCell(x, y) != TerrainType::Water)
+        return false;
+    for (auto &d : dirs)
     {
         int nx = x + d[0];
         int ny = y + d[1];
-        if (!isValid(nx, ny)) continue;
-        if (getCell(nx, ny) == TerrainType::Land) return true;
+        if (!isValid(nx, ny))
+            continue;
+        if (getCell(nx, ny) == TerrainType::Land)
+            return true;
     }
     return false;
 }
@@ -232,83 +187,46 @@ void World::addSandToLand()
         }
     }
 }
-void World::smoothShores()
+void World::updateMountainRange(
+    int mountainID,
+    uint16_t x,
+    uint16_t y)
 {
-    static const int dirs[8][2] =
-    {
-        {1,0}, {-1,0}, {0,1}, {0,-1},
-        {1,1}, {-1,-1}, {-1,1}, {1,-1}
-    };
-    bool changed = true;
-    while (changed)
-    {
-        changed = false;
-        std::vector<XY> sandToWater;
-        for (uint16_t y = 0; y < Config::sizeY; y++)
-        {
-            for (uint16_t x = 0; x < Config::sizeX; x++)
-            {
-                if (getCell(x, y) == TerrainType::Desert)
-                {
-                    int waterNeighbors = 0;
-                    for (auto& d : dirs)
-                    {
-                        int nx = x + d[0];
-                        int ny = y + d[1];
+    auto &range = mountainsRanges[mountainID];
 
-                        if (!isValid(nx, ny))
-                        {
-                            waterNeighbors++;
-                            continue;
-                        }
-                        if (getCell(nx, ny) == TerrainType::Water)
-                        {
-                            waterNeighbors++;
-                        }
-                    }
-                    if (waterNeighbors >= 5)
-                    {
-                        sandToWater.push_back({ x, y });
-                    }
-                }
-            }
-        }
-        if (!sandToWater.empty())
-        {
-            changed = true;
-            for (auto& cell : sandToWater)
-            {
-                setCell(cell.x, cell.y, TerrainType::Water);
-            }
-        }
-    }
+    if (x > range.maxX)
+        range.maxX = x;
+
+    if (x < range.minX)
+        range.minX = x;
+
+    if (y > range.maxY)
+        range.maxY = y;
+
+    if (y < range.minY)
+        range.minY = y;
 }
 void World::createStruct(TerrainType type)
 {
-    int totalCells = Config::sizeX * Config::sizeY;
-    int landCells = (totalCells * Config::landPercent) / 100;
+    uint32_t totalCells = Config::sizeX * Config::sizeY;
+    uint32_t landCells = (totalCells * Config::landPercent) / 100;
 
     int numberOfStruct;
     int totalStruct;
     int structCount;
 
-    if (type == TerrainType::Water)
+    if (type == TerrainType::Desert)
     {
-        if (Config::numberOfLakes == 0) return;
-        numberOfStruct = Config::numberOfLakes;
-        totalStruct = (landCells * Config::waterPercentInLand) / 100;
-        structCount = totalStruct / Config::numberOfLakes;
-    }
-    else if (type == TerrainType::Desert)
-    {
-        if (Config::numberOfDesserts == 0) return;
+        if (Config::numberOfDesserts == 0)
+            return;
         numberOfStruct = Config::numberOfDesserts;
         totalStruct = (landCells * Config::sandPercent) / 100;
         structCount = totalStruct / Config::numberOfDesserts;
     }
     else if (type == TerrainType::Mountain)
     {
-        if (Config::numberOfMountains == 0) return;
+        if (Config::numberOfMountains == 0)
+            return;
         numberOfStruct = Config::numberOfMountains;
         totalStruct = (landCells * Config::mountainPercent) / 100;
         structCount = totalStruct / Config::numberOfMountains;
@@ -321,15 +239,35 @@ void World::createStruct(TerrainType type)
 
     for (int i = 0; i < numberOfStruct; i++)
     {
+        if (type == TerrainType::Mountain)
+        {
+            mountainsRanges[i].minX = UINT16_MAX;
+            mountainsRanges[i].maxX = 0;
+            mountainsRanges[i].minY = UINT16_MAX;
+            mountainsRanges[i].maxY = 0;
+        }
+
         int x;
         int y;
+
         possible.clear();
+
         do
         {
             x = rand() % Config::sizeX;
             y = rand() % Config::sizeY;
         } while (getCell(x, y) != TerrainType::Land);
+
         setCell(x, y, type);
+
+        if (type == TerrainType::Mountain)
+        {
+            updateMountainRange(
+                i,
+                static_cast<uint16_t>(x),
+                static_cast<uint16_t>(y));
+        }
+
         addPossible(x, y, TerrainType::Land);
 
         for (int j = 0; j < structCount; j++)
@@ -346,9 +284,19 @@ void World::createStruct(TerrainType type)
             possible[posID] = possible.back();
             possible.pop_back();
 
-            if (getCell(x, y) != TerrainType::Land) continue;
+            if (getCell(x, y) != TerrainType::Land)
+                continue;
 
             setCell(x, y, type);
+
+            if (type == TerrainType::Mountain)
+            {
+                updateMountainRange(
+                    i,
+                    static_cast<uint16_t>(x),
+                    static_cast<uint16_t>(y));
+            }
+
             addPossible(x, y, TerrainType::Land);
         }
     }
@@ -361,22 +309,6 @@ bool World::isEmpty(uint16_t x, uint16_t y)
            type != TerrainType::LandWithFood &&
            type != TerrainType::LandWithTree;
 }
-
-
-void World::markAllDirty(RendererSFML &renderer)
-{
-    for (uint32_t y = 0; y < Config::sizeY; y++)
-    {
-        for (uint32_t x = 0; x < Config::sizeX; x++)
-        {
-            sf::Color color;
-            color = renderer.getColor(*this, x, y);
-            renderer.addToDirtyCells(*this, x, y, color);
-        }
-    }
-}
-
-
 
 bool World::hasBuilding(uint16_t chunkX, uint16_t chunkY)
 {
@@ -414,54 +346,53 @@ std::vector<XY> World::getCellsInChunk(uint16_t chunkX, uint16_t chunkY)
     return cells;
 }
 
-
 void World::cleanChunkResources(
-        Food &food, Tree &tree, Stone &stone,
-        uint16_t chunkX,
-        uint16_t chunkY,
-        Civilization &civ)
+    Food &food, Tree &tree, Stone &stone,
+    uint16_t chunkX,
+    uint16_t chunkY,
+    Civilization &civ)
+{
+    auto ref = getChunkRef(chunkX, chunkY);
+
+    auto &chunk =
+        grid[ref.chunkRegionIndex]
+            .chunks[ref.localChunkIndex];
+
+    for (uint16_t i = 0; i < ChunkConfig::CELL_COUNT; i++)
     {
-        auto ref = getChunkRef(chunkX, chunkY);
+        TerrainType type = chunk.getCell(i);
 
-        auto &chunk =
-            grid[ref.chunkRegionIndex]
-                .chunks[ref.localChunkIndex];
-
-        for (uint16_t i = 0; i < ChunkConfig::CELL_COUNT; i++)
+        switch (type)
         {
-            TerrainType type = chunk.getCell(i);
+        case TerrainType::LandWithFood:
+        {
+            civ.resources.food++;
+            food.foodsCount--;
 
-            switch (type)
-            {
-            case TerrainType::LandWithFood:
-            {
-                civ.resources.food++;
-                food.foodsCount--;
+            chunk.setCell(i, TerrainType::Land);
+            break;
+        }
 
-                chunk.setCell(i, TerrainType::Land);
-                break;
-            }
+        case TerrainType::LandWithTree:
+        {
+            civ.resources.wood++;
+            tree.treesCount--;
 
-            case TerrainType::LandWithTree:
-            {
-                civ.resources.wood++;
-                tree.treesCount--;
+            chunk.setCell(i, TerrainType::Land);
+            break;
+        }
 
-                chunk.setCell(i, TerrainType::Land);
-                break;
-            }
+        case TerrainType::MountainWithStone:
+        {
+            civ.resources.stone++;
+            stone.stonesCount--;
 
-            case TerrainType::MountainWithStone:
-            {
-                civ.resources.stone++;
-                stone.stonesCount--;
+            chunk.setCell(i, TerrainType::Mountain);
+            break;
+        }
 
-                chunk.setCell(i, TerrainType::Mountain);
-                break;
-            }
-
-            default:
-                break;
-            }
+        default:
+            break;
         }
     }
+}

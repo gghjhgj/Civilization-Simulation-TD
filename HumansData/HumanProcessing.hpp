@@ -395,11 +395,9 @@ inline void processHumanTypeBatch(
                              ref.chunkY,
                              type});
                 }
-                else
-                {
-                    h.targetX[i] = UINT16_MAX;
-                    h.targetY[i] = UINT16_MAX;
-                }
+
+                h.targetX[i] = UINT16_MAX;
+                h.targetY[i] = UINT16_MAX;
             }
 
             if (!valid)

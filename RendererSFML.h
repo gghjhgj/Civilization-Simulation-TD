@@ -132,7 +132,9 @@ private:
 
     sf::View view;
 
-    float cameraStep = 500.f;
+    sf::Clock cameraClock;
+
+    float cameraSpeed = 10000.f;
 
     bool viewChanged = true;
 
@@ -164,6 +166,8 @@ private:
     void updateViewport();
 
     void calculateVisibleCells();
+
+    void clampCameraToWorld();
 
     void updateSpritePosition();
 
