@@ -1,11 +1,11 @@
 #pragma once
 
 #include "HumanTypes.h"
-#include "XY/XY.h"
+#include "../../XY/XY.h"
 #include "Config.h"
-#include "Food.h"
-#include "Tree.h"
-#include "Stone.h"
+#include "../../world/resources/Food.h"
+#include "../../world/resources/Tree.h"
+#include "../../world/resources/Stone.h"
 
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_invoke.h>
@@ -13,8 +13,8 @@
 #include <tbb/task_group.h>
 #include <tbb/enumerable_thread_specific.h>
 
-#include "../ThreadController.hpp"
-#include "../TBBPinObserver.hpp"
+#include "../../system/ThreadController.hpp"
+#include "../../system/TBBPinObserver.hpp"
 #include <memory>
 #include <vector>
 #include <cmath>

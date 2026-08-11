@@ -2,7 +2,7 @@
 
 #include "HumanTypes.h"
 #include "immintrin.h"
-#include "../WorldData/World.h"
+#include "../../world/WorldData/World.h"
 #include "HumanHelpers.hpp"
 
 class Human;

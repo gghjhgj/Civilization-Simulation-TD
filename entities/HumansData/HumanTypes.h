@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../XY/XY.h"
-#include "WorldData/ChunkData/ChunkEnums/TerrainType.h"
-#include "WorldData/ChunkData/ChunkEnums/BuildingType.h"
+#include "../../XY/XY.h"
+#include "../../world/WorldData/ChunkData/ChunkEnums/TerrainType.h"
+#include "../../world/WorldData/ChunkData/ChunkEnums/BuildingType.h"
 
 #include <vector>
 

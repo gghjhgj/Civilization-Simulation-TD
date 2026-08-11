@@ -1,21 +1,21 @@
-#include "WorldData/World.h"
+#include "world/WorldData/World.h"
 
-#include "HumansData/Human.h"
+#include "entities/HumansData/Human.h"
 
 #include <tbb/parallel_invoke.h>
 #include <thread>
 #include "Config.h"
-#include "RendererSFML.h"
-#include "Food.h"
-#include "Tree.h"
-#include "Stone.h"
-#include "Civilization.h"
+#include "renderer/RendererSFML.h"
+#include "world/resources/Food.h"
+#include "world/resources/Tree.h"
+#include "world/resources/Stone.h"
+#include "entities/civilization/Civilization.h"
 
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include "ThreadController.hpp"
-#include "CrashHandler.hpp"
+#include "system/ThreadController.hpp"
+#include "system/CrashHandler.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -63,8 +63,6 @@ int main()
     std::cout << "desert created" << std::endl;
     world.createStruct(TerrainType::Mountain);
     std::cout << "mountain created" << std::endl;
-    world.addSandToLand();
-    std::cout << "sand added to land" << std::endl;
     civilization.createCivilization(world);
     std::cout << "civ created" << std::endl;
     human.createHuman(world, civilization);

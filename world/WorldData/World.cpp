@@ -1,9 +1,9 @@
 #include "World.h"
-#include "HumansData/Human.h"
-#include "Civilization.h"
-#include "Food.h"
-#include "Stone.h"
-#include "Tree.h"
+#include "../../entities/HumansData/Human.h"
+#include "../../entities/civilization/Civilization.h"
+#include "../resources/Food.h"
+#include "../resources/Stone.h"
+#include "../resources/Tree.h"
 
 World::World()
     : grid(
@@ -83,7 +83,6 @@ void World::writeStatsToTxt(
         statsFile.close();
     }
 }
-
 bool World::isValid(int x, int y)
 {
     return x >= 0 && y >= 0 &&
@@ -132,6 +131,7 @@ bool World::addSand(int x, int y)
     static const int dirs[8][2] =
         {
             {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {-1, 1}, {1, -1}};
+
     for (auto &d : dirs)
     {
         int nx = x + d[0];
@@ -142,19 +142,6 @@ bool World::addSand(int x, int y)
             return true;
     }
     return false;
-}
-void World::addSandToLand()
-{
-    for (int y = 0; y < Config::sizeY; y++)
-    {
-        for (int x = 0; x < Config::sizeX; x++)
-        {
-            if (addSand(x, y))
-            {
-                setCell(x, y, TerrainType::Desert);
-            }
-        }
-    }
 }
 void World::updateMountainRange(
     int mountainID,

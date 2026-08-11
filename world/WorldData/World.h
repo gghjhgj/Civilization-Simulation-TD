@@ -9,8 +9,8 @@
 #include <fstream>
 #include <memory>
 #include "Config.h"
-#include "../RendererSFML.h"
-#include "../XY/XY.h"
+#include "../../renderer/RendererSFML.h"
+#include "../../XY/XY.h"
 #include "ChunkData/Chunk.h"
 #include "ChunkData/ChunkRegion.h"
 
@@ -259,7 +259,6 @@ public:
 
     void createLand();
     bool addSand(int x, int y);
-    void addSandToLand();
 
     void updateMountainRange(int mountainID, uint16_t x, uint16_t y);
     void createStruct(TerrainType type);

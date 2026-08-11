@@ -1,6 +1,5 @@
 #pragma once
-#include "WorldData/World.h"
-#include "RendererSFML.h"
+#include "../WorldData/World.h"
 #include "Config.h"
 class Stone
 {

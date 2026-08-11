@@ -11,7 +11,7 @@
 #include <tbb/task_arena.h>
 
 #include "Config.h"
-#include "XY/XY.h"
+#include "../XY/XY.h"
 #include "DirtyCells.h"
 
 class World;

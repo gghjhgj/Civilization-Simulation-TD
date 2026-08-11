@@ -1,8 +1,8 @@
 #include "Human.h"
 
-#include "WorldData/World.h"
+#include "../../world/WorldData/World.h"
 
-#include "Civilization.h"
+#include "../civilization/Civilization.h"
 
 void Human::createHuman(World &world, Civilization &civilization)
 {

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "HumanTypes.h"
-#include "../Civilization.h"
-#include "../WorldData/World.h"
+#include "../civilization/Civilization.h"
+#include "../../world/WorldData/World.h"
 
 class Human;
 

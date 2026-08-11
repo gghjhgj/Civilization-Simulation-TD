@@ -1,7 +1,7 @@
 #include "RendererSFML.h"
 
-#include "WorldData/World.h"
-#include "HumansData/Human.h"
+#include "../world/WorldData/World.h"
+#include "../entities/HumansData/Human.h"
 
 RendererSFML::RendererSFML(
     int w,

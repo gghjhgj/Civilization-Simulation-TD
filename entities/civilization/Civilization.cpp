@@ -1,6 +1,6 @@
 #include "Civilization.h"
-#include "HumansData/Human.h"
-#include "WorldData/World.h"
+#include "../HumansData/Human.h"
+#include "../../world/WorldData/World.h"
 void Civilization::addCivilization(World &world, int index)
 {
     /*

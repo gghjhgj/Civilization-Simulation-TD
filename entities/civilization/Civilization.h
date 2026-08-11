@@ -1,10 +1,10 @@
 #pragma once
 
-#include "WorldData/ChunkData/Chunk.h"
-#include "HumansData/HumanTypes.h"
-#include "Food.h"
-#include "Tree.h"
-#include "Stone.h"
+#include "../../world/WorldData/ChunkData/Chunk.h"
+#include "../HumansData/HumanTypes.h"
+#include "../../world/resources/Food.h"
+#include "../../world/resources/Tree.h"
+#include "../../world/resources/Stone.h"
 class Human;
 class World;
 class Walls;
