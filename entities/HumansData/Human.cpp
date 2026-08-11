@@ -1,8 +1,10 @@
 #include "Human.h"
+#include "../../Config/Config.h"
 
 #include "../../world/WorldData/World.h"
 
 #include "../civilization/Civilization.h"
+
 
 void Human::createHuman(World &world, Civilization &civilization)
 {
@@ -10,7 +12,7 @@ void Human::createHuman(World &world, Civilization &civilization)
 
     threadResults.resize(threadsCount);
 
-    size_t reserveCount = Config::humanCount + 40000;
+    size_t reserveCount = Config::humans.count + 40000;
 
     reserveHumans(foodCollectors, reserveCount);
     reserveHumans(woodCollectors, reserveCount);
@@ -24,9 +26,9 @@ void Human::createHuman(World &world, Civilization &civilization)
     uint16_t x2;
     uint16_t y2;
 
-    int maxRange = Config::maxHumansSpawnRange;
+    int maxRange = Config::humans.maxSpawnRange;
 
-    for (int i = 0; i < Config::humanCount; i++)
+    for (int i = 0; i < Config::humans.count; i++)
     {
         int r = i + 1;
         if (r > maxRange)
@@ -45,23 +47,27 @@ void Human::createHuman(World &world, Civilization &civilization)
     }
 
     /*
- for (int i = 0; i < Config::humanCount; i++)
- {
-    addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
- }
+    for (int i = 0; i < Config::humans.count; i++)
+    {
+        addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
+    }
     */
 }
+
 
 void Human::humanRespawn(World &world, Civilization &civilization)
 {
     int newPeople = static_cast<int>(std::cbrt(humansCount));
     uint16_t x = static_cast<uint16_t>(civilization.spawnXY.x);
     uint16_t y = static_cast<uint16_t>(civilization.spawnXY.y);
+
     for (int i = 0; i < newPeople; i++)
     {
         addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
     }
 }
+
+
 XY Human::humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type)
 {
     if (!world.isValid(x, y))
@@ -104,17 +110,22 @@ XY Human::humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType ty
 
     return {UINT16_MAX, UINT16_MAX};
 }
+
+
 XY Human::humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag flag)
 {
     if (!world.isValid(x, y))
     {
         return {UINT16_MAX, UINT16_MAX};
     }
+
     auto ref = world.getCellRef(x, y);
 
     auto &region = world.grid[ref.chunkRegionIndex];
 
-    for (uint16_t i = 0; i < ChunkRegionConfig::CHUNK_REGION_SIZE * ChunkRegionConfig::CHUNK_REGION_SIZE; i++)
+    for (uint16_t i = 0;
+         i < ChunkRegionConfig::CHUNK_REGION_SIZE * ChunkRegionConfig::CHUNK_REGION_SIZE;
+         i++)
     {
         auto &chunk = region.chunks[i];
 
@@ -143,8 +154,11 @@ XY Human::humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag fla
                 static_cast<uint16_t>(chunkY * ChunkConfig::CHUNK_SIZE)};
         }
     }
+
     return {UINT16_MAX, UINT16_MAX};
 }
+
+
 XY Human::humanFindWorkingBuildingChunk(
     World &world,
     uint16_t x,
@@ -155,6 +169,7 @@ XY Human::humanFindWorkingBuildingChunk(
     {
         return {UINT16_MAX, UINT16_MAX};
     }
+
     auto ref = world.getCellRef(x, y);
 
     auto &region = world.grid[ref.chunkRegionIndex];
@@ -194,24 +209,42 @@ XY Human::humanFindWorkingBuildingChunk(
 
     return {UINT16_MAX, UINT16_MAX};
 }
-inline bool Human::gotResource(uint16_t hx, uint16_t hy, uint16_t rx, uint16_t ry)
+
+
+inline bool Human::gotResource(
+    uint16_t hx,
+    uint16_t hy,
+    uint16_t rx,
+    uint16_t ry)
 {
     if (hx == rx && hy == ry)
         return true;
+
     return false;
 }
 
+
 inline Human::Dirs Human::humanMoveDecision(
-    uint16_t x, uint16_t y,
-    uint16_t targetX, uint16_t targetY,
+    uint16_t x,
+    uint16_t y,
+    uint16_t targetX,
+    uint16_t targetY,
     uint8_t points)
 {
     int a;
+
     if (targetX == UINT16_MAX || targetY == UINT16_MAX)
     {
         uint8_t directionIndex = points & 7;
-        static constexpr int lookupX[8] = {1, 1, 0, -1, -1, -1, 0, 1};
-        static constexpr int lookupY[8] = {0, 1, 1, 1, 0, -1, -1, -1};
+
+        static constexpr int lookupX[8] = {
+            1, 1, 0, -1, -1, -1, 0, 1
+        };
+
+        static constexpr int lookupY[8] = {
+            0, 1, 1, 1, 0, -1, -1, -1
+        };
+
         return {
             static_cast<int8_t>(lookupX[directionIndex]),
             static_cast<int8_t>(lookupY[directionIndex])};
@@ -219,11 +252,13 @@ inline Human::Dirs Human::humanMoveDecision(
 
     int dx = targetX - x;
     int dy = targetY - y;
+
     int8_t dirX = (dx > 0) - (dx < 0);
     int8_t dirY = (dy > 0) - (dy < 0);
 
     return {dirX, dirY};
 }
+
 
 void Human::processFoodCollectors(
     World &world,
@@ -237,13 +272,15 @@ void Human::processFoodCollectors(
                 tbb::blocked_range<size_t>(
                     0,
                     foodCollectors.posX.size(),
-                    Config::GRAIN),
+                    Config::humans.grain),
 
                 [&](const tbb::blocked_range<size_t> &range)
                 {
                     auto &h = foodCollectors;
+
                     int threadID =
                         tbb::this_task_arena::current_thread_index();
+
                     for (int i = 0; i < ticksToDo; i++)
                     {
                         if ((humanTicks + i) % 3 == 0)
@@ -274,6 +311,7 @@ void Human::processFoodCollectors(
                                 h.targetY[i] = target.y;
                             }
                         }
+
                         processHumanRange<HumanType::FoodCollector>(
                             *this,
                             foodCollectors,
@@ -289,6 +327,7 @@ void Human::processFoodCollectors(
         });
 }
 
+
 void Human::processWoodCollectors(
     World &world,
     RendererSFML &renderer,
@@ -301,7 +340,7 @@ void Human::processWoodCollectors(
                 tbb::blocked_range<size_t>(
                     0,
                     woodCollectors.posX.size(),
-                    Config::GRAIN),
+                    Config::humans.grain),
 
                 [&](const tbb::blocked_range<size_t> &range)
                 {
@@ -358,6 +397,7 @@ void Human::processWoodCollectors(
         });
 }
 
+
 void Human::processStoneCollectors(
     World &world,
     RendererSFML &renderer,
@@ -370,7 +410,7 @@ void Human::processStoneCollectors(
                 tbb::blocked_range<size_t>(
                     0,
                     stoneCollectors.posX.size(),
-                    Config::GRAIN),
+                    Config::humans.grain),
 
                 [&](const tbb::blocked_range<size_t> &range)
                 {
@@ -397,8 +437,9 @@ void Human::processStoneCollectors(
                                         h,
                                         i);
 
-                                        continue;
+                                    continue;
                                 }
+
                                 XY target =
                                     humanFindResource(
                                         world,
@@ -426,6 +467,7 @@ void Human::processStoneCollectors(
         });
 }
 
+
 void Human::processBuilders(
     World &world,
     RendererSFML &renderer,
@@ -440,7 +482,7 @@ void Human::processBuilders(
                     tbb::blocked_range<size_t>(
                         0,
                         builders.posX.size(),
-                        Config::GRAIN),
+                        Config::humans.grain),
 
                     [&](const tbb::blocked_range<size_t> &range)
                     {
@@ -534,6 +576,7 @@ void Human::processBuilders(
     }
 }
 
+
 void Human::processAssigned(
     World &world,
     RendererSFML &renderer,
@@ -548,7 +591,7 @@ void Human::processAssigned(
                     tbb::blocked_range<size_t>(
                         0,
                         assigned.posX.size(),
-                        Config::GRAIN),
+                        Config::humans.grain),
 
                     [&](const tbb::blocked_range<size_t> &range)
                     {
@@ -575,6 +618,7 @@ void Human::processAssigned(
 
                                     continue;
                                 }
+
                                 XY target =
                                     humanFindWorkingBuildingChunk(
                                         world,
@@ -643,17 +687,37 @@ void Human::processAssigned(
     }
 }
 
-void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer)
+
+void Human::humanMove(
+    World &world,
+    Civilization &civilization,
+    Food &food,
+    Tree &tree,
+    Stone &stone,
+    RendererSFML &renderer)
 {
     for (auto &r : threadResults)
     {
         r.clear();
     }
-    constexpr uint32_t t = 1000000 + Config::humanCount * 10;
-    ticksToDo = t / (foodCollectors.posX.size() + woodCollectors.posX.size() + stoneCollectors.posX.size() + builders.posX.size() + assigned.posX.size());
 
-    actionsToDo = (ticksToDo + ticksLeft) / Config::ticksForNewHumans;
-    ticksLeft = (ticksToDo + ticksLeft) % Config::ticksForNewHumans;
+    const uint32_t t = 1000000 + Config::humans.count * 10;
+
+    ticksToDo =
+        t /
+        (foodCollectors.posX.size() +
+         woodCollectors.posX.size() +
+         stoneCollectors.posX.size() +
+         builders.posX.size() +
+         assigned.posX.size());
+
+    actionsToDo =
+        (ticksToDo + ticksLeft) /
+        Config::simulation.ticksForNewHumans;
+
+    ticksLeft =
+        (ticksToDo + ticksLeft) %
+        Config::simulation.ticksForNewHumans;
 
     tbb::parallel_invoke(
         [&]
@@ -668,7 +732,6 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
         { processAssigned(world, renderer, civilization); });
 
     humanTicks += ticksToDo;
-    ///////////////////////////sync
 
     for (const auto &res : threadResults)
     {
@@ -680,6 +743,7 @@ void Human::humanMove(World &world, Civilization &civilization, Food &food, Tree
 
         stone.stonesCount -= res.stoneCollected;
         civilization.resources.stone += res.stoneCollected;
+
         civilization.realWorkers[FARM] += res.farmWorkersDelta;
         civilization.realWorkers[SAWMILL] += res.sawmillWorkersDelta;
         civilization.realWorkers[MINE] += res.mineWorkersDelta;

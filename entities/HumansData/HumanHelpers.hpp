@@ -123,7 +123,7 @@ inline void setStoneCollectorMountainTarget(
         (static_cast<uint32_t>(h.points[i]) * 0x9E3779B9u);
 
     uint32_t mountainIndex =
-        fastRandom(seed) % Config::numberOfMountains;
+        fastRandom(seed) % ConfigConstexpr::numberOfMountains;
 
     const auto &mountain =
         world.mountainsRanges[mountainIndex];

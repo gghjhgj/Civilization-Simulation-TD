@@ -1,6 +1,6 @@
 #pragma once
 #include "../WorldData/World.h"
-#include "Config.h"
+#include "../../Config/Config.h"
 class Food
 {
     public:

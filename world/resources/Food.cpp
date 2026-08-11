@@ -11,13 +11,13 @@ void Food::createFood(World& world, RendererSFML &renderer)
 {
     std::mt19937 rng(std::random_device{}());
 
-    for (int i = 0; i < Config::foodCount; i++)
+    for (int i = 0; i < Config::resources.food.count; i++)
     {
         int tries = 0;
-        while (tries < Config::maxFoodSpawnTries)
+        while (tries < Config::resources.food.maxSpawnTries)
         {
-            uint16_t x = rng() % Config::sizeX;
-            uint16_t y = rng() % Config::sizeY;
+            uint16_t x = rng() % ConfigConstexpr::sizeX;
+            uint16_t y = rng() % ConfigConstexpr::sizeY;
 
             if (world.getCell(x, y) == TerrainType::Land)
             {
@@ -32,17 +32,17 @@ void Food::createFood(World& world, RendererSFML &renderer)
 
 void Food::foodRespawn(World& world, RendererSFML &renderer)
 {
-    if (foodsCount >= Config::maxFood) return;
+    if (foodsCount >= Config::resources.food.max) return;
 
     std::mt19937 rng(std::random_device{}());
 
-    for (int i = 0; i < Config::foodCount; i++)
+    for (int i = 0; i < Config::resources.food.count; i++)
     {
         int tries = 0;
-        while (tries < Config::maxFoodSpawnTries)
+        while (tries < Config::resources.food.maxSpawnTries)
         {
-            uint16_t x = rng() % Config::sizeX;
-            uint16_t y = rng() % Config::sizeY;
+            uint16_t x = rng() % ConfigConstexpr::sizeX;
+            uint16_t y = rng() % ConfigConstexpr::sizeY;
 
             auto ref = world.getCellRef(x, y);
 

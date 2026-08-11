@@ -4,7 +4,7 @@
 
 #include <tbb/parallel_invoke.h>
 #include <thread>
-#include "Config.h"
+#include "Config/Config.h"
 #include "renderer/RendererSFML.h"
 #include "world/resources/Food.h"
 #include "world/resources/Tree.h"
@@ -22,6 +22,7 @@
 
 int main()
 {
+    Config::load("Config/Config.ini");
 #ifdef _WIN32
     // SetUnhandledExceptionFilter(crashHandler);
     printCPUTopology();
@@ -46,7 +47,6 @@ int main()
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
     srand(time(NULL));
-
     World world;
 
     Food food;
@@ -55,7 +55,7 @@ int main()
     Civilization civilization(food, stone, tree);
     std::cout << "threads before initing threadpool" << std::thread::hardware_concurrency() << std::endl;
     Human human;
-    RendererSFML renderer(Config::WindowSizeX, Config::WindowSizeY, 1);
+    RendererSFML renderer(Config::rendering.windowSizeX, Config::rendering.windowSizeY, 1);
 
     world.createLand();
     std::cout << "land created" << std::endl;
@@ -102,11 +102,11 @@ int main()
 
         ticksCount++;
 
-        if (world.allTicksCount % Config::ticksForBuildingDecision == 0)
+        if (world.allTicksCount % Config::simulation.ticksForBuildingDecision == 0)
         {
             civilization.buildingDecision(world, renderer, human, food, stone, tree);
         }
-        if (world.allTicksCount % Config::ticksForResourcesGainsFromBuildings == 0)
+        if (world.allTicksCount % Config::simulation.ticksForResourcesGainsFromBuildings == 0)
         {
             civilization.getBuildingsGains();
         }
@@ -125,7 +125,7 @@ int main()
             framesCount = 0;
         }
 
-        if (renderTimer >= (1.f / Config::FPS))
+        if (renderTimer >= (1.f / Config::rendering.fps))
         {
             renderTimer = 0.f;
 

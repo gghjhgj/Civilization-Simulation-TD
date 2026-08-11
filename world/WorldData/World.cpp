@@ -86,8 +86,8 @@ void World::writeStatsToTxt(
 bool World::isValid(int x, int y)
 {
     return x >= 0 && y >= 0 &&
-           x < Config::sizeX &&
-           y < Config::sizeY;
+           x < ConfigConstexpr::sizeX &&
+           y < ConfigConstexpr::sizeY;
 }
 bool World::isValidChunk(uint16_t chunkX, uint16_t chunkY)
 {
@@ -118,9 +118,9 @@ void World::addPossible(int x, int y, TerrainType type)
 
 void World::createLand()
 {
-    for (int y = 0; y < Config::sizeY; y++)
+    for (int y = 0; y < ConfigConstexpr::sizeY; y++)
     {
-        for (int x = 0; x < Config::sizeX; x++)
+        for (int x = 0; x < ConfigConstexpr::sizeX; x++)
         {
             setCell(x, y, TerrainType::Land);
         }
@@ -164,8 +164,8 @@ void World::updateMountainRange(
 }
 void World::createStruct(TerrainType type)
 {
-    uint32_t totalCells = Config::sizeX * Config::sizeY;
-    uint32_t landCells = (totalCells * Config::landPercent) / 100;
+    uint32_t totalCells = ConfigConstexpr::sizeX * ConfigConstexpr::sizeY;
+    uint32_t landCells = (totalCells * Config::surface.landPercent) / 100;
 
     int numberOfStruct;
     int totalStruct;
@@ -173,19 +173,19 @@ void World::createStruct(TerrainType type)
 
     if (type == TerrainType::Desert)
     {
-        if (Config::numberOfDesserts == 0)
+        if (Config::surface.numberOfDeserts == 0)
             return;
-        numberOfStruct = Config::numberOfDesserts;
-        totalStruct = (landCells * Config::sandPercent) / 100;
-        structCount = totalStruct / Config::numberOfDesserts;
+        numberOfStruct = Config::surface.numberOfDeserts;
+        totalStruct = (landCells * Config::surface.sandPercent) / 100;
+        structCount = totalStruct / Config::surface.numberOfDeserts;
     }
     else if (type == TerrainType::Mountain)
     {
-        if (Config::numberOfMountains == 0)
+        if (ConfigConstexpr::numberOfMountains == 0)
             return;
-        numberOfStruct = Config::numberOfMountains;
-        totalStruct = (landCells * Config::mountainPercent) / 100;
-        structCount = totalStruct / Config::numberOfMountains;
+        numberOfStruct = ConfigConstexpr::numberOfMountains;
+        totalStruct = (landCells * Config::surface.mountainPercent) / 100;
+        structCount = totalStruct / ConfigConstexpr::numberOfMountains;
     }
     else
     {
@@ -210,8 +210,8 @@ void World::createStruct(TerrainType type)
 
         do
         {
-            x = rand() % Config::sizeX;
-            y = rand() % Config::sizeY;
+            x = rand() % ConfigConstexpr::sizeX;
+            y = rand() % ConfigConstexpr::sizeY;
         } while (getCell(x, y) != TerrainType::Land);
 
         setCell(x, y, type);
@@ -292,7 +292,7 @@ std::vector<XY> World::getCellsInChunk(uint16_t chunkX, uint16_t chunkY)
             uint16_t worldX = ref.x + x;
             uint16_t worldY = ref.y + y;
 
-            if (worldX >= Config::sizeX || worldY >= Config::sizeY)
+            if (worldX >= ConfigConstexpr::sizeX || worldY >= ConfigConstexpr::sizeY)
                 continue;
 
             cells.push_back({worldX, worldY});

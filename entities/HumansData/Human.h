@@ -2,7 +2,7 @@
 
 #include "HumanTypes.h"
 #include "../../XY/XY.h"
-#include "Config.h"
+#include "../../Config/Config.h"
 #include "../../world/resources/Food.h"
 #include "../../world/resources/Tree.h"
 #include "../../world/resources/Stone.h"

@@ -71,9 +71,6 @@ public:
     CivZone civZoneTiles;
     CivZone ranges;
 
-
-
-    void addCivilization(World& world, int index);
     void createCivilization(World& world);
     void initBuildings();
 

@@ -29,17 +29,17 @@ void Stone::createStone(
 
     std::uniform_int_distribution<int> mountainDist(
         0,
-        Config::numberOfMountains - 1);
+        ConfigConstexpr::numberOfMountains - 1);
 
     std::uniform_int_distribution<uint16_t> coordDist;
 
     for (int i = 0;
-         i < Config::stoneCount;
+         i < Config::resources.stone.count;
          ++i)
     {
         int tries = 0;
 
-        while (tries < Config::maxStoneSpawnTries)
+        while (tries < Config::resources.stone.maxSpawnTries)
         {
             const int mountainID =
                 mountainDist(rng);
@@ -82,7 +82,7 @@ void Stone::stoneRespawn(
     World &world,
     RendererSFML &renderer)
 {
-    if (stonesCount >= Config::maxStone)
+    if (stonesCount >= Config::resources.stone.max)
         return;
 
     std::mt19937 rng(
@@ -90,17 +90,17 @@ void Stone::stoneRespawn(
 
     std::uniform_int_distribution<int> mountainDist(
         0,
-        Config::numberOfMountains - 1);
+        ConfigConstexpr::numberOfMountains - 1);
 
     std::uniform_int_distribution<uint16_t> coordDist;
 
     for (int i = 0;
-         i < Config::StoneRespawn;
+         i < Config::resources.stone.respawn;
          ++i)
     {
         int tries = 0;
 
-        while (tries < Config::maxStoneSpawnTries)
+        while (tries < Config::resources.stone.maxSpawnTries)
         {
             const int mountainID =
                 mountainDist(rng);

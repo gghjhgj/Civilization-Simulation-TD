@@ -49,12 +49,12 @@ inline void processHumanTypeBatch(
     const __m256i worldWidth =
         _mm256_set1_epi16(
             static_cast<int>(
-                static_cast<uint16_t>(Config::sizeX)));
+                static_cast<uint16_t>(ConfigConstexpr::sizeX)));
 
     const __m256i worldHeight =
         _mm256_set1_epi16(
             static_cast<int>(
-                static_cast<uint16_t>(Config::sizeY)));
+                static_cast<uint16_t>(ConfigConstexpr::sizeY)));
 
     __m256i noTargetMask =
         _mm256_or_si256(

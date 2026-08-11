@@ -74,9 +74,9 @@ RendererSFML::RendererSFML(
         buffer.reserve(1000000);
     }
 
-    humanLayer.vertices.reserve(Config::humanCount + 500000);
+    humanLayer.vertices.reserve(Config::humans.count + 500000);
 
-    humanLayer.buffer.create(Config::humanCount + 500000);
+    humanLayer.buffer.create(Config::humans.count + 500000);
 
     updateSpritePosition();
 }
@@ -257,10 +257,10 @@ void RendererSFML::calculateVisibleCells()
 void RendererSFML::clampCameraToWorld()
 {
     const float worldWidth =
-        static_cast<float>(Config::sizeX * cellSize);
+        static_cast<float>(ConfigConstexpr::sizeX * cellSize);
 
     const float worldHeight =
-        static_cast<float>(Config::sizeY * cellSize);
+        static_cast<float>(ConfigConstexpr::sizeY * cellSize);
 
     const sf::Vector2f size =
         view.getSize();

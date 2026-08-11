@@ -8,7 +8,8 @@
 #include <algorithm>
 #include <fstream>
 #include <memory>
-#include "Config.h"
+#include "../../Config/Config.h"
+#include "../../Config/ConfigConstexpr.h"
 #include "../../renderer/RendererSFML.h"
 #include "../../XY/XY.h"
 #include "ChunkData/Chunk.h"
@@ -22,8 +23,8 @@ class Civilization;
 
 namespace WorldConfig
 {
-    constexpr uint32_t CHUNKS_X = (Config::sizeX + ChunkConfig::CHUNK_SIZE - 1) / ChunkConfig::CHUNK_SIZE;
-    constexpr uint32_t CHUNKS_Y = (Config::sizeY + ChunkConfig::CHUNK_SIZE - 1) / ChunkConfig::CHUNK_SIZE;
+    constexpr uint32_t CHUNKS_X = (ConfigConstexpr::sizeX + ChunkConfig::CHUNK_SIZE - 1) / ChunkConfig::CHUNK_SIZE;
+    constexpr uint32_t CHUNKS_Y = (ConfigConstexpr::sizeY + ChunkConfig::CHUNK_SIZE - 1) / ChunkConfig::CHUNK_SIZE;
     constexpr uint32_t CHUNKS_COUNT = CHUNKS_X * CHUNKS_Y;
 
     constexpr uint32_t CHUNK_REGIONS_X = (CHUNKS_X + ChunkRegionConfig::CHUNK_REGION_SIZE - 1) / ChunkRegionConfig::CHUNK_REGION_SIZE;
@@ -252,7 +253,7 @@ public:
         uint16_t minY;
         uint16_t maxY;
     };
-    MountainRanges mountainsRanges[Config::numberOfMountains];
+    MountainRanges mountainsRanges[ConfigConstexpr::numberOfMountains];
     bool isValid(int x, int y);
     bool isValidChunk(uint16_t chunkX, uint16_t chunkY);
     void addPossible(int x, int y, TerrainType type);
