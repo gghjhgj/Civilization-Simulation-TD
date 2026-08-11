@@ -3,6 +3,7 @@
 #include "HumanTypes.h"
 #include "../../XY/XY.h"
 #include "../../Config/Config.h"
+
 #include "../../world/resources/Food.h"
 #include "../../world/resources/Tree.h"
 #include "../../world/resources/Stone.h"
@@ -15,9 +16,11 @@
 
 #include "../../system/ThreadController.hpp"
 #include "../../system/TBBPinObserver.hpp"
+
 #include <memory>
 #include <vector>
 #include <cmath>
+#include <cstdint>
 #include <immintrin.h>
 
 class Civilization;
@@ -26,23 +29,31 @@ class World;
 class Human
 {
 public:
-    tbb::task_arena aiArena{10};
+    tbb::task_arena aiArena;
+
     std::unique_ptr<TBBPinObserver> aiObserver;
 
     Human()
+        : aiArena(Config::threads.threadsForHumanLoop)
     {
-        aiObserver =
-            std::make_unique<TBBPinObserver>(
-                aiArena);
+#ifdef _WIN32
+        aiObserver = std::make_unique<TBBPinObserver>(
+            aiArena,
+            getHumanLoopCPUs()
+        );
+#endif
+
         aiArena.initialize();
     }
 
     uint64_t humanTicks = 0;
+
     struct Dirs
     {
         int8_t x;
         int8_t y;
     };
+
     enum ResourceType
     {
         food,
@@ -59,6 +70,7 @@ public:
 
     int humansCount = 0;
     int humansHavingHouseCount = 0;
+
     inline uint16_t hash(uint16_t x)
     {
         x ^= x >> 16;
@@ -68,20 +80,25 @@ public:
         x ^= x >> 16;
         return x;
     }
+
     struct DataNeededForEndConstruction
     {
         uint32_t chunkX;
         uint32_t chunkY;
         Type type;
 
-        bool operator==(const DataNeededForEndConstruction &other) const
+        bool operator==(
+            const DataNeededForEndConstruction& other
+        ) const
         {
             return chunkX == other.chunkX &&
                    chunkY == other.chunkY &&
                    type == other.type;
         }
 
-        bool operator<(const DataNeededForEndConstruction &other) const
+        bool operator<(
+            const DataNeededForEndConstruction& other
+        ) const
         {
             if (chunkX != other.chunkX)
                 return chunkX < other.chunkX;
@@ -92,14 +109,17 @@ public:
             return type < other.type;
         }
     };
+
     struct ThreadLocalData
     {
         int foodCollected = 0;
         int woodCollected = 0;
         int stoneCollected = 0;
+
         int farmWorkersDelta = 0;
         int sawmillWorkersDelta = 0;
         int mineWorkersDelta = 0;
+
         std::vector<DataNeededForEndConstruction> constr;
         std::vector<size_t> assignedRemoveQueue;
 
@@ -117,20 +137,57 @@ public:
             assignedRemoveQueue.clear();
         }
     };
+
     uint32_t ticksToDo = 1;
     uint32_t actionsToDo = 0;
     uint32_t ticksLeft = 0;
 
-    void createHuman(World &world, Civilization &civilization);
-    void humanRespawn(World &world, Civilization &civilization);
-    XY humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type);
-    XY humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag flag);
-    XY humanFindWorkingBuildingChunk(World &world, uint16_t x, uint16_t y, BuildingType type);
-    bool gotResource(uint16_t hx, uint16_t hy, uint16_t rx, uint16_t ry);
+    void createHuman(
+        World& world,
+        Civilization& civilization
+    );
+
+    void humanRespawn(
+        World& world,
+        Civilization& civilization
+    );
+
+    XY humanFindResource(
+        World& world,
+        uint16_t x,
+        uint16_t y,
+        TerrainType type
+    );
+
+    XY humanFindFlagChunk(
+        World& world,
+        uint16_t x,
+        uint16_t y,
+        ChunkFlag flag
+    );
+
+    XY humanFindWorkingBuildingChunk(
+        World& world,
+        uint16_t x,
+        uint16_t y,
+        BuildingType type
+    );
+
+    bool gotResource(
+        uint16_t hx,
+        uint16_t hy,
+        uint16_t rx,
+        uint16_t ry
+    );
+
     Dirs humanMoveDecision(
-        uint16_t x, uint16_t y,
-        uint16_t targetX, uint16_t targetY,
-        uint8_t points);
+        uint16_t x,
+        uint16_t y,
+        uint16_t targetX,
+        uint16_t targetY,
+        uint8_t points
+    );
+
     struct SearchCell
     {
         uint16_t region;
@@ -139,18 +196,24 @@ public:
         uint16_t x;
         uint16_t y;
     };
-    void humanMove(World &world, Civilization &civilization, Food &food, Tree &tree, Stone &stone, RendererSFML &renderer);
+
+    void humanMove(
+        World& world,
+        Civilization& civilization,
+        Food& food,
+        Tree& tree,
+        Stone& stone,
+        RendererSFML& renderer
+    );
+
     template <typename T>
-    void reserveHumans(T &humans, size_t count)
+    void reserveHumans(T& humans, size_t count)
     {
         humans.posX.reserve(count);
         humans.posY.reserve(count);
-
         humans.targetX.reserve(count);
         humans.targetY.reserve(count);
-
         humans.points.reserve(count);
-
         humans.targetBuilding.reserve(count);
     }
 
@@ -160,29 +223,34 @@ public:
 
 private:
     void processFoodCollectors(
-        World &world,
-        RendererSFML &renderer,
-        Civilization &civilization);
+        World& world,
+        RendererSFML& renderer,
+        Civilization& civilization
+    );
 
     void processWoodCollectors(
-        World &world,
-        RendererSFML &renderer,
-        Civilization &civilization);
+        World& world,
+        RendererSFML& renderer,
+        Civilization& civilization
+    );
 
     void processStoneCollectors(
-        World &world,
-        RendererSFML &renderer,
-        Civilization &civilization);
+        World& world,
+        RendererSFML& renderer,
+        Civilization& civilization
+    );
 
     void processBuilders(
-        World &world,
-        RendererSFML &renderer,
-        Civilization &civilization);
+        World& world,
+        RendererSFML& renderer,
+        Civilization& civilization
+    );
 
     void processAssigned(
-        World &world,
-        RendererSFML &renderer,
-        Civilization &civilization);
+        World& world,
+        RendererSFML& renderer,
+        Civilization& civilization
+    );
 
     tbb::affinity_partitioner foodCollectorsPartitioner;
     tbb::affinity_partitioner woodCollectorsPartitioner;
