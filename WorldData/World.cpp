@@ -83,19 +83,7 @@ void World::writeStatsToTxt(
         statsFile.close();
     }
 }
-void World::init()
-{
-    // popularityRanking.clear();
-    // popularityRanking.resize(1);
-    /*
-    for (uint32_t i = 0; i < WorldConfig::CHUNK_REGIONS_COUNT; ++i)
-    {
-        auto& chunk = grid[i];
 
-        // chunk.chunks.data = 0;
-    }
-        */
-}
 bool World::isValid(int x, int y)
 {
     return x >= 0 && y >= 0 &&
@@ -107,24 +95,7 @@ bool World::isValidChunk(uint16_t chunkX, uint16_t chunkY)
     return chunkX < WorldConfig::CHUNKS_X &&
            chunkY < WorldConfig::CHUNKS_Y;
 }
-bool World::isChunkLand(uint16_t chunkX, uint16_t chunkY)
-{
-    for (uint32_t y = 0; y < ChunkConfig::CHUNK_SIZE; y++)
-    {
-        for (uint32_t x = 0; x < ChunkConfig::CHUNK_SIZE; x++)
-        {
-            auto ref = getCellInChunk(chunkX, chunkY);
 
-            if (ref.x >= Config::sizeX || ref.y >= Config::sizeY)
-                continue;
-
-            if (getCell(ref.x, ref.y) == TerrainType::Water)
-                return false;
-        }
-    }
-
-    return true;
-}
 void World::addPossible(int x, int y, TerrainType type)
 {
     static const int dirs[8][2] =
@@ -161,8 +132,6 @@ bool World::addSand(int x, int y)
     static const int dirs[8][2] =
         {
             {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {-1, 1}, {1, -1}};
-    if (getCell(x, y) != TerrainType::Water)
-        return false;
     for (auto &d : dirs)
     {
         int nx = x + d[0];

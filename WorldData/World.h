@@ -253,10 +253,8 @@ public:
         uint16_t maxY;
     };
     MountainRanges mountainsRanges[Config::numberOfMountains];
-    void init();
     bool isValid(int x, int y);
     bool isValidChunk(uint16_t chunkX, uint16_t chunkY);
-    bool isChunkLand(uint16_t chunkX, uint16_t chunkY);
     void addPossible(int x, int y, TerrainType type);
 
     void createLand();

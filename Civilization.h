@@ -73,17 +73,17 @@ public:
 
 
 
-    void addCivilization(World& world, int index);//git
-    void createCivilization(World& world);//git
-    void initBuildings();//nowe git
+    void addCivilization(World& world, int index);
+    void createCivilization(World& world);
+    void initBuildings();
 
-    void addWorkers(Human& human, HumanType type);//nowe git
+    void addWorkers(Human& human, HumanType type);
 
-    void civilizationDecision(Human& human, Food& food, Stone& stone, Tree& tree);//git
+    void civilizationDecision(Human& human, Food& food, Stone& stone, Tree& tree);
 
-    void markCloseAsCivZone(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks);//git
+    void markCloseAsCivZone(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks);
     void addChunksToPossibleVillage(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks);
-    ChunkPos getBestChunkForBuilingsVillage(World& world);//git
+    ChunkPos getBestChunkForBuilingsVillage(World& world);
 
     void buildBuilding(World& world, RendererSFML &renderer, Type type);
     void assignHumansToBuilding(Human& human, Type type);

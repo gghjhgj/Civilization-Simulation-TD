@@ -57,8 +57,6 @@ int main()
     Human human;
     RendererSFML renderer(Config::WindowSizeX, Config::WindowSizeY, 1);
 
-    world.init();
-    std::cout << "finisted wordl init" << std::endl;
     world.createLand();
     std::cout << "land created" << std::endl;
     world.createStruct(TerrainType::Desert);

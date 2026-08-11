@@ -470,10 +470,6 @@ sf::Color RendererSFML::getColor(
 
     switch (world.getCell(x, y))
     {
-    case TerrainType::Water:
-
-        return sf::Color::Blue;
-
     case TerrainType::Land:
 
         return sf::Color::Green;

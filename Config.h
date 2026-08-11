@@ -20,7 +20,7 @@ class Config
     static constexpr int landPercent = 100;
     static constexpr int waterPercentInLand = 5;
     static constexpr int mountainPercent = 8;
-    static constexpr int sandPercent = 7;//sand will also appear on the edge of land
+    static constexpr int sandPercent = 7;
 
     static constexpr int numberOfLands = 1;
     static constexpr int numberOfLakes = 0;

@@ -25,8 +25,8 @@
     - wywalenie rzeczy nieuzywanych np z configa czy struktur danych
 
     * podzielenie plikow ladnie na moduly itd, proste ale duzo jebania z includami bedzie 
-    - poinlinowanie funkcji czy pododawanie const gdzie trzeba, powydzielanie roznych rzeczy poza np funkcje czy osobne pliki miejace takie rzeczy, np lookup table etc, czy np odhudzanie klas poprostu i odpowiedzialnosci, dodanie troszke abstrakcji
-    - wywalenie dziwnych komentarzy typu //git //nie git co pozostawaly po refaktorach
+    - poinlinowanie funkcji czy pododawanie const gdzie trzeba, powydzielanie roznych rzeczy poza np funkcje czy osobne pliki miejace takie rzeczy, np lookup table etc, czy np odhudzanie klas poprostu i odpowiedzialnosci, dodanie troszke abstrakcji - nie jest konieczne ale mozna pod cv
+    - wywalenie dziwnych komentarzy typu //git //nie git co pozostawaly po refaktorach// jest
 
     * dodatkowe rzeczy
         - cmake

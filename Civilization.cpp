@@ -1,7 +1,6 @@
 #include "Civilization.h"
 #include "HumansData/Human.h"
 #include "WorldData/World.h"
-#include "Walls.h"
 void Civilization::addCivilization(World &world, int index)
 {
     /*
@@ -28,12 +27,10 @@ void Civilization::createCivilization(World &world)
         );
         spawn = id;
         */
-    //
     spawnChunk.chunkX = Config::civSpawnChunkX;
     spawnChunk.chunkY = Config::civSpawnChunkY;
     spawnXY.x = spawnChunk.chunkX * 3;
     spawnXY.y = spawnChunk.chunkY * 3;
-    //
     addChunksToPossibleVillage(world, spawnChunk.chunkX, spawnChunk.chunkY, Config::civilizationPlaceX);
 
     markCloseAsCivZone(
@@ -219,8 +216,6 @@ void Civilization::addChunksToPossibleVillage(World &world, uint16_t chunkX, uin
             if (!(world.isValidChunk(nx, ny)))
                 continue;
             if (world.hasChunkFlag(nx, ny, ChunkFlag::CivZone))
-                continue;
-            if (!(world.isChunkLand(nx, ny)))
                 continue;
 
             bestChunksForBuildingsVillage.push_back(
