@@ -144,5 +144,4 @@ static CivilizationConfig civilization;
 static HumansConfig humans;
 static BuildingsConfig buildings;
 static ThreadsConfig threads;
-
 };

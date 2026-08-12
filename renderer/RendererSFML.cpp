@@ -79,8 +79,13 @@ RendererSFML::RendererSFML(
     humanLayer.buffer.create(Config::humans.count + 500000);
 
     updateSpritePosition();
-}
 
+    ImGui::SFML::Init(window);
+}
+RendererSFML::~RendererSFML()
+{
+    ImGui::SFML::Shutdown();
+}
 bool RendererSFML::isOpen()
 {
     return window.isOpen();
@@ -90,13 +95,17 @@ void RendererSFML::handleCameraInput()
 {
     while (auto event = window.pollEvent())
     {
+        ImGui::SFML::ProcessEvent(
+            window,
+            *event);
+
         if (event->is<sf::Event::Closed>())
         {
             window.close();
             continue;
         }
 
-        if (const auto* resized =
+        if (const auto *resized =
                 event->getIf<sf::Event::Resized>())
         {
             windowWidth = resized->size.x;
@@ -176,6 +185,15 @@ void RendererSFML::begin()
     {
         updateViewport();
     }
+
+    const float dt =
+        cameraClock.getElapsedTime().asSeconds();
+
+    ImGui::SFML::Update(
+        window,
+        sf::seconds(dt));
+
+    cameraClock.restart();
 }
 
 void RendererSFML::updateViewport()
@@ -797,12 +815,15 @@ void RendererSFML::addChunkToDirtyCells(
 }
 
 void RendererSFML::render(
-    World &world,
-    Human &human)
+    World& world,
+    Human& human,
+    const Stats::Data& stats)
 {
     updateWorldLayer(world);
 
     updateHumanLayer(human);
+
+    StatsUI::draw(stats);
 }
 
 void RendererSFML::end()
@@ -827,5 +848,8 @@ void RendererSFML::end()
             humanLayer.vertices.size());
     }
 
+    ImGui::SFML::Render(window);
+
     window.display();
 }
+

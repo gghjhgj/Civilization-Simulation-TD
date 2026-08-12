@@ -1,0 +1,84 @@
+{
+    "version": 6,
+
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+
+    "configurePresets": [
+        {
+            "name": "release",
+            "displayName": "Release",
+            "description": "Optimized Release build with native CPU optimizations, fast math and LTO.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release",
+
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+
+                "ENABLE_NATIVE_ARCH": "ON",
+                "ENABLE_FAST_MATH": "ON",
+                "ENABLE_LTO": "ON",
+                "ENABLE_MIMALLOC": "ON",
+                "FETCH_MISSING_DEPS": "ON"
+            }
+        },
+
+        {
+            "name": "release-portable",
+            "displayName": "Release Portable",
+            "description": "Optimized Release build without -march=native.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release-portable",
+
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+
+                "ENABLE_NATIVE_ARCH": "OFF",
+                "ENABLE_FAST_MATH": "ON",
+                "ENABLE_LTO": "ON",
+                "ENABLE_MIMALLOC": "ON",
+                "FETCH_MISSING_DEPS": "ON"
+            }
+        },
+
+        {
+            "name": "debug",
+            "displayName": "Debug",
+            "description": "Debug build with optimizations disabled.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/debug",
+
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+
+                "ENABLE_NATIVE_ARCH": "OFF",
+                "ENABLE_FAST_MATH": "OFF",
+                "ENABLE_LTO": "OFF",
+                "ENABLE_MIMALLOC": "ON",
+                "FETCH_MISSING_DEPS": "ON"
+            }
+        }
+    ],
+
+    "buildPresets": [
+        {
+            "name": "release",
+            "configurePreset": "release"
+        },
+
+        {
+            "name": "release-portable",
+            "configurePreset": "release-portable"
+        },
+
+        {
+            "name": "debug",
+            "configurePreset": "debug"
+        }
+    ],
+
+    "testPresets": []
+}

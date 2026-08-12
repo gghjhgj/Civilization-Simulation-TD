@@ -36,7 +36,6 @@ class World
 {
 public:
     World();
-    int allTicksCount = 0;
     std::unique_ptr<ChunkRegion[]> grid;
 
     struct ChunkRef
@@ -235,16 +234,6 @@ public:
         Civilization &civ);
 
     std::vector<std::pair<int, int>> possible;
-
-    void writeStatsToTxt(
-        int ticks,
-        int FPS,
-        int humanTicks,
-        Civilization &civilization,
-        Human &human,
-        Stone &stone,
-        Food &food,
-        Tree &tree);
 
     struct MountainRanges
     {

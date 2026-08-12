@@ -10,6 +10,10 @@
 
 #include <tbb/task_arena.h>
 
+#include <imgui-SFML.h>
+
+#include "../stats/Stats.h"
+#include "../stats/StatsUI.h"
 #include "../Config/Config.h"
 #include "../XY/XY.h"
 #include "DirtyCells.h"
@@ -20,14 +24,19 @@ class Human;
 class RendererSFML
 {
 public:
-
     float time = 0.f;
 
     RendererSFML(
         int w,
         int h,
         int cellSize);
+    ~RendererSFML();
 
+    sf::RenderWindow &getWindow()
+    {
+        return window;
+    }
+    
     std::vector<DirtyCells> dirtyCells;
 
     std::vector<std::vector<DirtyCells>> dirtyBuffers;
@@ -37,17 +46,18 @@ public:
     void begin();
 
     void render(
-        World& world,
-        Human& human);
+        World &world,
+        Human &human,
+        const Stats::Data &stats);
 
     void end();
 
     template <typename T>
     void renderEntities(
-        std::vector<T>& entities,
-        World& world)
+        std::vector<T> &entities,
+        World &world)
     {
-        for (auto& e : entities)
+        for (auto &e : entities)
         {
             if (isCellVisible(
                     e.oldPos.x,
@@ -77,38 +87,38 @@ public:
     }
 
     void updateHumanLayer(
-        Human& human);
+        Human &human);
 
     void updateWorldLayer(
-        World& world);
+        World &world);
 
     sf::Color getColor(
-        World& world,
+        World &world,
         uint16_t x,
         uint16_t y);
 
     void addToDirtyBuffer(
-        World& world,
+        World &world,
         uint16_t x,
         uint16_t y,
         sf::Color color,
         int threadID);
 
     void addChunkToDirtyBuffer(
-        World& world,
+        World &world,
         uint16_t chunkX,
         uint16_t chunkY,
         sf::Color color,
         int threadID);
 
     void addToDirtyCells(
-        World& world,
+        World &world,
         uint16_t x,
         uint16_t y,
         sf::Color color);
 
     void addChunkToDirtyCells(
-        World& world,
+        World &world,
         uint16_t chunkX,
         uint16_t chunkY,
         sf::Color color);
@@ -116,7 +126,6 @@ public:
     void mergeDirtyBuffersToDirtyCells();
 
 private:
-
     sf::RenderWindow window;
 
     unsigned windowWidth;
@@ -153,8 +162,7 @@ private:
 
         sf::VertexBuffer buffer{
             sf::PrimitiveType::Points,
-            sf::VertexBuffer::Usage::Stream
-        };
+            sf::VertexBuffer::Usage::Stream};
     };
 
     HumanLayer humanLayer;
@@ -172,7 +180,7 @@ private:
     void updateSpritePosition();
 
     void rebuildVisibleWorld(
-        World& world);
+        World &world);
 
     void updateCellPixels(
         int x,
@@ -188,5 +196,5 @@ private:
         uint16_t y) const;
 
     bool isDirtyCellVisible(
-        const DirtyCells& cell) const;
+        const DirtyCells &cell) const;
 };

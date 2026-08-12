@@ -1,0 +1,550 @@
+cmake_minimum_required(VERSION 3.20)
+
+project(CivilizationSimulation
+    VERSION 1.0.0
+    DESCRIPTION "Civilization Simulation TD - High Performance C++ Simulation"
+    LANGUAGES CXX
+)
+
+# ============================================================
+# PODSTAWOWA KONFIGURACJA
+# ============================================================
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Domyślnie Release
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING
+        "Build type"
+        FORCE
+    )
+endif()
+
+# ============================================================
+# OPCJE
+# ============================================================
+
+option(
+    ENABLE_NATIVE_ARCH
+    "Enable -march=native"
+    ON
+)
+
+option(
+    ENABLE_FAST_MATH
+    "Enable -ffast-math"
+    ON
+)
+
+option(
+    ENABLE_LTO
+    "Enable LTO"
+    ON
+)
+
+option(
+    ENABLE_MIMALLOC
+    "Enable mimalloc"
+    ON
+)
+
+option(
+    FETCH_MISSING_DEPS
+    "Fetch missing dependencies automatically"
+    ON
+)
+
+option(
+    ENABLE_IMGUI
+    "Enable Dear ImGui"
+    ON
+)
+
+include(FetchContent)
+
+# ============================================================
+# ŹRÓDŁA PROJEKTU
+# ============================================================
+
+# Automatycznie znajdź wszystkie .cpp w projekcie.
+#
+# CONFIGURE_DEPENDS:
+# CMake ponownie sprawdzi katalogi, gdy dodasz/usuniesz .cpp.
+#
+# WAŻNE:
+# Nie pozwalamy, żeby do app trafiły:
+#   - build/
+#   - notUsed/
+#   - FetchContent (_deps/)
+#
+# Dzięki temu dodanie nowego pliku .cpp do projektu
+# nie wymaga ręcznego dopisywania go tutaj.
+
+file(
+    GLOB_RECURSE SOURCES
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+)
+
+# ------------------------------------------------------------
+# Wykluczenie katalogu build
+# ------------------------------------------------------------
+
+list(FILTER SOURCES EXCLUDE REGEX
+    "^${CMAKE_CURRENT_SOURCE_DIR}/build/.*"
+)
+
+# ------------------------------------------------------------
+# Wykluczenie kodu nieużywanego
+# ------------------------------------------------------------
+
+list(FILTER SOURCES EXCLUDE REGEX
+    "^${CMAKE_CURRENT_SOURCE_DIR}/notUsed/.*"
+)
+
+# ------------------------------------------------------------
+# Wykluczenie katalogów zależności
+# ------------------------------------------------------------
+
+list(FILTER SOURCES EXCLUDE REGEX
+    "^${CMAKE_CURRENT_SOURCE_DIR}/_deps/.*"
+)
+
+# ------------------------------------------------------------
+# Sprawdzenie
+# ------------------------------------------------------------
+
+if(NOT SOURCES)
+    message(FATAL_ERROR
+        "[CMake] Nie znaleziono zadnych plikow .cpp projektu."
+    )
+endif()
+
+message(STATUS "[CMake] Znalezione pliki .cpp projektu:")
+
+foreach(SOURCE_FILE IN LISTS SOURCES)
+    message(STATUS "  ${SOURCE_FILE}")
+endforeach()
+
+# ============================================================
+# EXECUTABLE
+# ============================================================
+
+add_executable(app
+    ${SOURCES}
+)
+
+target_include_directories(app PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# ============================================================
+# SFML
+# ============================================================
+
+find_package(
+    SFML 3
+    COMPONENTS Graphics Window System
+    QUIET
+)
+
+if(NOT SFML_FOUND)
+    find_package(
+        SFML
+        COMPONENTS Graphics Window System
+        QUIET
+    )
+endif()
+
+if(NOT SFML_FOUND AND FETCH_MISSING_DEPS)
+
+    message(STATUS
+        "[CMake] SFML nie znaleziony - pobieranie SFML 3.0.0..."
+    )
+
+    set(SFML_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(SFML_BUILD_DOC OFF CACHE BOOL "" FORCE)
+    set(SFML_BUILD_AUDIO OFF CACHE BOOL "" FORCE)
+    set(SFML_BUILD_NETWORK OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        sfml
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG 3.0.0
+    )
+
+    FetchContent_MakeAvailable(sfml)
+
+endif()
+
+if(TARGET SFML::Graphics)
+
+    target_link_libraries(app PRIVATE
+        SFML::Graphics
+        SFML::Window
+        SFML::System
+    )
+
+elseif(TARGET sfml-graphics)
+
+    target_link_libraries(app PRIVATE
+        sfml-graphics
+        sfml-window
+        sfml-system
+    )
+
+else()
+
+    message(FATAL_ERROR
+        "[CMake] SFML nie zostal znaleziony ani nie mogl zostac pobrany."
+    )
+
+endif()
+
+# ============================================================
+# TBB / oneTBB
+# ============================================================
+
+find_package(TBB QUIET)
+
+if(NOT TBB_FOUND)
+    find_package(oneTBB QUIET)
+endif()
+
+if(
+    NOT TBB_FOUND
+    AND NOT oneTBB_FOUND
+    AND FETCH_MISSING_DEPS
+)
+
+    message(STATUS
+        "[CMake] TBB nie znaleziony - pobieranie oneTBB..."
+    )
+
+    set(TBB_TEST OFF CACHE BOOL "" FORCE)
+    set(TBB_STRICT OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        onetbb
+        GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
+        GIT_TAG v2021.12.0
+    )
+
+    FetchContent_MakeAvailable(onetbb)
+
+endif()
+
+if(TARGET TBB::tbb)
+
+    target_link_libraries(app PRIVATE
+        TBB::tbb
+    )
+
+elseif(TARGET tbb)
+
+    target_link_libraries(app PRIVATE
+        tbb
+    )
+
+else()
+
+    find_library(
+        TBB_LIB
+        NAMES tbb12 tbb
+    )
+
+    if(TBB_LIB)
+
+        target_link_libraries(app PRIVATE
+            ${TBB_LIB}
+        )
+
+    else()
+
+        message(FATAL_ERROR
+            "[CMake] TBB nie zostal znaleziony ani nie mogl zostac pobrany."
+        )
+
+    endif()
+
+endif()
+
+# ============================================================
+# MIMALLOC
+# ============================================================
+
+if(ENABLE_MIMALLOC)
+
+    find_package(mimalloc QUIET)
+
+    if(NOT mimalloc_FOUND AND FETCH_MISSING_DEPS)
+
+        message(STATUS
+            "[CMake] mimalloc nie znaleziony - pobieranie mimalloc..."
+        )
+
+        set(MI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(MI_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+        set(MI_BUILD_OBJECT OFF CACHE BOOL "" FORCE)
+
+        FetchContent_Declare(
+            mimalloc
+            GIT_REPOSITORY https://github.com/microsoft/mimalloc.git
+            GIT_TAG v2.1.7
+        )
+
+        FetchContent_MakeAvailable(mimalloc)
+
+    endif()
+
+    if(TARGET mimalloc-static)
+
+        target_link_libraries(app PRIVATE
+            mimalloc-static
+        )
+
+    elseif(TARGET mimalloc)
+
+        target_link_libraries(app PRIVATE
+            mimalloc
+        )
+
+    else()
+
+        find_library(
+            MIMALLOC_LIB
+            NAMES mimalloc
+        )
+
+        if(MIMALLOC_LIB)
+
+            target_link_libraries(app PRIVATE
+                ${MIMALLOC_LIB}
+            )
+
+        else()
+
+            message(WARNING
+                "[CMake] mimalloc nie znaleziony. "
+                "Budowanie bez mimalloc."
+            )
+
+        endif()
+
+    endif()
+
+endif()
+
+# ============================================================
+# DEAR IMGUI + IMGUI-SFML
+# ============================================================
+
+if(ENABLE_IMGUI)
+
+    if(NOT FETCH_MISSING_DEPS)
+
+        message(FATAL_ERROR
+            "[CMake] ENABLE_IMGUI wymaga FETCH_MISSING_DEPS=ON."
+        )
+
+    endif()
+
+    message(STATUS
+        "[CMake] Pobieranie kompatybilnego Dear ImGui + ImGui-SFML..."
+    )
+
+    # --------------------------------------------------------
+    # Dear ImGui
+    #
+    # ImGui-SFML 3.0 nie jest kompatybilne z ImGui 1.92+.
+    # Dlatego przypinamy ImGui 1.91.9.
+    # --------------------------------------------------------
+
+    FetchContent_Declare(
+        imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui.git
+        GIT_TAG v1.91.9
+    )
+
+    FetchContent_MakeAvailable(imgui)
+
+    # --------------------------------------------------------
+    # Wskazanie katalogu Dear ImGui dla ImGui-SFML
+    # --------------------------------------------------------
+
+    set(
+        IMGUI_DIR
+        ${imgui_SOURCE_DIR}
+        CACHE PATH
+        "Dear ImGui source directory"
+        FORCE
+    )
+
+    # --------------------------------------------------------
+    # ImGui-SFML 3.0
+    # --------------------------------------------------------
+
+    set(
+        IMGUI_SFML_BUILD_EXAMPLES
+        OFF
+        CACHE BOOL
+        "Build ImGui-SFML examples"
+        FORCE
+    )
+
+    set(
+        IMGUI_SFML_IMGUI_DEMO
+        OFF
+        CACHE BOOL
+        "Build ImGui demo"
+        FORCE
+    )
+
+    FetchContent_Declare(
+        imgui_sfml
+        GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
+        GIT_TAG v3.0
+    )
+
+    FetchContent_MakeAvailable(imgui_sfml)
+
+    # --------------------------------------------------------
+    # Linkowanie
+    # --------------------------------------------------------
+
+    if(TARGET ImGui-SFML::ImGui-SFML)
+
+        target_link_libraries(app PRIVATE
+            ImGui-SFML::ImGui-SFML
+        )
+
+    elseif(TARGET ImGui-SFML)
+
+        target_link_libraries(app PRIVATE
+            ImGui-SFML
+        )
+
+    else()
+
+        message(FATAL_ERROR
+            "[CMake] Nie znaleziono targetu ImGui-SFML."
+        )
+
+    endif()
+
+    target_compile_definitions(app PRIVATE
+        ENABLE_IMGUI
+    )
+
+endif()
+
+# ============================================================
+# WINDOWS
+# ============================================================
+
+if(WIN32)
+
+    target_link_libraries(app PRIVATE
+        dbghelp
+    )
+
+endif()
+
+# ============================================================
+# COMPILER FLAGS
+# ============================================================
+
+if(MSVC)
+
+    target_compile_options(app PRIVATE
+        /W3
+    )
+
+else()
+
+    target_compile_options(app PRIVATE
+
+        -Wall
+        -Wextra
+        -funroll-loops
+
+        $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
+
+        $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
+
+        $<$<CONFIG:Release>:-Ofast>
+
+        $<$<CONFIG:Debug>:-g;-O0>
+    )
+
+endif()
+
+# ============================================================
+# LTO / IPO
+# ============================================================
+
+if(ENABLE_LTO)
+
+    include(CheckIPOSupported)
+
+    check_ipo_supported(
+        RESULT IPO_SUPPORTED
+        OUTPUT IPO_ERROR
+    )
+
+    if(IPO_SUPPORTED)
+
+        set_property(
+            TARGET app
+            PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+        )
+
+        message(STATUS
+            "[CMake] LTO/IPO: ENABLED"
+        )
+
+    else()
+
+        message(WARNING
+            "[CMake] LTO/IPO niedostepne: ${IPO_ERROR}"
+        )
+
+    endif()
+
+endif()
+
+# ============================================================
+# CONFIG.INI
+# ============================================================
+
+if(
+    EXISTS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Config/Config.ini"
+)
+
+    add_custom_command(
+        TARGET app
+        POST_BUILD
+
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:app>/Config"
+
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_CURRENT_SOURCE_DIR}/Config/Config.ini"
+            "$<TARGET_FILE_DIR:app>/Config/Config.ini"
+
+        COMMENT
+            "Kopiowanie Config/Config.ini do katalogu wyjsciowego..."
+    )
+
+else()
+
+    message(WARNING
+        "[CMake] Nie znaleziono Config/Config.ini - pomijam kopiowanie."
+    )
+
+endif()

@@ -1,4 +1,5 @@
 #include "world/WorldData/World.h"
+#include "world/WorldGenerator/WorldGenerator.h"
 #include "entities/HumansData/Human.h"
 
 #include <thread>
@@ -9,6 +10,7 @@
 
 #include "Config/Config.h"
 #include "renderer/RendererSFML.h"
+#include "renderer/LoadingScreen.h"
 
 #include "world/resources/Food.h"
 #include "world/resources/Tree.h"
@@ -17,6 +19,8 @@
 #include "entities/civilization/Civilization.h"
 #include "system/ThreadController.hpp"
 #include "system/CrashHandler.hpp"
+
+#include "stats/Stats.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -51,21 +55,17 @@ int main()
 #ifdef _WIN32
     SetPriorityClass(
         GetCurrentProcess(),
-        HIGH_PRIORITY_CLASS
-    );
+        HIGH_PRIORITY_CLASS);
 
     SetThreadPriority(
         GetCurrentThread(),
-        THREAD_PRIORITY_TIME_CRITICAL
-    );
+        THREAD_PRIORITY_TIME_CRITICAL);
 
     SetThreadExecutionState(
         ES_CONTINUOUS |
         ES_SYSTEM_REQUIRED |
-        ES_AWAYMODE_REQUIRED
-    );
+        ES_AWAYMODE_REQUIRED);
 #endif
-
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
@@ -83,37 +83,22 @@ int main()
     RendererSFML renderer(
         Config::rendering.windowSizeX,
         Config::rendering.windowSizeY,
-        1
-    );
+        1);
+    LoadingScreen loadingScreen(
+        renderer.getWindow(),
+        Config::rendering.windowSizeX,
+        Config::rendering.windowSizeY);
 
-    world.createLand();
-    std::cout << "land created" << std::endl;
+    Stats stats;
 
-    world.createStruct(TerrainType::Desert);
-    std::cout << "desert created" << std::endl;
 
-    world.createStruct(TerrainType::Mountain);
-    std::cout << "mountain created" << std::endl;
+    WorldGenerator::generate(world, civilization, human, food, tree, stone, renderer, loadingScreen);
 
-    civilization.createCivilization(world);
-    std::cout << "civ created" << std::endl;
-
-    human.createHuman(world, civilization);
-    std::cout << "humans created" << std::endl;
-
-    tree.createTree(world, renderer);
-    std::cout << "tree created" << std::endl;
-
-    food.createFood(world, renderer);
-    std::cout << "food created" << std::endl;
-
-    stone.createStone(world, renderer);
-    std::cout << "stone created" << std::endl;
-
-    std::atomic<bool> running = true;
+    std::atomic<bool>
+        running = true;
 
     std::thread humanThread([&]()
-    {
+                            {
         while (running)
         {
             human.humanMove(
@@ -124,19 +109,20 @@ int main()
                 stone,
                 renderer
             );
-        }
-    });
+        } });
 
     sf::Clock clock;
 
     float fileTimer = 0.f;
     float renderTimer = 0.f;
 
+    int allTicksCount = 0;
     int ticksCount = 0;
     int framesCount = 0;
     int humanTicksBefore = 0;
 
-    std::cout << "start sim loop\n";
+    std::cout << "start sim loop" << std::endl;
+    ;
 
     while (renderer.isOpen())
     {
@@ -148,8 +134,9 @@ int main()
 
         ticksCount++;
 
-        if (world.allTicksCount %
-            Config::simulation.ticksForBuildingDecision == 0)
+        if (allTicksCount %
+                Config::simulation.ticksForBuildingDecision ==
+            0)
         {
             civilization.buildingDecision(
                 world,
@@ -157,20 +144,19 @@ int main()
                 human,
                 food,
                 stone,
-                tree
-            );
+                tree);
         }
 
-        if (world.allTicksCount %
-            Config::simulation.ticksForResourcesGainsFromBuildings == 0)
+        if (allTicksCount %
+                Config::simulation.ticksForResourcesGainsFromBuildings ==
+            0)
         {
             civilization.getBuildingsGains();
         }
 
         civilization.assignHumansToBuilding(
             human,
-            Type::HOUSE
-        );
+            Type::HOUSE);
 
         food.foodRespawn(world, renderer);
         stone.stoneRespawn(world, renderer);
@@ -183,7 +169,7 @@ int main()
 
             humanTicksBefore = human.humanTicks;
 
-            world.writeStatsToTxt(
+            stats.update(
                 ticksCount,
                 framesCount,
                 humanTicks,
@@ -191,8 +177,9 @@ int main()
                 human,
                 stone,
                 food,
-                tree
-            );
+                tree,
+                allTicksCount);
+            stats.writeToTxt();
 
             fileTimer = 0.f;
             ticksCount = 0;
@@ -204,13 +191,13 @@ int main()
             renderTimer = 0.f;
 
             renderer.begin();
-            renderer.render(world, human);
+            renderer.render(world, human, stats.get());
             renderer.end();
 
             framesCount++;
         }
 
-        world.allTicksCount++;
+        allTicksCount++;
     }
 
     running = false;

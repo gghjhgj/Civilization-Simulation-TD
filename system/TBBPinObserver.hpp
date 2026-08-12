@@ -87,7 +87,7 @@ public:
             << workerID
             << " pinned to logical CPU "
             << cpu
-            << "\n";
+            << std::endl;
     }
 
 
