@@ -11,20 +11,11 @@
 
 #include "../Config/Config.h"
 
-
 struct CPUTopology
 {
     int physicalCores = 0;
     int logicalThreads = 0;
 
-    // Każdy element odpowiada jednemu fizycznemu rdzeniowi.
-    //
-    // Przykład Ryzen 5 5500U:
-    //
-    // physicalCoreMasks[0] -> CPU 0 + CPU 6
-    // physicalCoreMasks[1] -> CPU 1 + CPU 7
-    // physicalCoreMasks[2] -> CPU 2 + CPU 8
-    // ...
     std::vector<DWORD_PTR> physicalCoreMasks;
 
     bool hasSMT = false;
@@ -236,15 +227,6 @@ inline std::vector<int> getHumanLoopCPUs()
 
     std::vector<int> cpus;
 
-
-    /*
-        Physical core 0 jest zarezerwowany
-        dla simulation loop.
-
-        Wszystkie pozostałe rdzenie idą
-        do Human/TBB.
-    */
-
     for (size_t core = 1;
          core < topology.physicalCoreMasks.size();
          ++core)
@@ -363,13 +345,6 @@ inline void configureThreadsAutomatically()
         );
     }
 
-
-    /*
-        CORE 0
-        ------
-        Simulation loop.
-    */
-
     Config::threads.coresForSimLoop = 1;
 
 
@@ -380,13 +355,6 @@ inline void configureThreadsAutomatically()
             ).size()
         );
 
-
-    /*
-        CORES 1..N
-        ----------
-        Human loop.
-    */
-
     Config::threads.coresForHumanLoop =
         topology.physicalCores - 1;
 
@@ -394,12 +362,6 @@ inline void configureThreadsAutomatically()
     Config::threads.threadsForHumanLoop =
         topology.logicalThreads -
         Config::threads.threadsForSimLoop;
-
-
-    /*
-        Informacyjnie aktualizujemy również
-        całkowitą liczbę wykrytych rdzeni/wątków.
-    */
 
     Config::threads.cores =
         topology.physicalCores;

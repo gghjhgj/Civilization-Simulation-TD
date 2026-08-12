@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(CivilizationSimulation
+project(
+    CivilizationSimulation
     VERSION 1.0.0
     DESCRIPTION "Civilization Simulation TD - High Performance C++ Simulation"
     LANGUAGES CXX
@@ -16,14 +17,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Domyślnie Release
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING
-        "Build type"
-        FORCE
-    )
-endif()
-
 # ============================================================
 # OPCJE
 # ============================================================
@@ -31,6 +24,12 @@ endif()
 option(
     ENABLE_NATIVE_ARCH
     "Enable -march=native"
+    ON
+)
+
+option(
+    ENABLE_AVX2
+    "Enable AVX2"
     ON
 )
 
@@ -64,83 +63,92 @@ option(
     ON
 )
 
+option(
+    ENABLE_TESTS
+    "Build unit tests"
+    ON
+)
+
 include(FetchContent)
+include(CheckIPOSupported)
 
 # ============================================================
 # ŹRÓDŁA PROJEKTU
 # ============================================================
 
-# Automatycznie znajdź wszystkie .cpp w projekcie.
-#
-# CONFIGURE_DEPENDS:
-# CMake ponownie sprawdzi katalogi, gdy dodasz/usuniesz .cpp.
-#
-# WAŻNE:
-# Nie pozwalamy, żeby do app trafiły:
-#   - build/
-#   - notUsed/
-#   - FetchContent (_deps/)
-#
-# Dzięki temu dodanie nowego pliku .cpp do projektu
-# nie wymaga ręcznego dopisywania go tutaj.
-
 file(
-    GLOB_RECURSE SOURCES
+    GLOB_RECURSE PROJECT_SOURCES
     CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
 )
 
 # ------------------------------------------------------------
-# Wykluczenie katalogu build
+# Wykluczenia
 # ------------------------------------------------------------
 
-list(FILTER SOURCES EXCLUDE REGEX
+list(
+    FILTER PROJECT_SOURCES
+    EXCLUDE REGEX
     "^${CMAKE_CURRENT_SOURCE_DIR}/build/.*"
 )
 
-# ------------------------------------------------------------
-# Wykluczenie kodu nieużywanego
-# ------------------------------------------------------------
-
-list(FILTER SOURCES EXCLUDE REGEX
+list(
+    FILTER PROJECT_SOURCES
+    EXCLUDE REGEX
     "^${CMAKE_CURRENT_SOURCE_DIR}/notUsed/.*"
 )
 
+list(
+    FILTER PROJECT_SOURCES
+    EXCLUDE REGEX
+    "^${CMAKE_CURRENT_SOURCE_DIR}/_deps/.*"
+)
+
+list(
+    FILTER PROJECT_SOURCES
+    EXCLUDE REGEX
+    "^${CMAKE_CURRENT_SOURCE_DIR}/tests/.*"
+)
+
+list(
+    FILTER PROJECT_SOURCES
+    EXCLUDE REGEX
+    "^${CMAKE_CURRENT_SOURCE_DIR}/assembly/.*"
+)
+
 # ------------------------------------------------------------
-# Wykluczenie katalogów zależności
+# main.cpp
 # ------------------------------------------------------------
 
-list(FILTER SOURCES EXCLUDE REGEX
-    "^${CMAKE_CURRENT_SOURCE_DIR}/_deps/.*"
+set(
+    MAIN_SOURCE
+    "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
+)
+
+list(
+    REMOVE_ITEM
+    PROJECT_SOURCES
+    "${MAIN_SOURCE}"
 )
 
 # ------------------------------------------------------------
 # Sprawdzenie
 # ------------------------------------------------------------
 
-if(NOT SOURCES)
-    message(FATAL_ERROR
-        "[CMake] Nie znaleziono zadnych plikow .cpp projektu."
+if(NOT PROJECT_SOURCES)
+    message(
+        FATAL_ERROR
+        "[CMake] Nie znaleziono zadnych plikow .cpp/.c projektu."
     )
 endif()
 
-message(STATUS "[CMake] Znalezione pliki .cpp projektu:")
+message(STATUS "")
+message(STATUS "[CMake] Pliki simulation_core:")
 
-foreach(SOURCE_FILE IN LISTS SOURCES)
+foreach(SOURCE_FILE IN LISTS PROJECT_SOURCES)
     message(STATUS "  ${SOURCE_FILE}")
 endforeach()
-
-# ============================================================
-# EXECUTABLE
-# ============================================================
-
-add_executable(app
-    ${SOURCES}
-)
-
-target_include_directories(app PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
 
 # ============================================================
 # SFML
@@ -152,24 +160,39 @@ find_package(
     QUIET
 )
 
-if(NOT SFML_FOUND)
-    find_package(
-        SFML
-        COMPONENTS Graphics Window System
-        QUIET
-    )
-endif()
+if(
+    NOT SFML_FOUND
+    AND FETCH_MISSING_DEPS
+)
 
-if(NOT SFML_FOUND AND FETCH_MISSING_DEPS)
-
-    message(STATUS
+    message(
+        STATUS
         "[CMake] SFML nie znaleziony - pobieranie SFML 3.0.0..."
     )
 
-    set(SFML_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(SFML_BUILD_DOC OFF CACHE BOOL "" FORCE)
-    set(SFML_BUILD_AUDIO OFF CACHE BOOL "" FORCE)
-    set(SFML_BUILD_NETWORK OFF CACHE BOOL "" FORCE)
+    set(
+        SFML_BUILD_EXAMPLES
+        OFF
+        CACHE BOOL "" FORCE
+    )
+
+    set(
+        SFML_BUILD_DOC
+        OFF
+        CACHE BOOL "" FORCE
+    )
+
+    set(
+        SFML_BUILD_AUDIO
+        OFF
+        CACHE BOOL "" FORCE
+    )
+
+    set(
+        SFML_BUILD_NETWORK
+        OFF
+        CACHE BOOL "" FORCE
+    )
 
     FetchContent_Declare(
         sfml
@@ -183,7 +206,8 @@ endif()
 
 if(TARGET SFML::Graphics)
 
-    target_link_libraries(app PRIVATE
+    set(
+        SFML_TARGETS
         SFML::Graphics
         SFML::Window
         SFML::System
@@ -191,7 +215,8 @@ if(TARGET SFML::Graphics)
 
 elseif(TARGET sfml-graphics)
 
-    target_link_libraries(app PRIVATE
+    set(
+        SFML_TARGETS
         sfml-graphics
         sfml-window
         sfml-system
@@ -199,7 +224,8 @@ elseif(TARGET sfml-graphics)
 
 else()
 
-    message(FATAL_ERROR
+    message(
+        FATAL_ERROR
         "[CMake] SFML nie zostal znaleziony ani nie mogl zostac pobrany."
     )
 
@@ -221,12 +247,22 @@ if(
     AND FETCH_MISSING_DEPS
 )
 
-    message(STATUS
+    message(
+        STATUS
         "[CMake] TBB nie znaleziony - pobieranie oneTBB..."
     )
 
-    set(TBB_TEST OFF CACHE BOOL "" FORCE)
-    set(TBB_STRICT OFF CACHE BOOL "" FORCE)
+    set(
+        TBB_TEST
+        OFF
+        CACHE BOOL "" FORCE
+    )
+
+    set(
+        TBB_STRICT
+        OFF
+        CACHE BOOL "" FORCE
+    )
 
     FetchContent_Declare(
         onetbb
@@ -240,13 +276,15 @@ endif()
 
 if(TARGET TBB::tbb)
 
-    target_link_libraries(app PRIVATE
+    set(
+        TBB_TARGET
         TBB::tbb
     )
 
 elseif(TARGET tbb)
 
-    target_link_libraries(app PRIVATE
+    set(
+        TBB_TARGET
         tbb
     )
 
@@ -259,13 +297,15 @@ else()
 
     if(TBB_LIB)
 
-        target_link_libraries(app PRIVATE
+        set(
+            TBB_TARGET
             ${TBB_LIB}
         )
 
     else()
 
-        message(FATAL_ERROR
+        message(
+            FATAL_ERROR
             "[CMake] TBB nie zostal znaleziony ani nie mogl zostac pobrany."
         )
 
@@ -279,17 +319,38 @@ endif()
 
 if(ENABLE_MIMALLOC)
 
-    find_package(mimalloc QUIET)
+    find_package(
+        mimalloc
+        QUIET
+    )
 
-    if(NOT mimalloc_FOUND AND FETCH_MISSING_DEPS)
+    if(
+        NOT mimalloc_FOUND
+        AND FETCH_MISSING_DEPS
+    )
 
-        message(STATUS
+        message(
+            STATUS
             "[CMake] mimalloc nie znaleziony - pobieranie mimalloc..."
         )
 
-        set(MI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-        set(MI_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-        set(MI_BUILD_OBJECT OFF CACHE BOOL "" FORCE)
+        set(
+            MI_BUILD_TESTS
+            OFF
+            CACHE BOOL "" FORCE
+        )
+
+        set(
+            MI_BUILD_SHARED
+            OFF
+            CACHE BOOL "" FORCE
+        )
+
+        set(
+            MI_BUILD_OBJECT
+            OFF
+            CACHE BOOL "" FORCE
+        )
 
         FetchContent_Declare(
             mimalloc
@@ -303,13 +364,15 @@ if(ENABLE_MIMALLOC)
 
     if(TARGET mimalloc-static)
 
-        target_link_libraries(app PRIVATE
+        set(
+            MIMALLOC_TARGET
             mimalloc-static
         )
 
     elseif(TARGET mimalloc)
 
-        target_link_libraries(app PRIVATE
+        set(
+            MIMALLOC_TARGET
             mimalloc
         )
 
@@ -322,15 +385,21 @@ if(ENABLE_MIMALLOC)
 
         if(MIMALLOC_LIB)
 
-            target_link_libraries(app PRIVATE
+            set(
+                MIMALLOC_TARGET
                 ${MIMALLOC_LIB}
             )
 
         else()
 
-            message(WARNING
-                "[CMake] mimalloc nie znaleziony. "
-                "Budowanie bez mimalloc."
+            message(
+                WARNING
+                "[CMake] mimalloc nie znaleziony. Budowanie bez mimalloc."
+            )
+
+            set(
+                MIMALLOC_TARGET
+                ""
             )
 
         endif()
@@ -347,21 +416,20 @@ if(ENABLE_IMGUI)
 
     if(NOT FETCH_MISSING_DEPS)
 
-        message(FATAL_ERROR
+        message(
+            FATAL_ERROR
             "[CMake] ENABLE_IMGUI wymaga FETCH_MISSING_DEPS=ON."
         )
 
     endif()
 
-    message(STATUS
+    message(
+        STATUS
         "[CMake] Pobieranie kompatybilnego Dear ImGui + ImGui-SFML..."
     )
 
     # --------------------------------------------------------
     # Dear ImGui
-    #
-    # ImGui-SFML 3.0 nie jest kompatybilne z ImGui 1.92+.
-    # Dlatego przypinamy ImGui 1.91.9.
     # --------------------------------------------------------
 
     FetchContent_Declare(
@@ -372,10 +440,6 @@ if(ENABLE_IMGUI)
 
     FetchContent_MakeAvailable(imgui)
 
-    # --------------------------------------------------------
-    # Wskazanie katalogu Dear ImGui dla ImGui-SFML
-    # --------------------------------------------------------
-
     set(
         IMGUI_DIR
         ${imgui_SOURCE_DIR}
@@ -385,7 +449,7 @@ if(ENABLE_IMGUI)
     )
 
     # --------------------------------------------------------
-    # ImGui-SFML 3.0
+    # ImGui-SFML
     # --------------------------------------------------------
 
     set(
@@ -412,67 +476,161 @@ if(ENABLE_IMGUI)
 
     FetchContent_MakeAvailable(imgui_sfml)
 
-    # --------------------------------------------------------
-    # Linkowanie
-    # --------------------------------------------------------
-
     if(TARGET ImGui-SFML::ImGui-SFML)
 
-        target_link_libraries(app PRIVATE
+        set(
+            IMGUI_SFML_TARGET
             ImGui-SFML::ImGui-SFML
         )
 
     elseif(TARGET ImGui-SFML)
 
-        target_link_libraries(app PRIVATE
+        set(
+            IMGUI_SFML_TARGET
             ImGui-SFML
         )
 
     else()
 
-        message(FATAL_ERROR
+        message(
+            FATAL_ERROR
             "[CMake] Nie znaleziono targetu ImGui-SFML."
         )
 
     endif()
 
-    target_compile_definitions(app PRIVATE
+endif()
+
+# ============================================================
+# SIMULATION CORE
+# ============================================================
+
+add_library(
+    simulation_core
+    STATIC
+    ${PROJECT_SOURCES}
+)
+
+target_include_directories(
+    simulation_core
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# ============================================================
+# LINKOWANIE simulation_core
+# ============================================================
+
+target_link_libraries(
+    simulation_core
+    PUBLIC
+    ${SFML_TARGETS}
+    ${TBB_TARGET}
+)
+
+if(
+    ENABLE_MIMALLOC
+    AND MIMALLOC_TARGET
+)
+
+    target_link_libraries(
+        simulation_core
+        PUBLIC
+        ${MIMALLOC_TARGET}
+    )
+
+endif()
+
+if(ENABLE_IMGUI)
+
+    target_link_libraries(
+        simulation_core
+        PUBLIC
+        ${IMGUI_SFML_TARGET}
+    )
+
+    target_compile_definitions(
+        simulation_core
+        PUBLIC
         ENABLE_IMGUI
     )
 
 endif()
 
-# ============================================================
-# WINDOWS
-# ============================================================
-
 if(WIN32)
 
-    target_link_libraries(app PRIVATE
+    target_link_libraries(
+        simulation_core
+        PUBLIC
         dbghelp
     )
 
 endif()
 
 # ============================================================
-# COMPILER FLAGS
+# EXECUTABLE
+# ============================================================
+
+add_executable(
+    app
+    ${MAIN_SOURCE}
+)
+
+target_link_libraries(
+    app
+    PRIVATE
+    simulation_core
+)
+
+# ============================================================
+# WSPÓLNE FLAGI KOMPILATORA
 # ============================================================
 
 if(MSVC)
 
-    target_compile_options(app PRIVATE
+    target_compile_options(
+        simulation_core
+        PRIVATE
+        /W3
+    )
+
+    target_compile_options(
+        app
+        PRIVATE
         /W3
     )
 
 else()
 
-    target_compile_options(app PRIVATE
+    target_compile_options(
+        simulation_core
+        PRIVATE
 
         -Wall
         -Wextra
         -funroll-loops
 
         $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
+
+        $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
+
+        $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
+
+        $<$<CONFIG:Release>:-Ofast>
+
+        $<$<CONFIG:Debug>:-g;-O0>
+    )
+
+    target_compile_options(
+        app
+        PRIVATE
+
+        -Wall
+        -Wextra
+
+        $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
+
+        $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
 
         $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
 
@@ -489,8 +647,6 @@ endif()
 
 if(ENABLE_LTO)
 
-    include(CheckIPOSupported)
-
     check_ipo_supported(
         RESULT IPO_SUPPORTED
         OUTPUT IPO_ERROR
@@ -499,17 +655,26 @@ if(ENABLE_LTO)
     if(IPO_SUPPORTED)
 
         set_property(
-            TARGET app
-            PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+            TARGET simulation_core
+            PROPERTY
+            INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
         )
 
-        message(STATUS
+        set_property(
+            TARGET app
+            PROPERTY
+            INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+        )
+
+        message(
+            STATUS
             "[CMake] LTO/IPO: ENABLED"
         )
 
     else()
 
-        message(WARNING
+        message(
+            WARNING
             "[CMake] LTO/IPO niedostepne: ${IPO_ERROR}"
         )
 
@@ -518,7 +683,7 @@ if(ENABLE_LTO)
 endif()
 
 # ============================================================
-# CONFIG.INI
+# CONFIG.INI - APP
 # ============================================================
 
 if(
@@ -530,10 +695,16 @@ if(
         TARGET app
         POST_BUILD
 
-        COMMAND ${CMAKE_COMMAND} -E make_directory
+        COMMAND
+            ${CMAKE_COMMAND}
+            -E
+            make_directory
             "$<TARGET_FILE_DIR:app>/Config"
 
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        COMMAND
+            ${CMAKE_COMMAND}
+            -E
+            copy_if_different
             "${CMAKE_CURRENT_SOURCE_DIR}/Config/Config.ini"
             "$<TARGET_FILE_DIR:app>/Config/Config.ini"
 
@@ -543,8 +714,703 @@ if(
 
 else()
 
-    message(WARNING
+    message(
+        WARNING
         "[CMake] Nie znaleziono Config/Config.ini - pomijam kopiowanie."
     )
 
 endif()
+
+# ============================================================
+# GOOGLE TEST
+# ============================================================
+
+if(ENABLE_TESTS)
+
+    include(CTest)
+
+    enable_testing()
+
+    message(
+        STATUS
+        "[CMake] Konfiguracja GoogleTest..."
+    )
+
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG v1.17.0
+    )
+
+    set(
+        INSTALL_GTEST
+        OFF
+        CACHE BOOL "" FORCE
+    )
+
+    set(
+        BUILD_GMOCK
+        OFF
+        CACHE BOOL "" FORCE
+    )
+
+    FetchContent_MakeAvailable(googletest)
+
+    file(
+        GLOB_RECURSE TEST_SOURCES
+        CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
+    )
+
+    if(TEST_SOURCES)
+
+        message(
+            STATUS
+            "[CMake] Znalezione testy:"
+        )
+
+        foreach(TEST_FILE IN LISTS TEST_SOURCES)
+            message(STATUS "  ${TEST_FILE}")
+        endforeach()
+
+        add_executable(
+            tests
+            ${TEST_SOURCES}
+        )
+
+        target_include_directories(
+            tests
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+
+        target_link_libraries(
+            tests
+            PRIVATE
+            simulation_core
+            GTest::gtest_main
+        )
+
+        if(MSVC)
+
+            target_compile_options(
+                tests
+                PRIVATE
+                /W3
+            )
+
+        else()
+
+            target_compile_options(
+                tests
+                PRIVATE
+
+                -Wall
+                -Wextra
+
+                $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
+
+                $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
+
+                $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
+
+                $<$<CONFIG:Release>:-O3>
+
+                $<$<CONFIG:Debug>:-g;-O0>
+            )
+
+        endif()
+
+        if(
+            ENABLE_LTO
+            AND IPO_SUPPORTED
+        )
+
+            set_property(
+                TARGET tests
+                PROPERTY
+                INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+            )
+
+        endif()
+
+        if(
+            EXISTS
+            "${CMAKE_CURRENT_SOURCE_DIR}/Config/Config.ini"
+        )
+
+            add_custom_command(
+                TARGET tests
+                POST_BUILD
+
+                COMMAND
+                    ${CMAKE_COMMAND}
+                    -E
+                    make_directory
+                    "$<TARGET_FILE_DIR:tests>/Config"
+
+                COMMAND
+                    ${CMAKE_COMMAND}
+                    -E
+                    copy_if_different
+                    "${CMAKE_CURRENT_SOURCE_DIR}/Config/Config.ini"
+                    "$<TARGET_FILE_DIR:tests>/Config/Config.ini"
+
+                COMMENT
+                    "Kopiowanie Config/Config.ini do testow..."
+            )
+
+        endif()
+
+        include(GoogleTest)
+
+        gtest_discover_tests(
+            tests
+            DISCOVERY_MODE PRE_TEST
+        )
+
+        add_custom_target(
+            test-run
+
+            COMMAND
+                ${CMAKE_CTEST_COMMAND}
+                --test-dir
+                ${CMAKE_BINARY_DIR}
+                --output-on-failure
+
+            DEPENDS
+                tests
+
+            USES_TERMINAL
+
+            COMMENT
+                "[CMake] Uruchamianie testow..."
+        )
+
+        message(
+            STATUS
+            "[CMake] GoogleTest: ENABLED"
+        )
+
+    else()
+
+        message(
+            WARNING
+            "[CMake] ENABLE_TESTS=ON, ale nie znaleziono testow."
+        )
+
+    endif()
+
+endif()
+
+# ============================================================
+# PGO - GCC
+# ============================================================
+
+set(
+    GCC_PROFILE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/profiles/gcc"
+    CACHE PATH
+    "GCC PGO profile directory"
+)
+
+option(
+    ENABLE_GCC_PGO_GENERATE
+    "Enable GCC PGO profile generation"
+    OFF
+)
+
+option(
+    ENABLE_GCC_PGO_USE
+    "Enable GCC PGO profile use"
+    OFF
+)
+
+if(
+    ENABLE_GCC_PGO_GENERATE
+    AND ENABLE_GCC_PGO_USE
+)
+
+    message(
+        FATAL_ERROR
+        "[CMake] ENABLE_GCC_PGO_GENERATE i ENABLE_GCC_PGO_USE nie moga byc jednoczesnie ON."
+    )
+
+endif()
+
+if(
+    ENABLE_GCC_PGO_GENERATE
+    OR ENABLE_GCC_PGO_USE
+)
+
+    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+        message(
+            FATAL_ERROR
+            "[CMake] GCC PGO wymaga kompilatora GCC."
+        )
+
+    endif()
+
+    if(ENABLE_GCC_PGO_GENERATE)
+
+        message(
+            STATUS
+            "[CMake] GCC PGO: GENERATE"
+        )
+
+        target_compile_options(
+            simulation_core
+            PRIVATE
+            "-fprofile-generate=${GCC_PROFILE_DIR}"
+        )
+
+        target_compile_options(
+            app
+            PRIVATE
+            "-fprofile-generate=${GCC_PROFILE_DIR}"
+        )
+
+        target_link_options(
+            app
+            PRIVATE
+            "-fprofile-generate=${GCC_PROFILE_DIR}"
+        )
+
+    elseif(ENABLE_GCC_PGO_USE)
+
+        message(
+            STATUS
+            "[CMake] GCC PGO: USE"
+        )
+
+        target_compile_options(
+            simulation_core
+            PRIVATE
+            "-fprofile-use=${GCC_PROFILE_DIR}"
+            "-fprofile-correction"
+        )
+
+        target_compile_options(
+            app
+            PRIVATE
+            "-fprofile-use=${GCC_PROFILE_DIR}"
+            "-fprofile-correction"
+        )
+
+        target_link_options(
+            app
+            PRIVATE
+            "-fprofile-use=${GCC_PROFILE_DIR}"
+        )
+
+    endif()
+
+endif()
+
+# ============================================================
+# PGO - CLANG
+# ============================================================
+
+set(
+    CLANG_PROFILE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/profiles/clang"
+    CACHE PATH
+    "Clang PGO profile directory"
+)
+
+option(
+    ENABLE_CLANG_PGO_GENERATE
+    "Enable Clang PGO profile generation"
+    OFF
+)
+
+option(
+    ENABLE_CLANG_PGO_USE
+    "Enable Clang PGO profile use"
+    OFF
+)
+
+if(
+    ENABLE_CLANG_PGO_GENERATE
+    AND ENABLE_CLANG_PGO_USE
+)
+
+    message(
+        FATAL_ERROR
+        "[CMake] ENABLE_CLANG_PGO_GENERATE i ENABLE_CLANG_PGO_USE nie moga byc jednoczesnie ON."
+    )
+
+endif()
+
+if(
+    ENABLE_CLANG_PGO_GENERATE
+    OR ENABLE_CLANG_PGO_USE
+)
+
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+        message(
+            FATAL_ERROR
+            "[CMake] Clang PGO wymaga kompilatora Clang."
+        )
+
+    endif()
+
+    if(ENABLE_CLANG_PGO_GENERATE)
+
+        message(
+            STATUS
+            "[CMake] Clang PGO: GENERATE"
+        )
+
+        target_compile_options(
+            simulation_core
+            PRIVATE
+            "-fprofile-instr-generate=${CLANG_PROFILE_DIR}/app.profraw"
+        )
+
+        target_compile_options(
+            app
+            PRIVATE
+            "-fprofile-instr-generate=${CLANG_PROFILE_DIR}/app.profraw"
+        )
+
+        target_link_options(
+            app
+            PRIVATE
+            "-fprofile-instr-generate=${CLANG_PROFILE_DIR}/app.profraw"
+        )
+
+    elseif(ENABLE_CLANG_PGO_USE)
+
+        set(
+            CLANG_PROFDATA
+            "${CLANG_PROFILE_DIR}/app.profdata"
+            CACHE FILEPATH
+            "Clang merged profile"
+        )
+
+        if(NOT EXISTS "${CLANG_PROFDATA}")
+
+            message(
+                WARNING
+                "[CMake] Nie znaleziono ${CLANG_PROFDATA}. Najpierw wykonaj Clang PGO generate i llvm-profdata merge."
+            )
+
+        endif()
+
+        message(
+            STATUS
+            "[CMake] Clang PGO: USE"
+        )
+
+        target_compile_options(
+            simulation_core
+            PRIVATE
+            "-fprofile-instr-use=${CLANG_PROFDATA}"
+        )
+
+        target_compile_options(
+            app
+            PRIVATE
+            "-fprofile-instr-use=${CLANG_PROFDATA}"
+        )
+
+        target_link_options(
+            app
+            PRIVATE
+            "-fprofile-instr-use=${CLANG_PROFDATA}"
+        )
+
+    endif()
+
+endif()
+
+# ============================================================
+# PROFILING BUILD
+# ============================================================
+
+option(
+    ENABLE_PROFILING
+    "Enable profiling-friendly build"
+    OFF
+)
+
+if(ENABLE_PROFILING)
+
+    target_compile_options(
+        simulation_core
+        PRIVATE
+        -O2
+        -g
+        -fno-omit-frame-pointer
+    )
+
+    target_compile_options(
+        app
+        PRIVATE
+        -O2
+        -g
+        -fno-omit-frame-pointer
+    )
+
+    message(
+        STATUS
+        "[CMake] Profiling build: ENABLED"
+    )
+
+endif()
+
+# ============================================================
+# DEBUG-FAST
+# ============================================================
+
+option(
+    ENABLE_DEBUG_FAST
+    "Enable optimized debug build"
+    OFF
+)
+
+if(ENABLE_DEBUG_FAST)
+
+    target_compile_options(
+        simulation_core
+        PRIVATE
+        -g
+        -O1
+        -march=native
+        -fno-omit-frame-pointer
+        -Wall
+        -Wextra
+    )
+
+    target_compile_options(
+        app
+        PRIVATE
+        -g
+        -O1
+        -march=native
+        -fno-omit-frame-pointer
+        -Wall
+        -Wextra
+    )
+
+    message(
+        STATUS
+        "[CMake] Debug-Fast: ENABLED"
+    )
+
+endif()
+
+# ============================================================
+# CLANG DEBUG / PDB / LLD
+# ============================================================
+
+option(
+    ENABLE_CLANG_DEBUG_SYMBOLS
+    "Enable Clang CodeView debug symbols"
+    OFF
+)
+
+if(
+    ENABLE_CLANG_DEBUG_SYMBOLS
+    AND CMAKE_CXX_COMPILER_ID MATCHES "Clang"
+)
+
+    target_compile_options(
+        simulation_core
+        PRIVATE
+        -g
+        -gcodeview
+        -fno-omit-frame-pointer
+        -Wno-c++11-narrowing
+    )
+
+    target_compile_options(
+        app
+        PRIVATE
+        -g
+        -gcodeview
+        -fno-omit-frame-pointer
+        -Wno-c++11-narrowing
+    )
+
+    target_link_options(
+        app
+        PRIVATE
+        -fuse-ld=lld
+    )
+
+endif()
+
+# ============================================================
+# ASSEMBLER
+# ============================================================
+
+set(
+    ASSEMBLY_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/assembly"
+)
+
+add_custom_target(
+    assembler
+    COMMAND
+        ${CMAKE_COMMAND}
+        -E
+        remove_directory
+        "${ASSEMBLY_DIR}"
+
+    COMMAND
+        ${CMAKE_COMMAND}
+        -E
+        make_directory
+        "${ASSEMBLY_DIR}"
+
+    COMMENT
+        "[CMake] Generowanie asemblera..."
+)
+
+foreach(SOURCE_FILE IN LISTS PROJECT_SOURCES)
+
+    file(
+        RELATIVE_PATH
+        SOURCE_RELATIVE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${SOURCE_FILE}"
+    )
+
+    get_filename_component(
+        SOURCE_DIR
+        "${SOURCE_RELATIVE}"
+        DIRECTORY
+    )
+
+    get_filename_component(
+        SOURCE_NAME
+        "${SOURCE_RELATIVE}"
+        NAME_WE
+    )
+
+    set(
+        ASSEMBLY_OUTPUT_DIR
+        "${ASSEMBLY_DIR}/${SOURCE_DIR}"
+    )
+
+    set(
+        ASSEMBLY_OUTPUT
+        "${ASSEMBLY_OUTPUT_DIR}/${SOURCE_NAME}.s"
+    )
+
+    add_custom_command(
+        TARGET assembler
+        COMMAND
+            ${CMAKE_COMMAND}
+            -E
+            make_directory
+            "${ASSEMBLY_OUTPUT_DIR}"
+
+        COMMAND
+            ${CMAKE_CXX_COMPILER}
+            $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
+            $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
+            $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
+            $<$<CONFIG:Release>:-Ofast>
+            $<$<CONFIG:Debug>:-O0>
+            -funroll-loops
+            -S
+            -fverbose-asm
+            -I"${CMAKE_CURRENT_SOURCE_DIR}"
+            "${SOURCE_FILE}"
+            -o
+            "${ASSEMBLY_OUTPUT}"
+
+        VERBATIM
+    )
+
+endforeach()
+
+# ============================================================
+# PGO MERGE TARGETS - CLANG
+# ============================================================
+
+add_custom_target(
+    clang-pgo-merge
+    COMMAND
+        ${CMAKE_COMMAND}
+        -E
+        make_directory
+        "${CLANG_PROFILE_DIR}"
+
+    COMMAND
+        llvm-profdata
+        merge
+        -output="${CLANG_PROFILE_DIR}/app.profdata"
+        "${CLANG_PROFILE_DIR}/app.profraw"
+
+    USES_TERMINAL
+
+    COMMENT
+        "[CMake] Scalanie profilu Clang PGO..."
+)
+
+# ============================================================
+# CLEAN PROFILES
+# ============================================================
+
+add_custom_target(
+    clean-profiles
+
+    COMMAND
+        ${CMAKE_COMMAND}
+        -E
+        remove_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/profiles"
+
+    COMMENT
+        "[CMake] Czyszczenie profili PGO..."
+)
+
+# ============================================================
+# ALIAS TARGETS - WYGODNE KOMENDY
+# ============================================================
+
+add_custom_target(
+    build
+    DEPENDS
+    app
+)
+
+add_custom_target(
+    release
+    DEPENDS
+    app
+)
+
+# ============================================================
+# PODSUMOWANIE
+# ============================================================
+
+message(STATUS "")
+message(STATUS "============================================================")
+message(STATUS " CivilizationSimulation - konfiguracja")
+message(STATUS "============================================================")
+message(STATUS " Compiler:            ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS " Compiler path:       ${CMAKE_CXX_COMPILER}")
+message(STATUS " Build type:          ${CMAKE_BUILD_TYPE}")
+message(STATUS " Native architecture: ${ENABLE_NATIVE_ARCH}")
+message(STATUS " AVX2:                ${ENABLE_AVX2}")
+message(STATUS " Fast math:            ${ENABLE_FAST_MATH}")
+message(STATUS " LTO:                  ${ENABLE_LTO}")
+message(STATUS " mimalloc:             ${ENABLE_MIMALLOC}")
+message(STATUS " ImGui:                ${ENABLE_IMGUI}")
+message(STATUS " Tests:                ${ENABLE_TESTS}")
+message(STATUS " Fetch dependencies:   ${FETCH_MISSING_DEPS}")
+message(STATUS " GCC PGO generate:     ${ENABLE_GCC_PGO_GENERATE}")
+message(STATUS " GCC PGO use:          ${ENABLE_GCC_PGO_USE}")
+message(STATUS " Clang PGO generate:   ${ENABLE_CLANG_PGO_GENERATE}")
+message(STATUS " Clang PGO use:        ${ENABLE_CLANG_PGO_USE}")
+message(STATUS " Profiling:            ${ENABLE_PROFILING}")
+message(STATUS " Debug-Fast:           ${ENABLE_DEBUG_FAST}")
+message(STATUS "============================================================")
+message(STATUS "")

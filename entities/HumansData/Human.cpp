@@ -224,7 +224,7 @@ inline bool Human::gotResource(
 }
 
 
-inline Human::Dirs Human::humanMoveDecision(
+Human::Dirs Human::humanMoveDecision(
     uint16_t x,
     uint16_t y,
     uint16_t targetX,

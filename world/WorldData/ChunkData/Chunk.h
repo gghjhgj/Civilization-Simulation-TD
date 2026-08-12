@@ -42,23 +42,6 @@ struct Chunk
 
         return 9;
     }
-        /*
-        uint16_t whereType(TerrainType type) const
-    {
-        for (uint16_t i = 0; i < ChunkConfig::CELL_COUNT; i++)
-        {
-            uint32_t value =
-                (data >> (i * ChunkConfig::BITS_PER_CELL)) & ChunkConfig::CELL_MASK;
-
-            if (value == static_cast<uint32_t>(type))
-            {
-                return i;
-            }
-        }
-
-        return ChunkConfig::CELL_COUNT; // czyli 9 = brak
-    }
-        */
     void setCell(uint32_t index, TerrainType type)
     {
         assert(index < ChunkConfig::CELL_COUNT);
