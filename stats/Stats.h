@@ -11,7 +11,6 @@ class Tree;
 class Stats
 {
 public:
-
     struct Data
     {
         int ticksPerSecond = 0;
@@ -53,9 +52,9 @@ public:
         std::int64_t food = 0;
         std::int64_t wood = 0;
         std::int64_t stone = 0;
-    };
 
-public:
+        std::size_t civilizationChancesLeft = 0;
+    };
 
     void update(
         int ticks,
@@ -66,12 +65,10 @@ public:
         Stone& stone,
         Food& food,
         Tree& tree,
-        std::uint64_t totalTicks
-    );
+        std::uint64_t totalTicks);
 
     void writeToTxt(
-        const char* filename = "stats.txt"
-    ) const;
+        const char* filename = "stats/stats.txt") const;
 
     const Data& get() const
     {
@@ -79,6 +76,5 @@ public:
     }
 
 private:
-
     Data data;
 };

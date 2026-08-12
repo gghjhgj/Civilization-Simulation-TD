@@ -8,6 +8,29 @@ project(
 )
 
 # ============================================================
+# PLIKI GENEROWANE PRZEZ PROGRAM
+# ============================================================
+
+set(
+    STATS_FILE
+    "${CMAKE_CURRENT_SOURCE_DIR}/stats/stats.txt"
+)
+
+set(
+    IMGUI_INI_FILE
+    "${CMAKE_CURRENT_SOURCE_DIR}/imgui.ini"
+)
+
+set_property(
+    DIRECTORY
+    APPEND
+    PROPERTY
+    ADDITIONAL_CLEAN_FILES
+    "${STATS_FILE}"
+    "${IMGUI_INI_FILE}"
+)
+
+# ============================================================
 # PODSTAWOWA KONFIGURACJA
 # ============================================================
 
@@ -137,17 +160,24 @@ list(
 # ------------------------------------------------------------
 
 if(NOT PROJECT_SOURCES)
+
     message(
         FATAL_ERROR
         "[CMake] Nie znaleziono zadnych plikow .cpp/.c projektu."
     )
+
 endif()
 
 message(STATUS "")
 message(STATUS "[CMake] Pliki simulation_core:")
 
 foreach(SOURCE_FILE IN LISTS PROJECT_SOURCES)
-    message(STATUS "  ${SOURCE_FILE}")
+
+    message(
+        STATUS
+        "  ${SOURCE_FILE}"
+    )
+
 endforeach()
 
 # ============================================================
@@ -238,7 +268,9 @@ endif()
 find_package(TBB QUIET)
 
 if(NOT TBB_FOUND)
+
     find_package(oneTBB QUIET)
+
 endif()
 
 if(
@@ -605,37 +637,25 @@ else()
     target_compile_options(
         simulation_core
         PRIVATE
-
         -Wall
         -Wextra
         -funroll-loops
-
         $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
-
         $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
-
         $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
-
         $<$<CONFIG:Release>:-Ofast>
-
         $<$<CONFIG:Debug>:-g;-O0>
     )
 
     target_compile_options(
         app
         PRIVATE
-
         -Wall
         -Wextra
-
         $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
-
         $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
-
         $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
-
         $<$<CONFIG:Release>:-Ofast>
-
         $<$<CONFIG:Debug>:-g;-O0>
     )
 
@@ -770,7 +790,12 @@ if(ENABLE_TESTS)
         )
 
         foreach(TEST_FILE IN LISTS TEST_SOURCES)
-            message(STATUS "  ${TEST_FILE}")
+
+            message(
+                STATUS
+                "  ${TEST_FILE}"
+            )
+
         endforeach()
 
         add_executable(
@@ -804,18 +829,12 @@ if(ENABLE_TESTS)
             target_compile_options(
                 tests
                 PRIVATE
-
                 -Wall
                 -Wextra
-
                 $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
-
                 $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
-
                 $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
-
                 $<$<CONFIG:Release>:-O3>
-
                 $<$<CONFIG:Debug>:-g;-O0>
             )
 
@@ -1255,6 +1274,7 @@ set(
 
 add_custom_target(
     assembler
+
     COMMAND
         ${CMAKE_COMMAND}
         -E
@@ -1304,6 +1324,7 @@ foreach(SOURCE_FILE IN LISTS PROJECT_SOURCES)
 
     add_custom_command(
         TARGET assembler
+
         COMMAND
             ${CMAKE_COMMAND}
             -E
@@ -1336,6 +1357,7 @@ endforeach()
 
 add_custom_target(
     clang-pgo-merge
+
     COMMAND
         ${CMAKE_COMMAND}
         -E

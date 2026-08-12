@@ -367,6 +367,11 @@ void StatsUI::draw(const Stats::Data& data)
             static_cast<long long>(
                 data.stone)
         );
+
+        ImGui::Text(
+            "chances left: %lld",
+                data.civilizationChancesLeft
+        );
     }
 
 

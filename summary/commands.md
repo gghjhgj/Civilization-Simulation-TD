@@ -3,7 +3,10 @@
 ## Clean
 
 ```bash
+- clean 
 rm -rf build
+- clean additional files, works if /build exists
+cmake --build --preset release --target clean
 
 - Release
 cmake --preset release

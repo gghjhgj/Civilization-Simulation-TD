@@ -71,6 +71,7 @@ public:
     CivZone civZoneTiles;
     CivZone ranges;
 
+    int civilizationChancesLeft = Config::hunger.chancesForCivilizationWhenNoFood;
     void createCivilization(World& world);
     void initBuildings();
 
@@ -89,4 +90,6 @@ public:
     void buildingDecision(World& world, RendererSFML &renderer, Human& human, Food& food, Stone& stone, Tree& tree);
     void startConstruction(World& world, RendererSFML &renderer, uint16_t chunkX, uint16_t chunkY, Type type);
     void endConstruction(World& world, RendererSFML &renderer, Human& human, uint16_t chunkX, uint16_t chunkY, Type type);
+
+    void updateHunger(Human &human);
 };

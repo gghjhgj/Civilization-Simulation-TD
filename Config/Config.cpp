@@ -15,6 +15,7 @@ CivilizationConfig Config::civilization;
 HumansConfig Config::humans;
 BuildingsConfig Config::buildings;
 ThreadsConfig Config::threads;
+HungerConfig Config::hunger;
 
 namespace
 {
@@ -147,404 +148,425 @@ T get(
 
 void Config::load(const std::string& path)
 {
-const IniData ini = parseIni(path);
+    const IniData ini = parseIni(path);
 
-simulation.ticksForCivilizationDecision =
-    get<int>(
-        ini,
-        "simulation",
-        "ticks_for_civilization_decision"
-    );
+    simulation.ticksForBuildingDecision =
+        get<int>(
+            ini,
+            "simulation",
+            "ticks_for_building_decision"
+        );
 
-simulation.ticksForBuildingDecision =
-    get<int>(
-        ini,
-        "simulation",
-        "ticks_for_building_decision"
-    );
+    simulation.ticksForResourcesGainsFromBuildings =
+        get<int>(
+            ini,
+            "simulation",
+            "ticks_for_resources_gains_from_buildings"
+        );
 
-simulation.ticksForAssigningDecision =
-    get<int>(
-        ini,
-        "simulation",
-        "ticks_for_assigning_decision"
-    );
+    simulation.ticksForNewHumans =
+        get<int>(
+            ini,
+            "simulation",
+            "ticks_for_new_humans"
+        );
 
-simulation.ticksForResourcesGainsFromBuildings =
-    get<int>(
-        ini,
-        "simulation",
-        "ticks_for_resources_gains_from_buildings"
-    );
+    rendering.fps =
+        get<float>(
+            ini,
+            "rendering",
+            "fps"
+        );
 
-simulation.ticksForNewHumans =
-    get<int>(
-        ini,
-        "simulation",
-        "ticks_for_new_humans"
-    );
+    rendering.windowSizeX =
+        get<int>(
+            ini,
+            "rendering",
+            "window_size_x"
+        );
 
-rendering.fps =
-    get<float>(
-        ini,
-        "rendering",
-        "fps"
-    );
+    rendering.windowSizeY =
+        get<int>(
+            ini,
+            "rendering",
+            "window_size_y"
+        );
 
-rendering.windowSizeX =
-    get<int>(
-        ini,
-        "rendering",
-        "window_size_x"
-    );
+    surface.landPercent =
+        get<int>(
+            ini,
+            "surface",
+            "land_percent"
+        );
 
-rendering.windowSizeY =
-    get<int>(
-        ini,
-        "rendering",
-        "window_size_y"
-    );
+    surface.mountainPercent =
+        get<int>(
+            ini,
+            "surface",
+            "mountain_percent"
+        );
 
-surface.landPercent =
-    get<int>(
-        ini,
-        "surface",
-        "land_percent"
-    );
+    surface.sandPercent =
+        get<int>(
+            ini,
+            "surface",
+            "sand_percent"
+        );
 
-surface.mountainPercent =
-    get<int>(
-        ini,
-        "surface",
-        "mountain_percent"
-    );
+    surface.numberOfDeserts =
+        get<int>(
+            ini,
+            "surface",
+            "number_of_deserts"
+        );
 
-surface.sandPercent =
-    get<int>(
-        ini,
-        "surface",
-        "sand_percent"
-    );
+    resources.food.count =
+        get<int>(
+            ini,
+            "resources.food",
+            "count"
+        );
 
-surface.numberOfDeserts =
-    get<int>(
-        ini,
-        "surface",
-        "number_of_deserts"
-    );
+    resources.food.max =
+        get<int>(
+            ini,
+            "resources.food",
+            "max"
+        );
 
-resources.food.count =
-    get<int>(
-        ini,
-        "resources.food",
-        "count"
-    );
+    resources.food.respawn =
+        get<int>(
+            ini,
+            "resources.food",
+            "respawn"
+        );
 
-resources.food.max =
-    get<int>(
-        ini,
-        "resources.food",
-        "max"
-    );
+    resources.food.maxSpawnTries =
+        get<int>(
+            ini,
+            "resources.food",
+            "max_spawn_tries"
+        );
 
-resources.food.respawn =
-    get<int>(
-        ini,
-        "resources.food",
-        "respawn"
-    );
+    resources.trees.count =
+        get<int>(
+            ini,
+            "resources.trees",
+            "count"
+        );
 
-resources.food.maxSpawnTries =
-    get<int>(
-        ini,
-        "resources.food",
-        "max_spawn_tries"
-    );
+    resources.trees.forestCount =
+        get<int>(
+            ini,
+            "resources.trees",
+            "forest_count"
+        );
 
-resources.trees.count =
-    get<int>(
-        ini,
-        "resources.trees",
-        "count"
-    );
+    resources.trees.max =
+        get<int>(
+            ini,
+            "resources.trees",
+            "max"
+        );
 
-resources.trees.forestCount =
-    get<int>(
-        ini,
-        "resources.trees",
-        "forest_count"
-    );
+    resources.trees.respawn =
+        get<int>(
+            ini,
+            "resources.trees",
+            "respawn"
+        );
 
-resources.trees.max =
-    get<int>(
-        ini,
-        "resources.trees",
-        "max"
-    );
+    resources.trees.maxSpawnTries =
+        get<int>(
+            ini,
+            "resources.trees",
+            "max_spawn_tries"
+        );
 
-resources.trees.respawn =
-    get<int>(
-        ini,
-        "resources.trees",
-        "respawn"
-    );
+    resources.stone.count =
+        get<int>(
+            ini,
+            "resources.stone",
+            "count"
+        );
 
-resources.trees.maxSpawnTries =
-    get<int>(
-        ini,
-        "resources.trees",
-        "max_spawn_tries"
-    );
+    resources.stone.max =
+        get<int>(
+            ini,
+            "resources.stone",
+            "max"
+        );
 
-resources.stone.count =
-    get<int>(
-        ini,
-        "resources.stone",
-        "count"
-    );
+    resources.stone.respawn =
+        get<int>(
+            ini,
+            "resources.stone",
+            "respawn"
+        );
 
-resources.stone.max =
-    get<int>(
-        ini,
-        "resources.stone",
-        "max"
-    );
+    resources.stone.maxSpawnTries =
+        get<int>(
+            ini,
+            "resources.stone",
+            "max_spawn_tries"
+        );
 
-resources.stone.respawn =
-    get<int>(
-        ini,
-        "resources.stone",
-        "respawn"
-    );
+    civilization.spawnChunkX =
+        get<uint16_t>(
+            ini,
+            "civilization",
+            "spawn_chunk_x"
+        );
 
-resources.stone.maxSpawnTries =
-    get<int>(
-        ini,
-        "resources.stone",
-        "max_spawn_tries"
-    );
+    civilization.spawnChunkY =
+        get<uint16_t>(
+            ini,
+            "civilization",
+            "spawn_chunk_y"
+        );
 
-civilization.spawnChunkX =
-    get<uint16_t>(
-        ini,
-        "civilization",
-        "spawn_chunk_x"
-    );
+    civilization.partOfHumansChangingJobs =
+        get<int>(
+            ini,
+            "civilization",
+            "part_of_humans_changing_jobs"
+        );
 
-civilization.spawnChunkY =
-    get<uint16_t>(
-        ini,
-        "civilization",
-        "spawn_chunk_y"
-    );
+    humans.count =
+        get<int>(
+            ini,
+            "humans",
+            "count"
+        );
 
-civilization.partOfHumansChangingJobs =
-    get<int>(
-        ini,
-        "civilization",
-        "part_of_humans_changing_jobs"
-    );
+    humans.grain =
+        get<int>(
+            ini,
+            "humans",
+            "grain"
+        );
 
-humans.count =
-    get<int>(
-        ini,
-        "humans",
-        "count"
-    );
+    humans.range =
+        get<int>(
+            ini,
+            "humans",
+            "range"
+        );
 
-humans.grain =
-    get<int>(
-        ini,
-        "humans",
-        "grain"
-    );
+    humans.maxSpawnRange =
+        get<int>(
+            ini,
+            "humans",
+            "max_spawn_range"
+        );
 
-humans.range =
-    get<int>(
-        ini,
-        "humans",
-        "range"
-    );
+    buildings.house.stoneRequired =
+        get<int>(
+            ini,
+            "buildings.house",
+            "stone_required"
+        );
 
-humans.maxSpawnRange =
-    get<int>(
-        ini,
-        "humans",
-        "max_spawn_range"
-    );
+    buildings.house.woodRequired =
+        get<int>(
+            ini,
+            "buildings.house",
+            "wood_required"
+        );
 
-buildings.house.stoneRequired =
-    get<int>(
-        ini,
-        "buildings.house",
-        "stone_required"
-    );
+    buildings.house.maxHumans =
+        get<int>(
+            ini,
+            "buildings.house",
+            "max_humans"
+        );
 
-buildings.house.woodRequired =
-    get<int>(
-        ini,
-        "buildings.house",
-        "wood_required"
-    );
+    buildings.farm.foodRequired =
+        get<int>(
+            ini,
+            "buildings.farm",
+            "food_required"
+        );
 
-buildings.house.maxHumans =
-    get<int>(
-        ini,
-        "buildings.house",
-        "max_humans"
-    );
+    buildings.farm.woodRequired =
+        get<int>(
+            ini,
+            "buildings.farm",
+            "wood_required"
+        );
 
-buildings.farm.foodRequired =
-    get<int>(
-        ini,
-        "buildings.farm",
-        "food_required"
-    );
+    buildings.farm.maxSpawnTries =
+        get<int>(
+            ini,
+            "buildings.farm",
+            "max_spawn_tries"
+        );
 
-buildings.farm.woodRequired =
-    get<int>(
-        ini,
-        "buildings.farm",
-        "wood_required"
-    );
+    buildings.farm.maxWorkers =
+        get<int>(
+            ini,
+            "buildings.farm",
+            "max_workers"
+        );
 
-buildings.farm.maxSpawnTries =
-    get<int>(
-        ini,
-        "buildings.farm",
-        "max_spawn_tries"
-    );
+    buildings.farm.foodPerWorker =
+        get<float>(
+            ini,
+            "buildings.farm",
+            "food_per_worker"
+        );
 
-buildings.farm.maxWorkers =
-    get<int>(
-        ini,
-        "buildings.farm",
-        "max_workers"
-    );
+    buildings.sawmill.stoneRequired =
+        get<int>(
+            ini,
+            "buildings.sawmill",
+            "stone_required"
+        );
 
-buildings.farm.foodPerWorker =
-    get<float>(
-        ini,
-        "buildings.farm",
-        "food_per_worker"
-    );
+    buildings.sawmill.woodRequired =
+        get<int>(
+            ini,
+            "buildings.sawmill",
+            "wood_required"
+        );
 
-buildings.sawmill.stoneRequired =
-    get<int>(
-        ini,
-        "buildings.sawmill",
-        "stone_required"
-    );
+    buildings.sawmill.maxSpawnTries =
+        get<int>(
+            ini,
+            "buildings.sawmill",
+            "max_spawn_tries"
+        );
 
-buildings.sawmill.woodRequired =
-    get<int>(
-        ini,
-        "buildings.sawmill",
-        "wood_required"
-    );
+    buildings.sawmill.maxWorkers =
+        get<int>(
+            ini,
+            "buildings.sawmill",
+            "max_workers"
+        );
 
-buildings.sawmill.maxSpawnTries =
-    get<int>(
-        ini,
-        "buildings.sawmill",
-        "max_spawn_tries"
-    );
+    buildings.sawmill.woodPerWorker =
+        get<float>(
+            ini,
+            "buildings.sawmill",
+            "wood_per_worker"
+        );
 
-buildings.sawmill.maxWorkers =
-    get<int>(
-        ini,
-        "buildings.sawmill",
-        "max_workers"
-    );
+    buildings.mine.stoneRequired =
+        get<int>(
+            ini,
+            "buildings.mine",
+            "stone_required"
+        );
 
-buildings.sawmill.woodPerWorker =
-    get<float>(
-        ini,
-        "buildings.sawmill",
-        "wood_per_worker"
-    );
+    buildings.mine.woodRequired =
+        get<int>(
+            ini,
+            "buildings.mine",
+            "wood_required"
+        );
 
-buildings.mine.stoneRequired =
-    get<int>(
-        ini,
-        "buildings.mine",
-        "stone_required"
-    );
+    buildings.mine.maxSpawnTries =
+        get<int>(
+            ini,
+            "buildings.mine",
+            "max_spawn_tries"
+        );
 
-buildings.mine.woodRequired =
-    get<int>(
-        ini,
-        "buildings.mine",
-        "wood_required"
-    );
+    buildings.mine.maxWorkers =
+        get<int>(
+            ini,
+            "buildings.mine",
+            "max_workers"
+        );
 
-buildings.mine.maxSpawnTries =
-    get<int>(
-        ini,
-        "buildings.mine",
-        "max_spawn_tries"
-    );
+    buildings.mine.stonePerWorker =
+        get<float>(
+            ini,
+            "buildings.mine",
+            "stone_per_worker"
+        );
 
-buildings.mine.maxWorkers =
-    get<int>(
-        ini,
-        "buildings.mine",
-        "max_workers"
-    );
+    threads.cores =
+        get<int>(
+            ini,
+            "threads",
+            "cores"
+        );
 
-buildings.mine.stonePerWorker =
-    get<float>(
-        ini,
-        "buildings.mine",
-        "stone_per_worker"
-    );
+    threads.threads =
+        get<int>(
+            ini,
+            "threads",
+            "threads"
+        );
 
-threads.cores =
-    get<int>(
-        ini,
-        "threads",
-        "cores"
-    );
+    threads.coresForSimLoop =
+        get<int>(
+            ini,
+            "threads",
+            "coresForSimLoop"
+        );
 
-threads.threads =
-    get<int>(
-        ini,
-        "threads",
-        "threads"
-    );
+    threads.threadsForSimLoop =
+        get<int>(
+            ini,
+            "threads",
+            "threadsForSimLoop"
+        );
 
-threads.coresForSimLoop =
-    get<int>(
-        ini,
-        "threads",
-        "coresForSimLoop"
-    );
+    threads.coresForHumanLoop =
+        get<int>(
+            ini,
+            "threads",
+            "coresForHumanLoop"
+        );
 
-threads.threadsForSimLoop =
-    get<int>(
-        ini,
-        "threads",
-        "threadsForSimLoop"
-    );
+    threads.threadsForHumanLoop =
+        get<int>(
+            ini,
+            "threads",
+            "threadsForHumanLoop"
+        );
 
-threads.coresForHumanLoop =
-    get<int>(
-        ini,
-        "threads",
-        "coresForHumanLoop"
-    );
+    threads.readDeviceThreadCount =
+        get<bool>(
+            ini,
+            "threads",
+            "readDeviceThreadCount"
+        );
 
-threads.threadsForHumanLoop =
-    get<int>(
-        ini,
-        "threads",
-        "threadsForHumanLoop"
-    );
+    hunger.firstTickHumansEat =
+        get<int>(
+            ini,
+            "hunger",
+            "firstTickHumansEat"
+        );
 
-threads.readDeviceThreadCount =
-    get<bool>(
-        ini,
-        "threads",
-        "readDeviceThreadCount"
+    hunger.ticksForHumansToEat =
+        get<int>(
+            ini,
+            "hunger",
+            "ticksForHumansToEat"
+        );
+
+    hunger.foodNeededForHumansToEat =
+        get<int>(
+            ini,
+            "hunger",
+            "foodNeededForHumansToEat"
+        );
+
+    hunger.chancesForCivilizationWhenNoFood =
+        get<int>(
+            ini,
+            "hunger",
+            "chancesForCivilizationWhenNoFood"
+        );
+
+    hunger.foodReductionForHumansWithHouse =
+        get<int>(
+            ini,
+            "hunger",
+            "foodReductionForHumansWithHouse"
     );
 }

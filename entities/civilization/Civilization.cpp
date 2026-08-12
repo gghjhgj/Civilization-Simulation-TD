@@ -415,3 +415,35 @@ void Civilization::endConstruction(World &world, RendererSFML &renderer, Human &
     constructions[type]--;
     buildingsCount[type]++;
 }
+
+void Civilization::updateHunger(Human& human)
+{
+    const int humansWithHouse =
+        human.humansHavingHouseCount;
+
+    const int humansWithoutHouse =
+        human.humansCount - humansWithHouse;
+
+    const int foodNeededWithoutHouse =
+        Config::hunger.foodNeededForHumansToEat;
+
+    const int foodNeededWithHouse =
+        std::max(
+            0,
+            foodNeededWithoutHouse -
+            Config::hunger.foodReductionForHumansWithHouse
+        );
+
+    const int foodAte =
+        humansWithoutHouse * foodNeededWithoutHouse +
+        humansWithHouse * foodNeededWithHouse;
+
+    if (foodAte <= resources.food)
+    {
+        resources.food -= foodAte;
+    }
+    else
+    {
+        civilizationChancesLeft--;
+    }
+}

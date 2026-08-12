@@ -5,9 +5,7 @@
 
 struct SimulationConfig
 {
-int ticksForCivilizationDecision;
 int ticksForBuildingDecision;
-int ticksForAssigningDecision;
 int ticksForResourcesGainsFromBuildings;
 int ticksForNewHumans;
 };
@@ -131,6 +129,15 @@ bool readDeviceThreadCount;
 
 };
 
+struct HungerConfig
+{
+    int firstTickHumansEat;
+    int ticksForHumansToEat;
+    int foodNeededForHumansToEat;
+    int foodReductionForHumansWithHouse;
+    int chancesForCivilizationWhenNoFood;
+};
+
 class Config
 {
 public:
@@ -144,4 +151,5 @@ static CivilizationConfig civilization;
 static HumansConfig humans;
 static BuildingsConfig buildings;
 static ThreadsConfig threads;
+static HungerConfig hunger;
 };

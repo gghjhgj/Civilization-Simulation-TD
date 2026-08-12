@@ -11,6 +11,7 @@
 #include "Config/Config.h"
 #include "renderer/RendererSFML.h"
 #include "renderer/LoadingScreen.h"
+#include "renderer/LoseScreen.h"
 
 #include "world/resources/Food.h"
 #include "world/resources/Tree.h"
@@ -89,8 +90,12 @@ int main()
         Config::rendering.windowSizeX,
         Config::rendering.windowSizeY);
 
-    Stats stats;
+    LoseScreen loseScreen(
+        renderer.getWindow(),
+        Config::rendering.windowSizeX,
+        Config::rendering.windowSizeY);
 
+    Stats stats;
 
     WorldGenerator::generate(world, civilization, human, food, tree, stone, renderer, loadingScreen);
 
@@ -134,6 +139,17 @@ int main()
 
         ticksCount++;
 
+        if (allTicksCount >= Config::hunger.firstTickHumansEat &&
+            allTicksCount % Config::hunger.firstTickHumansEat == 0)
+        {
+            civilization.updateHunger(human);
+
+            if (civilization.civilizationChancesLeft <= 0)
+            {
+                loseScreen.show();
+                break;
+            }
+        }
         if (allTicksCount %
                 Config::simulation.ticksForBuildingDecision ==
             0)

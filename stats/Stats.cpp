@@ -1,6 +1,7 @@
 #include "Stats.h"
 
 #include <fstream>
+#include <filesystem>
 
 #include "../entities/civilization/Civilization.h"
 #include "../entities/HumansData/Human.h"
@@ -8,7 +9,6 @@
 #include "../world/resources/Food.h"
 #include "../world/resources/Stone.h"
 #include "../world/resources/Tree.h"
-
 
 void Stats::update(
     int ticks,
@@ -19,8 +19,7 @@ void Stats::update(
     Stone& stoneResource,
     Food& foodResource,
     Tree& treeResource,
-    std::uint64_t totalTicks
-)
+    std::uint64_t totalTicks)
 {
     data.ticksPerSecond = ticks;
     data.humanTicksPerSecond = humanTicks;
@@ -32,6 +31,9 @@ void Stats::update(
     data.foodCount = foodResource.foodsCount;
     data.treeCount = treeResource.treesCount;
     data.stoneCount = stoneResource.stonesCount;
+
+    data.civilizationChancesLeft =
+        civilization.civilizationChancesLeft;
 
     data.humansCount = human.humansCount;
 
@@ -103,10 +105,18 @@ void Stats::update(
         civilization.buildingsCount[MINE];
 }
 
-
 void Stats::writeToTxt(const char* filename) const
 {
-    std::ofstream statsFile(filename);
+    const std::filesystem::path filePath(filename);
+
+    if (filePath.has_parent_path())
+    {
+        std::filesystem::create_directories(
+            filePath.parent_path()
+        );
+    }
+
+    std::ofstream statsFile(filePath);
 
     if (!statsFile.is_open())
     {
@@ -130,7 +140,6 @@ void Stats::writeToTxt(const char* filename) const
     statsFile << "Total human ticks: "
               << data.totalHumanTicks << "\n\n";
 
-
     statsFile << "=== ZASOBY SWIATA ===\n";
 
     statsFile << "Ilosc jedzenia: "
@@ -141,7 +150,6 @@ void Stats::writeToTxt(const char* filename) const
 
     statsFile << "Ilosc kamieni: "
               << data.stoneCount << "\n\n";
-
 
     statsFile << "=== LUDZIE ===\n";
 
@@ -169,7 +177,6 @@ void Stats::writeToTxt(const char* filename) const
     statsFile << "Ilosc ludzi posiadajacych dom: "
               << data.humansHavingHouse << "\n\n";
 
-
     statsFile << "=== PRACOWNICY ===\n";
 
     statsFile << "Ludzie na farmach: "
@@ -181,7 +188,6 @@ void Stats::writeToTxt(const char* filename) const
     statsFile << "Ludzie w kopalniach: "
               << data.mineWorkers << "\n\n";
 
-
     statsFile << "=== ZASOBY CYWILIZACJI ===\n";
 
     statsFile << "Jedzenie: "
@@ -191,8 +197,10 @@ void Stats::writeToTxt(const char* filename) const
               << data.wood << "\n";
 
     statsFile << "Kamienie: "
-              << data.stone << "\n\n";
+              << data.stone << "\n";
 
+    statsFile << "szanse cywilizacji: "
+              << data.civilizationChancesLeft << "\n\n";
 
     statsFile << "=== BUDYNKI ===\n";
 
