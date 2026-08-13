@@ -127,7 +127,7 @@ void WorldGenerator::generate(
 
     loadingScreen.update(
         1.00f,
-        "Finished! \nwait a moment..."
+        "Finished! \nwait a moment and don't close the window \nit works I promise"
     );
 
     std::cout << "Finished!"

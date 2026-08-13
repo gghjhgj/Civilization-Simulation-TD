@@ -679,7 +679,8 @@ void Civilization::assignHumansToBuilding(
     {
         HumanType::WoodCollector,
         HumanType::FoodCollector,
-        HumanType::StoneCollector
+        HumanType::StoneCollector,
+        HumanType::Builder
     };
 
     for (HumanType sourceType : sources)
