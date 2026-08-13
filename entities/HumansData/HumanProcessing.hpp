@@ -395,6 +395,9 @@ inline void processHumanTypeBatch(
                             {ref.chunkX,
                              ref.chunkY,
                              type});
+
+                    h.targetX[i] = UINT16_MAX;
+                    h.targetY[i] = UINT16_MAX;
                 }
 
                 h.targetX[i] = UINT16_MAX;
@@ -453,6 +456,9 @@ inline void processHumanTypeBatch(
                     human.threadResults[threadID]
                         .assignedRemoveQueue
                         .push_back(i);
+
+                    h.targetX[i] = UINT16_MAX;
+                    h.targetY[i] = UINT16_MAX;
 
                     continue;
                 }
@@ -642,6 +648,9 @@ inline void processHumanType(
                         {ref.chunkX,
                          ref.chunkY,
                          type});
+
+                h.targetX[i] = UINT16_MAX;
+                h.targetY[i] = UINT16_MAX;
             }
             else
             {
@@ -701,6 +710,9 @@ inline void processHumanType(
                 human.threadResults[threadID]
                     .assignedRemoveQueue
                     .push_back(i);
+
+                h.targetX[i] = UINT16_MAX;
+                h.targetY[i] = UINT16_MAX;
 
                 return;
             }

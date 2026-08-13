@@ -69,7 +69,9 @@ int count;
 int grain;
 int range;
 int maxSpawnRange;
+bool respawn;
 std::string humanRespawnType;
+float humanRespawnRoot;
 int humanRespawnDivisor;
 };
 
@@ -141,6 +143,10 @@ struct HungerConfig
     int chancesForCivilizationWhenNoFood;
 };
 
+struct SystemConfig
+{
+    bool crashHandler;
+};
 class Config
 {
 public:
@@ -155,4 +161,5 @@ static HumansConfig humans;
 static BuildingsConfig buildings;
 static ThreadsConfig threads;
 static HungerConfig hunger;
+static SystemConfig system;
 };

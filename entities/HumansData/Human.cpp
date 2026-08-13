@@ -57,24 +57,26 @@ void Human::humanRespawn(
     World &world,
     Civilization &civilization)
 {
+    if(!Config::humans.respawn) return;
+
+    
     int newPeople = 0;
 
-    if (Config::humans.humanRespawnType == "cube_root")
+    if (Config::humans.humanRespawnType == "root")
     {
-        newPeople = static_cast<int>(std::cbrt(humansCount));
-    }
-    else if (Config::humans.humanRespawnType == "sqrt")
-    {
-        newPeople = static_cast<int>(std::sqrt(humansCount));
+        newPeople = static_cast<int>(
+            std::pow(
+                static_cast<double>(humansCount),
+                1.0 / Config::humans.humanRespawnRoot));
     }
     else if (Config::humans.humanRespawnType == "divide")
     {
-        newPeople = humansCount / Config::humans.humanRespawnDivisor;
+        newPeople =
+            humansCount / Config::humans.humanRespawnDivisor;
     }
     else
     {
-        std::cout << "invalid humanRespawnType";
-        newPeople = static_cast<int>(std::sqrt(humansCount));
+        std::cout << "invalid humanRespawnType, respawn types are: root, divide";
     }
 
     uint16_t x =
@@ -765,6 +767,8 @@ void Human::humanMove(
          stoneCollectors.posX.size() +
          builders.posX.size() +
          assigned.posX.size());
+
+    if(ticksToDo == 0) ticksToDo = 1;
 
     actionsToDo =
         (ticksToDo + ticksLeft) /

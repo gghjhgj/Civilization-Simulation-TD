@@ -31,6 +31,11 @@ int main()
 {
     Config::load("Config/Config.ini");
 
+        #ifdef _WIN32
+            if(Config::system.crashHandler)
+                SetUnhandledExceptionFilter(crashHandler);
+        #endif
+
 #ifdef _WIN32
     printCPUTopology();
 

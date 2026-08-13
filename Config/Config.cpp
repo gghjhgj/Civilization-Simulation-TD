@@ -16,6 +16,7 @@ HumansConfig Config::humans;
 BuildingsConfig Config::buildings;
 ThreadsConfig Config::threads;
 HungerConfig Config::hunger;
+SystemConfig Config::system;
 
 namespace
 {
@@ -353,6 +354,13 @@ void Config::load(const std::string& path)
             "range"
         );
 
+    humans.respawn =
+        get<bool>(
+            ini,
+            "humans",
+            "respawn"
+        );
+
     humans.humanRespawnType = 
         get<std::string>(
             ini,
@@ -360,6 +368,13 @@ void Config::load(const std::string& path)
             "human_respawn_type"
         );
     
+    humans.humanRespawnRoot =
+        get<float>(
+            ini,
+            "humans",
+            "human_respawn_root"
+    );
+
     humans.humanRespawnDivisor = 
         get<int>(
             ini,
@@ -597,4 +612,11 @@ void Config::load(const std::string& path)
             "hunger",
             "foodReductionForHumansWithHouse"
     );
+
+    system.crashHandler = 
+        get<bool>(
+            ini,
+            "system",
+            "crashHandler"
+        );
 }
