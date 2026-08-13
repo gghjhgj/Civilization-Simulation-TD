@@ -101,16 +101,7 @@ namespace
 
 void StatsUI::draw(const Stats::Data& data)
 {
-    // ============================================================
-    // UPDATE HISTORY
-    // ============================================================
-
     history.add(data);
-
-
-    // ============================================================
-    // PERFORMANCE WINDOW
-    // ============================================================
 
     ImGui::SetNextWindowPos(
         ImVec2(
@@ -209,11 +200,6 @@ void StatsUI::draw(const Stats::Data& data)
 
     ImGui::End();
 
-
-    // ============================================================
-    // SIMULATION STATISTICS WINDOW
-    // ============================================================
-
     ImGui::SetNextWindowPos(
         ImVec2(
             ImGui::GetIO().DisplaySize.x - 10.0f,
@@ -239,11 +225,6 @@ void StatsUI::draw(const Stats::Data& data)
         ImGuiWindowFlags_NoResize
     );
 
-
-    // ============================================================
-    // WORLD RESOURCES
-    // ============================================================
-
     if (ImGui::CollapsingHeader(
             "World Resources",
             ImGuiTreeNodeFlags_DefaultOpen))
@@ -263,11 +244,6 @@ void StatsUI::draw(const Stats::Data& data)
             data.stoneCount
         );
     }
-
-
-    // ============================================================
-    // HUMANS
-    // ============================================================
 
     if (ImGui::CollapsingHeader(
             "Humans",
@@ -318,11 +294,6 @@ void StatsUI::draw(const Stats::Data& data)
         );
     }
 
-
-    // ============================================================
-    // WORKERS
-    // ============================================================
-
     if (ImGui::CollapsingHeader("Workers"))
     {
         ImGui::Text(
@@ -340,11 +311,6 @@ void StatsUI::draw(const Stats::Data& data)
             data.mineWorkers
         );
     }
-
-
-    // ============================================================
-    // CIVILIZATION RESOURCES
-    // ============================================================
 
     if (ImGui::CollapsingHeader(
             "Civilization Resources",
@@ -373,11 +339,6 @@ void StatsUI::draw(const Stats::Data& data)
                 data.civilizationChancesLeft
         );
     }
-
-
-    // ============================================================
-    // BUILDINGS
-    // ============================================================
 
     if (ImGui::CollapsingHeader(
             "Buildings",

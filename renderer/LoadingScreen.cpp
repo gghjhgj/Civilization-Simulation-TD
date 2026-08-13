@@ -34,11 +34,6 @@ LoadingScreen::LoadingScreen(
         );
     }
 
-
-    // ============================================================
-    // BACKGROUND
-    // ============================================================
-
     background.setSize(
         sf::Vector2f(
             static_cast<float>(width),
@@ -49,11 +44,6 @@ LoadingScreen::LoadingScreen(
     background.setFillColor(
         sf::Color(18, 18, 18)
     );
-
-
-    // ============================================================
-    // TITLE
-    // ============================================================
 
     title.setString(
         "Civilization Simulation"
@@ -83,32 +73,17 @@ LoadingScreen::LoadingScreen(
         )
     );
 
-
-    // ============================================================
-    // STATUS
-    // ============================================================
-
     statusText.setCharacterSize(20);
 
     statusText.setFillColor(
         sf::Color(210, 210, 210)
     );
 
-
-    // ============================================================
-    // PERCENTAGE
-    // ============================================================
-
     percentageText.setCharacterSize(18);
 
     percentageText.setFillColor(
         sf::Color(180, 180, 180)
     );
-
-
-    // ============================================================
-    // PROGRESS BAR
-    // ============================================================
 
     const float barWidth =
         static_cast<float>(width) * 0.60f;
@@ -176,11 +151,6 @@ bool LoadingScreen::update(
         1.0f
     );
 
-
-    // ============================================================
-    // EVENTS
-    // ============================================================
-
     while (const auto event = window.pollEvent())
     {
         if (event->is<sf::Event::Closed>())
@@ -194,10 +164,6 @@ bool LoadingScreen::update(
     if (!running)
         return false;
 
-
-    // ============================================================
-    // STATUS TEXT
-    // ============================================================
 
     statusText.setString(status);
 
@@ -219,22 +185,12 @@ bool LoadingScreen::update(
         )
     );
 
-
-    // ============================================================
-    // PROGRESS BAR
-    // ============================================================
-
     progressBar.setSize(
         sf::Vector2f(
             progressBarBackground.getSize().x * progress,
             progressBarBackground.getSize().y
         )
     );
-
-
-    // ============================================================
-    // PERCENTAGE
-    // ============================================================
 
     const int percentage =
         static_cast<int>(
@@ -263,11 +219,6 @@ bool LoadingScreen::update(
             static_cast<float>(height) * 0.72f
         )
     );
-
-
-    // ============================================================
-    // RENDER
-    // ============================================================
 
     window.clear();
 

@@ -46,9 +46,22 @@ public:
         aiArena.initialize();
     }
 
-    
     uint64_t humanTicks = 0;
+    struct ReadyForRender
+    {
+        bool foodCollectors = true;
+        bool woodCollectors = true;
+        bool stoneCollectors = true;
+        bool builders = true;
+        bool assigned= true;
 
+        void setAllFlag(bool flag)
+        {
+            foodCollectors = flag;
+            
+        }
+    };
+    ReadyForRender ready;
     struct Dirs
     {
         int8_t x;

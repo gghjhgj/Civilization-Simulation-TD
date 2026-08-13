@@ -116,8 +116,6 @@ int main()
 
     std::thread humanThread([&]()
     {
-        sf::Clock humanRenderClock;
-
         while (running)
         {
             human.humanMove(
@@ -127,13 +125,6 @@ int main()
                 tree,
                 stone,
                 renderer);
-
-            if (humanRenderClock.getElapsedTime().asSeconds() >=
-                1.f / Config::rendering.fps)
-            {
-                renderer.updateHumanLayer(human);
-                humanRenderClock.restart();
-            }
         }
     });
 
@@ -236,7 +227,7 @@ int main()
             renderTimer = 0.f;
 
             renderer.begin();
-            renderer.render(world, stats.get());
+            renderer.render(world, human, stats.get());
             renderer.end();
 
             framesCount++;

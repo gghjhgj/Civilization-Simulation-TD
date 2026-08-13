@@ -27,10 +27,6 @@ void WorldGenerator::generate(
     LoadingScreen& loadingScreen
 )
 {
-    // ============================================================
-    // WORLD
-    // ============================================================
-
     loadingScreen.update(
         0.00f,
         "Creating world..."
@@ -40,11 +36,6 @@ void WorldGenerator::generate(
               << std::endl;
 
     world.createLand();
-
-
-    // ============================================================
-    // DESERT
-    // ============================================================
 
     loadingScreen.update(
         0.10f,
@@ -58,11 +49,6 @@ void WorldGenerator::generate(
         TerrainType::Desert
     );
 
-
-    // ============================================================
-    // MOUNTAINS
-    // ============================================================
-
     loadingScreen.update(
         0.20f,
         "Creating mountains..."
@@ -75,11 +61,6 @@ void WorldGenerator::generate(
         TerrainType::Mountain
     );
 
-
-    // ============================================================
-    // CIVILIZATION
-    // ============================================================
-
     loadingScreen.update(
         0.30f,
         "Creating civilization..."
@@ -91,11 +72,6 @@ void WorldGenerator::generate(
     civilization.createCivilization(
         world
     );
-
-
-    // ============================================================
-    // HUMANS
-    // ============================================================
 
     loadingScreen.update(
         0.45f,
@@ -110,11 +86,6 @@ void WorldGenerator::generate(
         civilization
     );
 
-
-    // ============================================================
-    // TREES
-    // ============================================================
-
     loadingScreen.update(
         0.60f,
         "Creating trees..."
@@ -127,11 +98,6 @@ void WorldGenerator::generate(
         world,
         renderer
     );
-
-
-    // ============================================================
-    // FOOD
-    // ============================================================
 
     loadingScreen.update(
         0.73f,
@@ -146,11 +112,6 @@ void WorldGenerator::generate(
         renderer
     );
 
-
-    // ============================================================
-    // STONE
-    // ============================================================
-
     loadingScreen.update(
         0.86f,
         "Creating stone..."
@@ -163,11 +124,6 @@ void WorldGenerator::generate(
         world,
         renderer
     );
-
-
-    // ============================================================
-    // FINISHED
-    // ============================================================
 
     loadingScreen.update(
         1.00f,

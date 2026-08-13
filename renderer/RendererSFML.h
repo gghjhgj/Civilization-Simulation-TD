@@ -36,10 +36,29 @@ public:
     {
         return window;
     }
-    
+
     std::vector<DirtyCells> dirtyCells;
 
     std::vector<std::vector<DirtyCells>> dirtyBuffers;
+
+    struct RenderingReady
+    {
+        bool foodCollectors = true;
+        bool woodCollectors = true;
+        bool stoneCollectors = true;
+        bool builders = true;
+        bool assigned = true;
+
+        bool anyRendering() const
+        {
+            return foodCollectors ||
+                   woodCollectors ||
+                   stoneCollectors ||
+                   builders ||
+                   assigned;
+        }
+    };
+    RenderingReady isRendering;
 
     bool isOpen();
 
@@ -47,6 +66,7 @@ public:
 
     void render(
         World &World,
+        Human &human,
         const Stats::Data &stats);
 
     void end();

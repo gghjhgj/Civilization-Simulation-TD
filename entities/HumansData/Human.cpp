@@ -57,9 +57,9 @@ void Human::humanRespawn(
     World &world,
     Civilization &civilization)
 {
-    if(!Config::humans.respawn) return;
+    if (!Config::humans.respawn)
+        return;
 
-    
     int newPeople = 0;
 
     if (Config::humans.humanRespawnType == "root")
@@ -593,45 +593,45 @@ void Human::processBuilders(
                     },
                     buildersPartitioner);
             });
-    }
 
-    for (const auto &res : threadResults)
-    {
-        allConstructionsToEnd.insert(
-            allConstructionsToEnd.end(),
-            res.constr.begin(),
-            res.constr.end());
-    }
-
-    if (!allConstructionsToEnd.empty())
-    {
-        std::sort(
-            allConstructionsToEnd.begin(),
-            allConstructionsToEnd.end());
-
-        allConstructionsToEnd.erase(
-            std::unique(
-                allConstructionsToEnd.begin(),
-                allConstructionsToEnd.end()),
-            allConstructionsToEnd.end());
-
-        for (auto constr : allConstructionsToEnd)
+        for (const auto &res : threadResults)
         {
-            civilization.endConstruction(
-                world,
-                renderer,
-                *this,
-                constr.chunkX,
-                constr.chunkY,
-                constr.type);
+            allConstructionsToEnd.insert(
+                allConstructionsToEnd.end(),
+                res.constr.begin(),
+                res.constr.end());
         }
 
-        allConstructionsToEnd.clear();
-    }
+        if (!allConstructionsToEnd.empty())
+        {
+            std::sort(
+                allConstructionsToEnd.begin(),
+                allConstructionsToEnd.end());
 
-    for (auto &res : threadResults)
-    {
-        res.constr.clear();
+            allConstructionsToEnd.erase(
+                std::unique(
+                    allConstructionsToEnd.begin(),
+                    allConstructionsToEnd.end()),
+                allConstructionsToEnd.end());
+
+            for (auto constr : allConstructionsToEnd)
+            {
+                civilization.endConstruction(
+                    world,
+                    renderer,
+                    *this,
+                    constr.chunkX,
+                    constr.chunkY,
+                    constr.type);
+            }
+
+            allConstructionsToEnd.clear();
+        }
+
+        for (auto &res : threadResults)
+        {
+            res.constr.clear();
+        }
     }
 }
 
@@ -701,47 +701,51 @@ void Human::processAssigned(
                     },
                     assignedPartitioner);
             });
-    }
 
-    for (const auto &res : threadResults)
-    {
-        allAssignedToRemove.insert(
-            allAssignedToRemove.end(),
-            res.assignedRemoveQueue.begin(),
-            res.assignedRemoveQueue.end());
-    }
+        ready.assigned = false;
 
-    if (!allAssignedToRemove.empty())
-    {
-        std::sort(
-            allAssignedToRemove.rbegin(),
-            allAssignedToRemove.rend());
-
-        allAssignedToRemove.erase(
-            std::unique(
-                allAssignedToRemove.begin(),
-                allAssignedToRemove.end()),
-            allAssignedToRemove.end());
-
-        for (size_t id : allAssignedToRemove)
+        for (const auto &res : threadResults)
         {
-            if (id >= assigned.posX.size())
-            {
-                continue;
-            }
-
-            eraseHuman(
-                *this,
-                assigned,
-                id);
+            allAssignedToRemove.insert(
+                allAssignedToRemove.end(),
+                res.assignedRemoveQueue.begin(),
+                res.assignedRemoveQueue.end());
         }
 
-        allAssignedToRemove.clear();
-    }
+        if (!allAssignedToRemove.empty())
+        {
+            std::sort(
+                allAssignedToRemove.rbegin(),
+                allAssignedToRemove.rend());
 
-    for (auto &res : threadResults)
-    {
-        res.assignedRemoveQueue.clear();
+            allAssignedToRemove.erase(
+                std::unique(
+                    allAssignedToRemove.begin(),
+                    allAssignedToRemove.end()),
+                allAssignedToRemove.end());
+
+            for (size_t id : allAssignedToRemove)
+            {
+                if (id >= assigned.posX.size())
+                {
+                    continue;
+                }
+
+                eraseHuman(
+                    *this,
+                    assigned,
+                    id);
+            }
+
+            allAssignedToRemove.clear();
+        }
+
+        for (auto &res : threadResults)
+        {
+            res.assignedRemoveQueue.clear();
+        }
+
+        ready.assigned = true;
     }
 }
 
@@ -753,10 +757,7 @@ void Human::humanMove(
     Stone &stone,
     RendererSFML &renderer)
 {
-    for (auto &r : threadResults)
-    {
-        r.clear();
-    }
+    ready.setAllFlag(true);
 
     const uint32_t t = 1000000 + Config::humans.count * 10;
 
@@ -768,7 +769,8 @@ void Human::humanMove(
          builders.posX.size() +
          assigned.posX.size());
 
-    if(ticksToDo == 0) ticksToDo = 1;
+    if (ticksToDo == 0)
+        ticksToDo = 1;
 
     actionsToDo =
         (ticksToDo + ticksLeft) /
@@ -807,7 +809,15 @@ void Human::humanMove(
         civilization.realWorkers[SAWMILL] += res.sawmillWorkersDelta;
         civilization.realWorkers[MINE] += res.mineWorkersDelta;
     }
+    for (auto &r : threadResults)
+    {
+        r.clear();
+    }
 
+    if (renderer.isRendering.anyRendering())
+        return;
+
+    ready.setAllFlag(false);
     for (int i = 0; i < actionsToDo; i++)
     {
         humanRespawn(world, civilization);
@@ -818,4 +828,5 @@ void Human::humanMove(
 
         civilization.civilizationDecision(*this, food, stone, tree);
     }
+    ready.setAllFlag(true);
 }

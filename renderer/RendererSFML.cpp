@@ -665,40 +665,75 @@ void RendererSFML::updateHumanLayer(
         }
     };
 
-    add(
-        human.foodCollectors,
-        sf::Color(
-            255,
-            0,
-            0));
+    if (human.ready.foodCollectors)
+    {
+        isRendering.foodCollectors = true;
 
-    add(
-        human.woodCollectors,
-        sf::Color(
-            139,
-            69,
-            19));
+        add(
+            human.foodCollectors,
+            sf::Color(
+                255,
+                0,
+                0));
 
-    add(
-        human.stoneCollectors,
-        sf::Color(
-            0,
-            100,
-            255));
+        isRendering.foodCollectors = false;
+    }
 
-    add(
-        human.builders,
-        sf::Color(
-            255,
-            128,
-            0));
+    if (human.ready.woodCollectors)
+    {
+        isRendering.woodCollectors = true;
 
-    add(
-        human.assigned,
-        sf::Color(
-            160,
-            32,
-            240));
+        add(
+            human.woodCollectors,
+            sf::Color(
+                139,
+                69,
+                19));
+
+        isRendering.woodCollectors = false;
+    }
+
+    if (human.ready.stoneCollectors)
+    {
+        isRendering.stoneCollectors = true;
+
+        add(
+            human.stoneCollectors,
+            sf::Color(
+                0,
+                100,
+                255));
+
+        isRendering.stoneCollectors = false;
+    }
+
+    if (human.ready.builders)
+    {
+        isRendering.builders = true;
+
+        add(
+            human.builders,
+            sf::Color(
+                255,
+                128,
+                0));
+
+        isRendering.builders = false;
+    }
+
+    if (human.ready.assigned)
+    {
+        isRendering.assigned = true;
+
+        add(
+            human.assigned,
+            sf::Color(
+                160,
+                32,
+                240));
+
+        isRendering.assigned = false;
+    }
 
     if (!humanLayer.vertices.empty())
     {
@@ -815,11 +850,12 @@ void RendererSFML::addChunkToDirtyCells(
 }
 
 void RendererSFML::render(
-    World& world,
-    const Stats::Data& stats)
+    World &world,
+    Human &human,
+    const Stats::Data &stats)
 {
     updateWorldLayer(world);
-
+    updateHumanLayer(human);
     StatsUI::draw(stats);
 }
 
