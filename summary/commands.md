@@ -18,6 +18,11 @@ cmake --preset release-portable
 cmake --build --preset release-portable
 ./build/release-portable/app.exe
 
+- Do lapania crashhandlerem
+cmake --preset crash-debug
+cmake --build --preset crash-debug
+./build/crash-debug/app.exe
+
 - debug
 cmake --preset debug
 cmake --build --preset debug

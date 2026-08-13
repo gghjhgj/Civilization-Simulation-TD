@@ -816,12 +816,9 @@ void RendererSFML::addChunkToDirtyCells(
 
 void RendererSFML::render(
     World& world,
-    Human& human,
     const Stats::Data& stats)
 {
     updateWorldLayer(world);
-
-    updateHumanLayer(human);
 
     StatsUI::draw(stats);
 }

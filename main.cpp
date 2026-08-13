@@ -31,12 +31,10 @@ int main()
 {
     Config::load("Config/Config.ini");
 
-        #ifdef _WIN32
-            if(Config::system.crashHandler)
-                SetUnhandledExceptionFilter(crashHandler);
-        #endif
-
 #ifdef _WIN32
+    if (Config::system.crashHandler)
+        SetUnhandledExceptionFilter(CrashHandler::crashHandler);
+
     printCPUTopology();
 
     if (Config::threads.readDeviceThreadCount)
@@ -72,6 +70,7 @@ int main()
         ES_SYSTEM_REQUIRED |
         ES_AWAYMODE_REQUIRED);
 #endif
+
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
@@ -90,6 +89,7 @@ int main()
         Config::rendering.windowSizeX,
         Config::rendering.windowSizeY,
         1);
+
     LoadingScreen loadingScreen(
         renderer.getWindow(),
         Config::rendering.windowSizeX,
@@ -102,13 +102,22 @@ int main()
 
     Stats stats;
 
-    WorldGenerator::generate(world, civilization, human, food, tree, stone, renderer, loadingScreen);
+    WorldGenerator::generate(
+        world,
+        civilization,
+        human,
+        food,
+        tree,
+        stone,
+        renderer,
+        loadingScreen);
 
-    std::atomic<bool>
-        running = true;
+    std::atomic<bool> running = true;
 
     std::thread humanThread([&]()
-                            {
+    {
+        sf::Clock humanRenderClock;
+
         while (running)
         {
             human.humanMove(
@@ -117,9 +126,16 @@ int main()
                 food,
                 tree,
                 stone,
-                renderer
-            );
-        } });
+                renderer);
+
+            if (humanRenderClock.getElapsedTime().asSeconds() >=
+                1.f / Config::rendering.fps)
+            {
+                renderer.updateHumanLayer(human);
+                humanRenderClock.restart();
+            }
+        }
+    });
 
     sf::Clock clock;
     sf::Clock screenReloadClock;
@@ -133,7 +149,6 @@ int main()
     int humanTicksBefore = 0;
 
     std::cout << "start sim loop" << std::endl;
-    ;
 
     while (renderer.isOpen())
     {
@@ -162,6 +177,7 @@ int main()
                 break;
             }
         }
+
         if (allTicksCount %
                 Config::simulation.ticksForBuildingDecision ==
             0)
@@ -207,6 +223,7 @@ int main()
                 food,
                 tree,
                 allTicksCount);
+
             stats.writeToTxt();
 
             fileTimer = 0.f;
@@ -219,7 +236,7 @@ int main()
             renderTimer = 0.f;
 
             renderer.begin();
-            renderer.render(world, human, stats.get());
+            renderer.render(world, stats.get());
             renderer.end();
 
             framesCount++;

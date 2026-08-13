@@ -46,8 +46,7 @@ public:
     void begin();
 
     void render(
-        World &world,
-        Human &human,
+        World &World,
         const Stats::Data &stats);
 
     void end();

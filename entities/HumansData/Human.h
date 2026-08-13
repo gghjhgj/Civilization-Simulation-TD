@@ -46,6 +46,7 @@ public:
         aiArena.initialize();
     }
 
+    
     uint64_t humanTicks = 0;
 
     struct Dirs

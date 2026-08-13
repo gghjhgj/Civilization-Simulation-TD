@@ -92,6 +92,30 @@ option(
     ON
 )
 
+option(
+    ENABLE_PROFILING
+    "Enable profiling-friendly build"
+    OFF
+)
+
+option(
+    ENABLE_DEBUG_FAST
+    "Enable optimized debug build"
+    OFF
+)
+
+option(
+    ENABLE_CRASH_DEBUG
+    "Enable crash-debug build with symbols and without LTO"
+    OFF
+)
+
+option(
+    ENABLE_CLANG_DEBUG_SYMBOLS
+    "Enable Clang CodeView debug symbols"
+    OFF
+)
+
 include(FetchContent)
 include(CheckIPOSupported)
 
@@ -460,10 +484,6 @@ if(ENABLE_IMGUI)
         "[CMake] Pobieranie kompatybilnego Dear ImGui + ImGui-SFML..."
     )
 
-    # --------------------------------------------------------
-    # Dear ImGui
-    # --------------------------------------------------------
-
     FetchContent_Declare(
         imgui
         GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -479,10 +499,6 @@ if(ENABLE_IMGUI)
         "Dear ImGui source directory"
         FORCE
     )
-
-    # --------------------------------------------------------
-    # ImGui-SFML
-    # --------------------------------------------------------
 
     set(
         IMGUI_SFML_BUILD_EXAMPLES
@@ -640,11 +656,17 @@ else()
         -Wall
         -Wextra
         -funroll-loops
+
         $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
         $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
         $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
-        $<$<CONFIG:Release>:-Ofast>
-        $<$<CONFIG:Debug>:-g;-O0>
+
+        $<$<AND:$<NOT:$<BOOL:${ENABLE_CRASH_DEBUG}>>,$<CONFIG:Release>>:-Ofast>
+        $<$<AND:$<BOOL:${ENABLE_CRASH_DEBUG}>,$<CONFIG:Release>>:-O1>
+
+        $<$<AND:$<CONFIG:Debug>,$<NOT:$<BOOL:${ENABLE_CRASH_DEBUG}>>>:-g;-O0>
+
+        $<$<BOOL:${ENABLE_CRASH_DEBUG}>:-g;-O1;-fno-omit-frame-pointer>
     )
 
     target_compile_options(
@@ -652,11 +674,17 @@ else()
         PRIVATE
         -Wall
         -Wextra
+
         $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
         $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
         $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
-        $<$<CONFIG:Release>:-Ofast>
-        $<$<CONFIG:Debug>:-g;-O0>
+
+        $<$<AND:$<NOT:$<BOOL:${ENABLE_CRASH_DEBUG}>>,$<CONFIG:Release>>:-Ofast>
+        $<$<AND:$<BOOL:${ENABLE_CRASH_DEBUG}>,$<CONFIG:Release>>:-O1>
+
+        $<$<AND:$<CONFIG:Debug>,$<NOT:$<BOOL:${ENABLE_CRASH_DEBUG}>>>:-g;-O0>
+
+        $<$<BOOL:${ENABLE_CRASH_DEBUG}>:-g;-O1;-fno-omit-frame-pointer>
     )
 
 endif()
@@ -674,22 +702,45 @@ if(ENABLE_LTO)
 
     if(IPO_SUPPORTED)
 
-        set_property(
-            TARGET simulation_core
-            PROPERTY
-            INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
-        )
+        if(NOT ENABLE_CRASH_DEBUG)
 
-        set_property(
-            TARGET app
-            PROPERTY
-            INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
-        )
+            set_property(
+                TARGET simulation_core
+                PROPERTY
+                INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+            )
 
-        message(
-            STATUS
-            "[CMake] LTO/IPO: ENABLED"
-        )
+            set_property(
+                TARGET app
+                PROPERTY
+                INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+            )
+
+            message(
+                STATUS
+                "[CMake] LTO/IPO: ENABLED"
+            )
+
+        else()
+
+            set_property(
+                TARGET simulation_core
+                PROPERTY
+                INTERPROCEDURAL_OPTIMIZATION_RELEASE FALSE
+            )
+
+            set_property(
+                TARGET app
+                PROPERTY
+                INTERPROCEDURAL_OPTIMIZATION_RELEASE FALSE
+            )
+
+            message(
+                STATUS
+                "[CMake] LTO/IPO: DISABLED for Crash-Debug"
+            )
+
+        endif()
 
     else()
 
@@ -699,6 +750,15 @@ if(ENABLE_LTO)
         )
 
     endif()
+
+else()
+
+    set(IPO_SUPPORTED FALSE)
+
+    message(
+        STATUS
+        "[CMake] LTO/IPO: DISABLED"
+    )
 
 endif()
 
@@ -831,9 +891,11 @@ if(ENABLE_TESTS)
                 PRIVATE
                 -Wall
                 -Wextra
+
                 $<$<BOOL:${ENABLE_NATIVE_ARCH}>:-march=native>
                 $<$<BOOL:${ENABLE_AVX2}>:-mavx2>
                 $<$<BOOL:${ENABLE_FAST_MATH}>:-ffast-math>
+
                 $<$<CONFIG:Release>:-O3>
                 $<$<CONFIG:Debug>:-g;-O0>
             )
@@ -843,12 +905,34 @@ if(ENABLE_TESTS)
         if(
             ENABLE_LTO
             AND IPO_SUPPORTED
+            AND NOT ENABLE_CRASH_DEBUG
         )
 
             set_property(
                 TARGET tests
                 PROPERTY
                 INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+            )
+
+        endif()
+
+        if(
+            ENABLE_CRASH_DEBUG
+            AND NOT MSVC
+        )
+
+            target_compile_options(
+                tests
+                PRIVATE
+                -g
+                -O1
+                -fno-omit-frame-pointer
+            )
+
+            set_property(
+                TARGET tests
+                PROPERTY
+                INTERPROCEDURAL_OPTIMIZATION_RELEASE FALSE
             )
 
         endif()
@@ -1150,12 +1234,6 @@ endif()
 # PROFILING BUILD
 # ============================================================
 
-option(
-    ENABLE_PROFILING
-    "Enable profiling-friendly build"
-    OFF
-)
-
 if(ENABLE_PROFILING)
 
     target_compile_options(
@@ -1184,12 +1262,6 @@ endif()
 # ============================================================
 # DEBUG-FAST
 # ============================================================
-
-option(
-    ENABLE_DEBUG_FAST
-    "Enable optimized debug build"
-    OFF
-)
 
 if(ENABLE_DEBUG_FAST)
 
@@ -1223,14 +1295,71 @@ if(ENABLE_DEBUG_FAST)
 endif()
 
 # ============================================================
-# CLANG DEBUG / PDB / LLD
+# CRASH DEBUG
 # ============================================================
 
-option(
-    ENABLE_CLANG_DEBUG_SYMBOLS
-    "Enable Clang CodeView debug symbols"
-    OFF
-)
+if(ENABLE_CRASH_DEBUG)
+
+    if(MSVC)
+
+        target_compile_options(
+            simulation_core
+            PRIVATE
+            /Zi
+            /Od
+            /Oy-
+        )
+
+        target_compile_options(
+            app
+            PRIVATE
+            /Zi
+            /Od
+            /Oy-
+        )
+
+    else()
+
+        target_compile_options(
+            simulation_core
+            PRIVATE
+            -g
+            -O1
+            -fno-omit-frame-pointer
+        )
+
+        target_compile_options(
+            app
+            PRIVATE
+            -g
+            -O1
+            -fno-omit-frame-pointer
+        )
+
+    endif()
+
+    set_property(
+        TARGET simulation_core
+        PROPERTY
+        INTERPROCEDURAL_OPTIMIZATION_RELEASE FALSE
+    )
+
+    set_property(
+        TARGET app
+        PROPERTY
+        INTERPROCEDURAL_OPTIMIZATION_RELEASE FALSE
+    )
+
+    message(
+        STATUS
+        "[CMake] Crash-Debug: ENABLED"
+    )
+
+endif()
+
+# ============================================================
+# CLANG DEBUG / PDB / LLD
+# ============================================================
 
 if(
     ENABLE_CLANG_DEBUG_SYMBOLS
@@ -1434,5 +1563,7 @@ message(STATUS " Clang PGO generate:   ${ENABLE_CLANG_PGO_GENERATE}")
 message(STATUS " Clang PGO use:        ${ENABLE_CLANG_PGO_USE}")
 message(STATUS " Profiling:            ${ENABLE_PROFILING}")
 message(STATUS " Debug-Fast:           ${ENABLE_DEBUG_FAST}")
+message(STATUS " Crash-Debug:          ${ENABLE_CRASH_DEBUG}")
+message(STATUS " Clang debug symbols:  ${ENABLE_CLANG_DEBUG_SYMBOLS}")
 message(STATUS "============================================================")
 message(STATUS "")

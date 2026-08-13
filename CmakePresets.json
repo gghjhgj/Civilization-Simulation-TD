@@ -1,297 +1,257 @@
 {
     "version": 6,
-
     "cmakeMinimumRequired": {
         "major": 3,
         "minor": 20,
         "patch": 0
     },
-
     "configurePresets": [
-
         {
             "name": "release",
             "displayName": "GCC Release",
             "description": "GCC optimized Release: native CPU, AVX2, fast math, LTO.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/release",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-
                 "ENABLE_NATIVE_ARCH": "ON",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "ON",
                 "ENABLE_LTO": "ON",
-
                 "ENABLE_MIMALLOC": "ON",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "release-portable",
             "displayName": "GCC Release Portable",
             "description": "GCC Release with AVX2 but without -march=native.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/release-portable",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-
                 "ENABLE_NATIVE_ARCH": "OFF",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "ON",
                 "ENABLE_LTO": "ON",
-
                 "ENABLE_MIMALLOC": "ON",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "debug",
             "displayName": "GCC Debug",
             "description": "GCC debug build.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/debug",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-
                 "ENABLE_NATIVE_ARCH": "OFF",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "OFF",
                 "ENABLE_LTO": "OFF",
-
                 "ENABLE_MIMALLOC": "ON",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "debug-fast",
             "displayName": "GCC Debug Fast",
             "description": "Optimized debug build equivalent to old Makefile debug-fast.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/debug-fast",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-
                 "ENABLE_NATIVE_ARCH": "ON",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "OFF",
                 "ENABLE_LTO": "OFF",
-
                 "ENABLE_DEBUG_FAST": "ON",
-
                 "ENABLE_MIMALLOC": "ON",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
+        {
+            "name": "crash-debug",
+            "displayName": "GCC Crash Debug",
+            "description": "Debug build for CrashHandler with symbols, frame pointers and no optimization.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/crash-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_NATIVE_ARCH": "OFF",
+                "ENABLE_AVX2": "ON",
+                "ENABLE_FAST_MATH": "OFF",
+                "ENABLE_LTO": "OFF",
+                "ENABLE_CRASH_DEBUG": "ON",
+                "ENABLE_PROFILING": "OFF",
+                "ENABLE_DEBUG_FAST": "OFF",
+                "ENABLE_MIMALLOC": "ON",
+                "FETCH_MISSING_DEPS": "ON",
+                "ENABLE_IMGUI": "ON",
+                "ENABLE_TESTS": "ON"
+            }
+        },
         {
             "name": "profile",
             "displayName": "GCC Profile",
             "description": "Profiling-friendly GCC build.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/profile",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-
                 "ENABLE_NATIVE_ARCH": "ON",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "OFF",
                 "ENABLE_LTO": "OFF",
-
                 "ENABLE_PROFILING": "ON",
-
                 "ENABLE_MIMALLOC": "ON",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "gcc-pgo-generate",
             "displayName": "GCC PGO Generate",
             "description": "GCC PGO instrumentation build.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/gcc-pgo-generate",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-
                 "ENABLE_NATIVE_ARCH": "ON",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "ON",
                 "ENABLE_LTO": "ON",
-
                 "ENABLE_GCC_PGO_GENERATE": "ON",
                 "ENABLE_GCC_PGO_USE": "OFF",
-
                 "ENABLE_MIMALLOC": "ON",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "gcc-pgo-use",
             "displayName": "GCC PGO Use",
             "description": "GCC optimized build using collected PGO profile.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/gcc-pgo-use",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-
                 "ENABLE_NATIVE_ARCH": "ON",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "ON",
                 "ENABLE_LTO": "ON",
-
                 "ENABLE_GCC_PGO_GENERATE": "OFF",
                 "ENABLE_GCC_PGO_USE": "ON",
-
                 "ENABLE_MIMALLOC": "ON",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "clang",
             "displayName": "Clang Release",
             "description": "Clang optimized Release build using native CPU optimizations and LLD.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/clang",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-
                 "CMAKE_CXX_COMPILER": "clang++",
-
                 "ENABLE_NATIVE_ARCH": "ON",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "OFF",
                 "ENABLE_LTO": "ON",
-
                 "ENABLE_MIMALLOC": "OFF",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "clang-debug",
             "displayName": "Clang Debug",
             "description": "Clang debug build with CodeView symbols and LLD.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/clang-debug",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-
                 "CMAKE_CXX_COMPILER": "clang++",
-
                 "ENABLE_NATIVE_ARCH": "OFF",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "OFF",
                 "ENABLE_LTO": "OFF",
-
                 "ENABLE_CLANG_DEBUG_SYMBOLS": "ON",
-
                 "ENABLE_MIMALLOC": "OFF",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "clang-pgo-generate",
             "displayName": "Clang PGO Generate",
             "description": "Clang instrumentation build.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/clang-pgo-generate",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-
                 "CMAKE_CXX_COMPILER": "clang++",
-
                 "ENABLE_NATIVE_ARCH": "ON",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "OFF",
                 "ENABLE_LTO": "ON",
-
                 "ENABLE_CLANG_PGO_GENERATE": "ON",
                 "ENABLE_CLANG_PGO_USE": "OFF",
-
                 "ENABLE_MIMALLOC": "OFF",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "clang-pgo-use",
             "displayName": "Clang PGO Use",
             "description": "Clang optimized build using LLVM profile data.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/clang-pgo-use",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-
                 "CMAKE_CXX_COMPILER": "clang++",
-
                 "ENABLE_NATIVE_ARCH": "ON",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "OFF",
                 "ENABLE_LTO": "ON",
-
                 "ENABLE_CLANG_PGO_GENERATE": "OFF",
                 "ENABLE_CLANG_PGO_USE": "ON",
-
                 "ENABLE_MIMALLOC": "OFF",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
             }
         },
-
         {
             "name": "assembler",
             "displayName": "Assembly",
             "description": "Build configuration used for assembly generation.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/assembler",
-
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-
                 "ENABLE_NATIVE_ARCH": "ON",
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "ON",
                 "ENABLE_LTO": "OFF",
-
                 "ENABLE_MIMALLOC": "ON",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
@@ -299,64 +259,55 @@
             }
         }
     ],
-
     "buildPresets": [
-
         {
             "name": "release",
             "configurePreset": "release"
         },
-
         {
             "name": "release-portable",
             "configurePreset": "release-portable"
         },
-
         {
             "name": "debug",
             "configurePreset": "debug"
         },
-
         {
             "name": "debug-fast",
             "configurePreset": "debug-fast"
         },
-
+        {
+            "name": "crash-debug",
+            "configurePreset": "crash-debug"
+        },
         {
             "name": "profile",
             "configurePreset": "profile"
         },
-
         {
             "name": "gcc-pgo-generate",
             "configurePreset": "gcc-pgo-generate"
         },
-
         {
             "name": "gcc-pgo-use",
             "configurePreset": "gcc-pgo-use"
         },
-
         {
             "name": "clang",
             "configurePreset": "clang"
         },
-
         {
             "name": "clang-debug",
             "configurePreset": "clang-debug"
         },
-
         {
             "name": "clang-pgo-generate",
             "configurePreset": "clang-pgo-generate"
         },
-
         {
             "name": "clang-pgo-use",
             "configurePreset": "clang-pgo-use"
         },
-
         {
             "name": "assembler",
             "configurePreset": "assembler",
@@ -365,40 +316,38 @@
             ]
         }
     ],
-
     "testPresets": [
-
         {
             "name": "debug",
             "configurePreset": "debug",
-
             "output": {
                 "outputOnFailure": true
             }
         },
-
         {
             "name": "release",
             "configurePreset": "release",
-
             "output": {
                 "outputOnFailure": true
             }
         },
-
         {
             "name": "release-portable",
             "configurePreset": "release-portable",
-
             "output": {
                 "outputOnFailure": true
             }
         },
-
+        {
+            "name": "crash-debug",
+            "configurePreset": "crash-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
         {
             "name": "clang-debug",
             "configurePreset": "clang-debug",
-
             "output": {
                 "outputOnFailure": true
             }
