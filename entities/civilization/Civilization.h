@@ -75,7 +75,16 @@ public:
     void createCivilization(World& world);
     void initBuildings();
 
-    void addWorkers(Human& human, HumanType type);
+    HumanType getWorkerSource(Human &human, int &count);
+    void moveWorkersByPriority(
+        Human &human,
+        HumanType targetType,
+        int count);
+    void addWorkers(
+        Human &human,
+        HumanType sourceType,
+        HumanType targetType,
+        int count);
 
     void civilizationDecision(Human& human, Food& food, Stone& stone, Tree& tree);
 
@@ -83,7 +92,7 @@ public:
     void addChunksToPossibleVillage(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks);
     ChunkPos getBestChunkForBuilingsVillage(World& world);
 
-    void buildBuilding(World& world, RendererSFML &renderer, Type type);
+    bool buildBuilding(World& world, RendererSFML &renderer, Type type);
     void assignHumansToBuilding(Human& human, Type type);
     void getBuildingsGains();
 
@@ -91,5 +100,8 @@ public:
     void startConstruction(World& world, RendererSFML &renderer, uint16_t chunkX, uint16_t chunkY, Type type);
     void endConstruction(World& world, RendererSFML &renderer, Human& human, uint16_t chunkX, uint16_t chunkY, Type type);
 
+    int64_t getFoodAte(Human &human);
     void updateHunger(Human &human);
+
+    HumanType respawnDecision(Human &human);
 };

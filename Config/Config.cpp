@@ -117,31 +117,38 @@ T get(
         );
     }
 
-    std::stringstream stream(valueIt->second);
-
-    T value{};
-
-    if constexpr (std::is_same_v<T, bool>)
+    if constexpr (std::is_same_v<T, std::string>)
     {
-        stream >> std::boolalpha >> value;
+        return valueIt->second;
     }
     else
     {
-        stream >> value;
-    }
+        std::stringstream stream(valueIt->second);
 
-    if (stream.fail())
-    {
-        throw std::runtime_error(
-            "Invalid value for [" +
-            section + "] " +
-            key +
-            ": " +
-            valueIt->second
-        );
-    }
+        T value{};
 
-    return value;
+        if constexpr (std::is_same_v<T, bool>)
+        {
+            stream >> std::boolalpha >> value;
+        }
+        else
+        {
+            stream >> value;
+        }
+
+        if (stream.fail())
+        {
+            throw std::runtime_error(
+                "Invalid value for [" +
+                section + "] " +
+                key +
+                ": " +
+                valueIt->second
+            );
+        }
+
+        return value;
+    }
 }
 
 }
@@ -325,13 +332,6 @@ void Config::load(const std::string& path)
             "spawn_chunk_y"
         );
 
-    civilization.partOfHumansChangingJobs =
-        get<int>(
-            ini,
-            "civilization",
-            "part_of_humans_changing_jobs"
-        );
-
     humans.count =
         get<int>(
             ini,
@@ -351,6 +351,20 @@ void Config::load(const std::string& path)
             ini,
             "humans",
             "range"
+        );
+
+    humans.humanRespawnType = 
+        get<std::string>(
+            ini,
+            "humans",
+            "human_respawn_type"
+        );
+    
+    humans.humanRespawnDivisor = 
+        get<int>(
+            ini,
+            "humans",
+            "human_respawn_divisor"
         );
 
     humans.maxSpawnRange =
@@ -484,6 +498,20 @@ void Config::load(const std::string& path)
             ini,
             "buildings.mine",
             "stone_per_worker"
+        );
+
+    buildings.buildBuildings = 
+        get<bool>(
+            ini,
+            "buildings",
+            "buildBuildings"
+        );
+
+    buildings.spawnWithResourcesFor2Buildings = 
+        get<bool>(
+            ini,
+            "buildings",
+            "spawnWithResourcesFor2Buildings"
         );
 
     threads.cores =

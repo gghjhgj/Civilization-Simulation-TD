@@ -125,6 +125,8 @@ public:
 
     void mergeDirtyBuffersToDirtyCells();
 
+    void forceWorldReload();
+
 private:
     sf::RenderWindow window;
 

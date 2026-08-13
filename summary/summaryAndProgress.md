@@ -7,4 +7,4 @@
 7) szybki balans
 8) testy jednostkowe na najwazniejsze funkcje ludzi i moze cywilizacji 🟢
 9) dodanie cmake 🟢
-10) ulepszenie logiki cywilizacji
+10) ulepszenie logiki cywilizacji 🟢

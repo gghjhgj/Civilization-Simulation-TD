@@ -61,7 +61,6 @@ struct CivilizationConfig
 {
 uint16_t spawnChunkX;
 uint16_t spawnChunkY;
-int partOfHumansChangingJobs;
 };
 
 struct HumansConfig
@@ -70,6 +69,8 @@ int count;
 int grain;
 int range;
 int maxSpawnRange;
+std::string humanRespawnType;
+int humanRespawnDivisor;
 };
 
 struct HouseConfig
@@ -112,6 +113,8 @@ HouseConfig house;
 FarmConfig farm;
 SawmillConfig sawmill;
 MineConfig mine;
+bool buildBuildings;
+bool spawnWithResourcesFor2Buildings;
 };
 
 struct ThreadsConfig

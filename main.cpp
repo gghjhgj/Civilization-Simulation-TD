@@ -117,6 +117,7 @@ int main()
         } });
 
     sf::Clock clock;
+    sf::Clock screenReloadClock;
 
     float fileTimer = 0.f;
     float renderTimer = 0.f;
@@ -138,6 +139,12 @@ int main()
         renderTimer += deltaTime;
 
         ticksCount++;
+
+        if (screenReloadClock.getElapsedTime().asSeconds() >= 5.f)
+        {
+            renderer.forceWorldReload();
+            screenReloadClock.restart();
+        }
 
         if (allTicksCount >= Config::hunger.firstTickHumansEat &&
             allTicksCount % Config::hunger.firstTickHumansEat == 0)

@@ -5,7 +5,6 @@
 
 #include "../civilization/Civilization.h"
 
-
 void Human::createHuman(World &world, Civilization &civilization)
 {
     size_t threadsCount = tbb::this_task_arena::max_concurrency();
@@ -54,19 +53,87 @@ void Human::createHuman(World &world, Civilization &civilization)
     */
 }
 
-
-void Human::humanRespawn(World &world, Civilization &civilization)
+void Human::humanRespawn(
+    World &world,
+    Civilization &civilization)
 {
-    int newPeople = static_cast<int>(std::cbrt(humansCount));
-    uint16_t x = static_cast<uint16_t>(civilization.spawnXY.x);
-    uint16_t y = static_cast<uint16_t>(civilization.spawnXY.y);
+    int newPeople = 0;
+
+    if (Config::humans.humanRespawnType == "cube_root")
+    {
+        newPeople = static_cast<int>(std::cbrt(humansCount));
+    }
+    else if (Config::humans.humanRespawnType == "sqrt")
+    {
+        newPeople = static_cast<int>(std::sqrt(humansCount));
+    }
+    else if (Config::humans.humanRespawnType == "divide")
+    {
+        newPeople = humansCount / Config::humans.humanRespawnDivisor;
+    }
+    else
+    {
+        std::cout << "invalid humanRespawnType";
+        newPeople = static_cast<int>(std::sqrt(humansCount));
+    }
+
+    uint16_t x =
+        static_cast<uint16_t>(civilization.spawnXY.x);
+
+    uint16_t y =
+        static_cast<uint16_t>(civilization.spawnXY.y);
 
     for (int i = 0; i < newPeople; i++)
     {
-        addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
+        HumanType type =
+            civilization.respawnDecision(*this);
+
+        switch (type)
+        {
+        case HumanType::Builder:
+            addHuman(
+                *this,
+                this->builders,
+                BuildingType::None,
+                x,
+                y);
+            break;
+
+        case HumanType::FoodCollector:
+            addHuman(
+                *this,
+                this->foodCollectors,
+                BuildingType::None,
+                x,
+                y);
+            break;
+
+        case HumanType::WoodCollector:
+            addHuman(
+                *this,
+                this->woodCollectors,
+                BuildingType::None,
+                x,
+                y);
+            break;
+
+        case HumanType::StoneCollector:
+            addHuman(
+                *this,
+                this->stoneCollectors,
+                BuildingType::None,
+                x,
+                y);
+            break;
+
+        case HumanType::Assigned:
+            break;
+
+        default:
+            break;
+        }
     }
 }
-
 
 XY Human::humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType type)
 {
@@ -110,7 +177,6 @@ XY Human::humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType ty
 
     return {UINT16_MAX, UINT16_MAX};
 }
-
 
 XY Human::humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag flag)
 {
@@ -157,7 +223,6 @@ XY Human::humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag fla
 
     return {UINT16_MAX, UINT16_MAX};
 }
-
 
 XY Human::humanFindWorkingBuildingChunk(
     World &world,
@@ -210,7 +275,6 @@ XY Human::humanFindWorkingBuildingChunk(
     return {UINT16_MAX, UINT16_MAX};
 }
 
-
 inline bool Human::gotResource(
     uint16_t hx,
     uint16_t hy,
@@ -222,7 +286,6 @@ inline bool Human::gotResource(
 
     return false;
 }
-
 
 Human::Dirs Human::humanMoveDecision(
     uint16_t x,
@@ -238,12 +301,10 @@ Human::Dirs Human::humanMoveDecision(
         uint8_t directionIndex = points & 7;
 
         static constexpr int lookupX[8] = {
-            1, 1, 0, -1, -1, -1, 0, 1
-        };
+            1, 1, 0, -1, -1, -1, 0, 1};
 
         static constexpr int lookupY[8] = {
-            0, 1, 1, 1, 0, -1, -1, -1
-        };
+            0, 1, 1, 1, 0, -1, -1, -1};
 
         return {
             static_cast<int8_t>(lookupX[directionIndex]),
@@ -258,7 +319,6 @@ Human::Dirs Human::humanMoveDecision(
 
     return {dirX, dirY};
 }
-
 
 void Human::processFoodCollectors(
     World &world,
@@ -326,7 +386,6 @@ void Human::processFoodCollectors(
                 foodCollectorsPartitioner);
         });
 }
-
 
 void Human::processWoodCollectors(
     World &world,
@@ -397,7 +456,6 @@ void Human::processWoodCollectors(
         });
 }
 
-
 void Human::processStoneCollectors(
     World &world,
     RendererSFML &renderer,
@@ -466,7 +524,6 @@ void Human::processStoneCollectors(
                 stoneCollectorsPartitioner);
         });
 }
-
 
 void Human::processBuilders(
     World &world,
@@ -575,7 +632,6 @@ void Human::processBuilders(
         res.constr.clear();
     }
 }
-
 
 void Human::processAssigned(
     World &world,
@@ -686,7 +742,6 @@ void Human::processAssigned(
         res.assignedRemoveQueue.clear();
     }
 }
-
 
 void Human::humanMove(
     World &world,

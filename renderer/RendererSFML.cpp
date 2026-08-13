@@ -853,3 +853,8 @@ void RendererSFML::end()
     window.display();
 }
 
+void RendererSFML::forceWorldReload()
+{
+    viewChanged = true;
+    textureDirty = true;
+}
