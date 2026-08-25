@@ -58,7 +58,10 @@ public:
         void setAllFlag(bool flag)
         {
             foodCollectors = flag;
-            
+            woodCollectors = flag;
+            stoneCollectors = flag;
+            builders = flag;
+            assigned = flag;
         }
     };
     ReadyForRender ready;
@@ -146,10 +149,13 @@ public:
             farmWorkersDelta = 0;
             sawmillWorkersDelta = 0;
             mineWorkersDelta = 0;
+        };
 
+        void clearVec()
+        {
             constr.clear();
             assignedRemoveQueue.clear();
-        }
+        };
     };
 
     uint32_t ticksToDo = 1;
