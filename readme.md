@@ -48,10 +48,9 @@
 ![](docs/AMDuProf3.png)
 
 ### Videos:
-<video src="docs/benchmark-1mVid.mp4" controls width="100%"></video>
-<video src="docs/benchmark-civVid.mp4" controls width="100%"></video>
-<video src="docs/worldwalkthroughdown.mp4" controls width="100%"></video>
-
+- 🎥 [1 Million Agents Benchmark (MP4)](docs/benchmark-1mVid.mp4)
+- 🎥 [Civilization Growth & Building (MP4)](docs/benchmark-civVid.mp4)
+- 🎥 [World Walkthrough (MP4)](docs/worldwalkthroughdown.mp4)
 ---
 
 # World Architecture
