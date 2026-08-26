@@ -48,8 +48,8 @@
 ![](docs/AMDuProf3.png)
 
 ### Videos:
-- [1 Million Agents Benchmark Video (2m tiles world)(Streamable)](https://streamable.com/22flb5)
-- [Civilization Growth & Building Video (Streamable)](https://streamable.com/zr8gzk)
+- [Civilization growth Benchmark Video (Streamable)](https://streamable.com/22flb5)
+- [Civilization benchmark and growth 1m people 2m tiles world(Streamable)](https://streamable.com/zr8gzk)
 - [World Walkthrough Video (Streamable)](https://streamable.com/ckzt01)
 ---
 
