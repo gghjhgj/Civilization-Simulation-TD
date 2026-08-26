@@ -164,7 +164,7 @@ private:
 
     sf::Clock cameraClock;
 
-    float cameraSpeed = 10000.f;
+    float cameraSpeed = 2000.f;
 
     bool viewChanged = true;
 

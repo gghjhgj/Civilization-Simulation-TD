@@ -103,7 +103,7 @@
         {
             "name": "profile",
             "displayName": "GCC Profile",
-            "description": "Profiling-friendly GCC build.",
+            "description": "Profiling-friendly GCC build with debug symbols.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/profile",
             "cacheVariables": {
@@ -113,6 +113,7 @@
                 "ENABLE_FAST_MATH": "OFF",
                 "ENABLE_LTO": "OFF",
                 "ENABLE_PROFILING": "ON",
+                "ENABLE_CLANG_DEBUG_SYMBOLS": "ON",
                 "ENABLE_MIMALLOC": "ON",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
@@ -162,7 +163,7 @@
         {
             "name": "clang",
             "displayName": "Clang Release",
-            "description": "Clang optimized Release build using native CPU optimizations and LLD.",
+            "description": "Clang optimized Release build with CodeView/PDB symbols and LLD.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/clang",
             "cacheVariables": {
@@ -172,10 +173,32 @@
                 "ENABLE_AVX2": "ON",
                 "ENABLE_FAST_MATH": "OFF",
                 "ENABLE_LTO": "ON",
+                "ENABLE_CLANG_DEBUG_SYMBOLS": "ON",
                 "ENABLE_MIMALLOC": "OFF",
                 "FETCH_MISSING_DEPS": "ON",
                 "ENABLE_IMGUI": "ON",
                 "ENABLE_TESTS": "ON"
+            }
+        },
+        {
+            "name": "clang-profile",
+            "displayName": "Clang Profile (uProf)",
+            "description": "Clang profiling build for AMD uProf: -O2, CodeView/PDB symbols, frame pointers preserved, NO LTO.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/clang-profile",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "ENABLE_NATIVE_ARCH": "ON",
+                "ENABLE_AVX2": "ON",
+                "ENABLE_FAST_MATH": "OFF",
+                "ENABLE_LTO": "OFF",
+                "ENABLE_PROFILING": "ON",
+                "ENABLE_CLANG_DEBUG_SYMBOLS": "ON",
+                "ENABLE_MIMALLOC": "OFF",
+                "FETCH_MISSING_DEPS": "ON",
+                "ENABLE_IMGUI": "ON",
+                "ENABLE_TESTS": "OFF"
             }
         },
         {
@@ -295,6 +318,10 @@
         {
             "name": "clang",
             "configurePreset": "clang"
+        },
+        {
+            "name": "clang-profile",
+            "configurePreset": "clang-profile"
         },
         {
             "name": "clang-debug",

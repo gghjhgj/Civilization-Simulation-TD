@@ -44,13 +44,6 @@ void Human::createHuman(World &world, Civilization &civilization)
 
         addHuman(*this, this->foodCollectors, BuildingType::None, x2, y2);
     }
-
-    /*
-    for (int i = 0; i < Config::humans.count; i++)
-    {
-        addHuman(*this, this->foodCollectors, BuildingType::None, x, y);
-    }
-    */
 }
 
 void Human::humanRespawn(
@@ -550,7 +543,7 @@ void Human::processBuilders(
                         int threadID =
                             tbb::this_task_arena::current_thread_index();
 
-                        if ((humanTicks + i) % 13 == 0)
+                        if ((humanTicks + i) % 12 == 0)
                         {
                             for (size_t i = range.begin();
                                  i < range.end();
@@ -658,7 +651,7 @@ void Human::processAssigned(
                         int threadID =
                             tbb::this_task_arena::current_thread_index();
 
-                        if ((humanTicks + i) % 13 == 0)
+                        if ((humanTicks + i) % 12 == 0)
                         {
                             for (size_t i = range.begin();
                                  i < range.end();
@@ -759,7 +752,7 @@ void Human::humanMove(
 {
     ready.setAllFlag(true);
 
-    const uint32_t t = 1000000 + Config::humans.count * 10;
+    const uint32_t t = 10000000 + Config::humans.count * 10;
 
     ticksToDo =
         t /
@@ -796,14 +789,17 @@ void Human::humanMove(
 
     for (const auto &res : threadResults)
     {
-        food.foodsCount -= res.foodCollected;
-        civilization.resources.food += res.foodCollected;
+        uint32_t actualFood = std::min(food.foodsCount, res.foodCollected);
+        food.foodsCount -= actualFood;
+        civilization.resources.food += actualFood;
 
-        tree.treesCount -= res.woodCollected;
-        civilization.resources.wood += res.woodCollected;
+        uint32_t actualWood = std::min(tree.treesCount, res.woodCollected);
+        tree.treesCount -= actualWood;
+        civilization.resources.wood += actualWood;
 
-        stone.stonesCount -= res.stoneCollected;
-        civilization.resources.stone += res.stoneCollected;
+        uint32_t actualStone = std::min(stone.stonesCount, res.stoneCollected);
+        stone.stonesCount -= actualStone;
+        civilization.resources.stone += actualStone;
 
         civilization.realWorkers[FARM] += res.farmWorkersDelta;
         civilization.realWorkers[SAWMILL] += res.sawmillWorkersDelta;

@@ -1384,11 +1384,22 @@ if(
         -Wno-c++11-narrowing
     )
 
-    target_link_options(
-        app
-        PRIVATE
-        -fuse-ld=lld
-    )
+    if(WIN32)
+        if(MSVC)
+            target_link_options(
+                app
+                PRIVATE
+                /DEBUG:FULL
+            )
+        else()
+            target_link_options(
+                app
+                PRIVATE
+                -fuse-ld=lld
+                -Wl,--pdb=
+            )
+        endif()
+    endif()
 
 endif()
 
