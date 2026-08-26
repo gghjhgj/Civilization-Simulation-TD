@@ -48,9 +48,9 @@
 ![](docs/AMDuProf3.png)
 
 ### Videos:
-- 🎥 [1 Million Agents Benchmark (MP4)](docs/benchmark-1mVid.mp4)
-- 🎥 [Civilization Growth & Building (MP4)](docs/benchmark-civVid.mp4)
-- 🎥 [World Walkthrough (MP4)](docs/worldwalkthroughdown.mp4)
+- [1 Million Agents Benchmark Video (2m tiles world)(Streamable)](https://streamable.com/22flb5)
+- [Civilization Growth & Building Video (Streamable)](https://streamable.com/zr8gzk)
+- [World Walkthrough Video (Streamable)](https://streamable.com/ckzt01)
 ---
 
 # World Architecture
