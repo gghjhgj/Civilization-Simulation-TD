@@ -34,5 +34,7 @@ cmake --build --preset clang
 ./build/clang/app.exe
 
 
-- tests
+- tests - 1 of these:
 cmake --build --preset release --target test-run
+ctest --preset release
+./build/release/tests.exe
