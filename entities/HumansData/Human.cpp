@@ -47,7 +47,6 @@ void Human::createHuman(World &world, Civilization &civilization)
 }
 
 void Human::humanRespawn(
-    World &world,
     Civilization &civilization)
 {
     if (!Config::humans.respawn)
@@ -173,7 +172,7 @@ XY Human::humanFindResource(World &world, uint16_t x, uint16_t y, TerrainType ty
     return {UINT16_MAX, UINT16_MAX};
 }
 
-XY Human::humanFindFlagChunk(World &world, uint16_t x, uint16_t y, ChunkFlag flag)
+XY Human::humanFindFlagChunk(World &world, uint16_t x, uint16_t y, [[maybe_unused]] ChunkFlag flag)
 {
     if (!world.isValid(x, y))
     {
@@ -289,8 +288,6 @@ Human::Dirs Human::humanMoveDecision(
     uint16_t targetY,
     uint8_t points)
 {
-    int a;
-
     if (targetX == UINT16_MAX || targetY == UINT16_MAX)
     {
         uint8_t directionIndex = points & 7;
@@ -336,7 +333,7 @@ void Human::processFoodCollectors(
                     int threadID =
                         tbb::this_task_arena::current_thread_index();
 
-                    for (int i = 0; i < ticksToDo; i++)
+                    for (uint32_t i = 0; i < ticksToDo; i++)
                     {
                         if ((humanTicks + i) % 3 == 0)
                         {
@@ -403,7 +400,7 @@ void Human::processWoodCollectors(
                     int threadID =
                         tbb::this_task_arena::current_thread_index();
 
-                    for (int i = 0; i < ticksToDo; i++)
+                    for (uint32_t i = 0; i < ticksToDo; i++)
                     {
                         if ((humanTicks + i) % 3 == 0)
                         {
@@ -472,7 +469,7 @@ void Human::processStoneCollectors(
                     int threadID =
                         tbb::this_task_arena::current_thread_index();
 
-                    for (int i = 0; i < ticksToDo; i++)
+                    for (uint32_t i = 0; i < ticksToDo; i++)
                     {
                         if ((humanTicks + i) % 3 == 0)
                         {
@@ -525,7 +522,7 @@ void Human::processBuilders(
     RendererSFML &renderer,
     Civilization &civilization)
 {
-    for (int i = 0; i < ticksToDo; i++)
+    for (uint32_t i = 0; i < ticksToDo; i++)
     {
         aiArena.execute(
             [&]()
@@ -612,7 +609,6 @@ void Human::processBuilders(
                 civilization.endConstruction(
                     world,
                     renderer,
-                    *this,
                     constr.chunkX,
                     constr.chunkY,
                     constr.type);
@@ -633,7 +629,7 @@ void Human::processAssigned(
     RendererSFML &renderer,
     Civilization &civilization)
 {
-    for (int i = 0; i < ticksToDo; i++)
+    for (uint32_t i = 0; i < ticksToDo; i++)
     {
         aiArena.execute(
             [&]()
@@ -725,7 +721,6 @@ void Human::processAssigned(
                 }
 
                 eraseHuman(
-                    *this,
                     assigned,
                     id);
             }
@@ -814,15 +809,15 @@ void Human::humanMove(
         return;
 
     ready.setAllFlag(false);
-    for (int i = 0; i < actionsToDo; i++)
+    for (uint32_t i = 0; i < actionsToDo; i++)
     {
-        humanRespawn(world, civilization);
+        humanRespawn(civilization);
 
         civilization.assignHumansToBuilding(*this, Type::FARM);
         civilization.assignHumansToBuilding(*this, Type::SAWMILL);
         civilization.assignHumansToBuilding(*this, Type::MINE);
 
-        civilization.civilizationDecision(*this, food, stone, tree);
+        civilization.civilizationDecision(*this);
     }
     ready.setAllFlag(true);
 }

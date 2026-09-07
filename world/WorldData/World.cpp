@@ -93,8 +93,8 @@ void World::updateMountainRange(
 }
 void World::createStruct(TerrainType type)
 {
-    uint32_t totalCells = ConfigConstexpr::sizeX * ConfigConstexpr::sizeY;
-    uint32_t landCells = (totalCells * Config::surface.landPercent) / 100;
+    uint64_t totalCells = static_cast<uint64_t>(ConfigConstexpr::sizeX) * ConfigConstexpr::sizeY;
+    uint32_t landCells = static_cast<uint32_t>((totalCells * Config::surface.landPercent) / 100);
 
     int numberOfStruct;
     int totalStruct;

@@ -59,7 +59,7 @@ void Tree::createTree(World& world, RendererSFML &renderer)
 
 
     int tr = 0;
-    int maxTreeSpawnTries = Config::resources.trees.maxSpawnTries;
+    int maxTreeSpawnTries = std::max(50, Config::resources.trees.maxSpawnTries);
     for (int i = 0; i < Config::resources.trees.forestCount || tr < Config::resources.trees.count; i++)
     {
         int trBefore = tr;
@@ -136,7 +136,6 @@ void Tree::treeRespawn(World& world, RendererSFML &renderer)
     {
         int k = 1;
         int x, y;
-        bool placed = false;
         int maxTreeSpawnTries = Config::resources.trees.maxSpawnTries;
         do
         {
@@ -194,7 +193,6 @@ void Tree::treeRespawn(World& world, RendererSFML &renderer)
             last.x = x;
             last.y = y;
             treesCount++;
-            placed = true;
         }
         else
         {

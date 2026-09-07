@@ -98,7 +98,6 @@ void Civilization::addWorkers(
                     for (int i = 0; i < toMove; i++)
                     {
                         switchProfLast(
-                            human,
                             srcVec,
                             destVec,
                             BuildingType::None);
@@ -116,11 +115,10 @@ void Civilization::moveWorkersByPriority(
         return;
 
     const HumanType sources[] =
-    {
-        HumanType::WoodCollector,
-        HumanType::FoodCollector,
-        HumanType::StoneCollector
-    };
+        {
+            HumanType::WoodCollector,
+            HumanType::FoodCollector,
+            HumanType::StoneCollector};
 
     for (HumanType sourceType : sources)
     {
@@ -161,10 +159,7 @@ void Civilization::moveWorkersByPriority(
 }
 
 void Civilization::civilizationDecision(
-    Human &human,
-    Food &food,
-    Stone &stone,
-    Tree &tree)
+    Human &human)
 {
     const int population =
         static_cast<int>(
@@ -193,7 +188,6 @@ void Civilization::civilizationDecision(
         buildingsCount[MINE] +
         constructions[MINE];
 
-
     int desiredFoodCollectors = 0;
 
     if (!hasFarm)
@@ -210,7 +204,6 @@ void Civilization::civilizationDecision(
 
     if (availablePopulation < 0)
         availablePopulation = 0;
-
 
     int desiredStoneCollectors = 0;
 
@@ -237,23 +230,13 @@ void Civilization::civilizationDecision(
         initialDesiredBuilders +
         availablePopulation;
 
+    [[maybe_unused]] const int currentBuilders = static_cast<int>(human.builders.posX.size());
 
-    const int currentBuilders =
-        static_cast<int>(
-            human.builders.posX.size());
+    [[maybe_unused]] const int currentFoodCollectors = static_cast<int>(human.foodCollectors.posX.size());
 
-    const int currentFoodCollectors =
-        static_cast<int>(
-            human.foodCollectors.posX.size());
+    [[maybe_unused]] const int currentWoodCollectors = static_cast<int>(human.woodCollectors.posX.size());
 
-    const int currentWoodCollectors =
-        static_cast<int>(
-            human.woodCollectors.posX.size());
-
-    const int currentStoneCollectors =
-        static_cast<int>(
-            human.stoneCollectors.posX.size());
-
+    const int currentStoneCollectors = static_cast<int>(human.stoneCollectors.posX.size());
 
     if (currentStoneCollectors >
         desiredStoneCollectors)
@@ -270,7 +253,7 @@ void Civilization::civilizationDecision(
             std::max(
                 0,
                 desiredWoodCollectors -
-                currentWood);
+                    currentWood);
 
         const int stoneToWood =
             std::min(
@@ -304,7 +287,6 @@ void Civilization::civilizationDecision(
         }
     }
 
-
     const int updatedWood =
         static_cast<int>(
             human.woodCollectors.posX.size());
@@ -319,7 +301,6 @@ void Civilization::civilizationDecision(
             updatedWood -
                 desiredWoodCollectors);
     }
-
 
     const int buildersAfterReduction =
         static_cast<int>(
@@ -421,8 +402,8 @@ void Civilization::markCloseAsCivZone(
                     std::max(
                         0,
                         civZoneTiles.mostNorthCivZone -
-                        static_cast<int>(
-                            Config::humans.range));
+                            static_cast<int>(
+                                Config::humans.range));
             }
 
             if (ny > civZoneChunks.mostSouthCivZone)
@@ -437,10 +418,11 @@ void Civilization::markCloseAsCivZone(
                 ranges.mostSouthCivZone =
                     std::min(
                         static_cast<int>(
-                            ConfigConstexpr::sizeY) - 1,
+                            ConfigConstexpr::sizeY) -
+                            1,
                         civZoneTiles.mostSouthCivZone +
-                        static_cast<int>(
-                            Config::humans.range));
+                            static_cast<int>(
+                                Config::humans.range));
             }
 
             if (nx < civZoneChunks.mostWestCivZone ||
@@ -455,8 +437,8 @@ void Civilization::markCloseAsCivZone(
                     std::max(
                         0,
                         civZoneTiles.mostWestCivZone -
-                        static_cast<int>(
-                            Config::humans.range));
+                            static_cast<int>(
+                                Config::humans.range));
             }
 
             if (nx > civZoneChunks.mostEastCivZone)
@@ -471,10 +453,11 @@ void Civilization::markCloseAsCivZone(
                 ranges.mostEastCivZone =
                     std::min(
                         static_cast<int>(
-                            ConfigConstexpr::sizeX) - 1,
+                            ConfigConstexpr::sizeX) -
+                            1,
                         civZoneTiles.mostEastCivZone +
-                        static_cast<int>(
-                            Config::humans.range));
+                            static_cast<int>(
+                                Config::humans.range));
             }
 
             world.setChunkFlag(
@@ -512,10 +495,8 @@ void Civilization::addChunksToPossibleVillage(
                 continue;
 
             bestChunksForBuildingsVillage.push_back(
-                {
-                    static_cast<uint16_t>(nx),
-                    static_cast<uint16_t>(ny)
-                });
+                {static_cast<uint16_t>(nx),
+                 static_cast<uint16_t>(ny)});
         }
     }
 }
@@ -529,8 +510,7 @@ Civilization::getBestChunkForBuilingsVillage(
     if (bestChunksForBuildingsVillage.empty())
         return {
             UINT16_MAX,
-            UINT16_MAX
-        };
+            UINT16_MAX};
 
     ChunkPos pos;
 
@@ -554,17 +534,15 @@ Civilization::getBestChunkForBuilingsVillage(
 
     } while (
         !bestChunksForBuildingsVillage.empty() &&
-        (
-            world.getBuilding(
-                pos.chunkX,
-                pos.chunkY) !=
-                BuildingType::None ||
+        (world.getBuilding(
+             pos.chunkX,
+             pos.chunkY) !=
+             BuildingType::None ||
 
-            world.hasChunkFlag(
-                pos.chunkX,
-                pos.chunkY,
-                ChunkFlag::CivZone)
-        ));
+         world.hasChunkFlag(
+             pos.chunkX,
+             pos.chunkY,
+             ChunkFlag::CivZone)));
 
     if (
         world.getBuilding(
@@ -579,8 +557,7 @@ Civilization::getBestChunkForBuilingsVillage(
     {
         return {
             UINT16_MAX,
-            UINT16_MAX
-        };
+            UINT16_MAX};
     }
 
     addChunksToPossibleVillage(
@@ -676,12 +653,11 @@ void Civilization::assignHumansToBuilding(
         maxHumans[type];
 
     const HumanType sources[] =
-    {
-        HumanType::WoodCollector,
-        HumanType::FoodCollector,
-        HumanType::StoneCollector,
-        HumanType::Builder
-    };
+        {
+            HumanType::WoodCollector,
+            HumanType::FoodCollector,
+            HumanType::StoneCollector,
+            HumanType::Builder};
 
     for (HumanType sourceType : sources)
     {
@@ -699,7 +675,6 @@ void Civilization::assignHumansToBuilding(
                     !srcVec.posX.empty())
                 {
                     switchProfLast(
-                        human,
                         srcVec,
                         human.assigned,
                         GetBuildingType(type));
@@ -731,10 +706,7 @@ void Civilization::getBuildingsGains()
 void Civilization::buildingDecision(
     World &world,
     RendererSFML &renderer,
-    Human &human,
-    Food &food,
-    Stone &stone,
-    Tree &tree)
+    Human &human)
 {
     if (!Config::buildings.buildBuildings)
         return;
@@ -784,9 +756,8 @@ void Civilization::buildingDecision(
         }
 
         if (
-            foodAte > resources.food &&
-            collectors >=
-                Config::buildings.farm.maxWorkers)
+            static_cast<int64_t>(foodAte) > resources.food &&
+            static_cast<int64_t>(collectors) >= Config::buildings.farm.maxWorkers)
         {
             if (!buildBuilding(
                     world,
@@ -798,11 +769,8 @@ void Civilization::buildingDecision(
         }
 
         if (
-            collectors >=
-                Config::buildings.mine.maxWorkers ||
-
-            collectors >=
-                Config::buildings.sawmill.maxWorkers)
+            static_cast<int64_t>(collectors) >= Config::buildings.mine.maxWorkers ||
+            static_cast<int64_t>(collectors) >= Config::buildings.sawmill.maxWorkers)
         {
             if (mineCount <= sawmillCount)
             {
@@ -824,10 +792,8 @@ void Civilization::buildingDecision(
             continue;
         }
 
-        if (
-            human.humansCount >
-            houseCount *
-                Config::buildings.house.maxHumans)
+        if (static_cast<int64_t>(human.humansCount) > 
+            static_cast<int64_t>(houseCount * Config::buildings.house.maxHumans))
         {
             if (!buildBuilding(
                     world,
@@ -893,7 +859,6 @@ void Civilization::startConstruction(
 void Civilization::endConstruction(
     World &world,
     RendererSFML &renderer,
-    Human &human,
     uint16_t chunkX,
     uint16_t chunkY,
     Type type)
@@ -952,8 +917,8 @@ int64_t Civilization::getFoodAte(
         std::max(
             int64_t{0},
             foodNeededWithoutHouse -
-            Config::hunger
-                .foodReductionForHumansWithHouse);
+                Config::hunger
+                    .foodReductionForHumansWithHouse);
 
     const uint64_t foodAte =
         humansWithoutHouse *
@@ -968,7 +933,7 @@ int64_t Civilization::getFoodAte(
 void Civilization::updateHunger(
     Human &human)
 {
-    uint64_t foodAte =
+    int64_t foodAte =
         getFoodAte(human);
 
     if (foodAte <= resources.food)

@@ -261,7 +261,6 @@ inline void processHumanTypeBatch(
                         TerrainType::Land);
 
                     renderer.addToDirtyBuffer(
-                        world,
                         fx,
                         fy,
                         sf::Color::Green,
@@ -303,7 +302,6 @@ inline void processHumanTypeBatch(
                         TerrainType::Land);
 
                     renderer.addToDirtyBuffer(
-                        world,
                         fx,
                         fy,
                         sf::Color::Green,
@@ -345,7 +343,6 @@ inline void processHumanTypeBatch(
                         TerrainType::Mountain);
 
                     renderer.addToDirtyBuffer(
-                        world,
                         fx,
                         fy,
                         sf::Color(120, 120, 120),
@@ -528,7 +525,6 @@ inline void processHumanType(
                     TerrainType::Land);
 
                 renderer.addToDirtyBuffer(
-                    world,
                     newX,
                     newY,
                     sf::Color::Green,
@@ -564,7 +560,6 @@ inline void processHumanType(
                     TerrainType::Land);
 
                 renderer.addToDirtyBuffer(
-                    world,
                     newX,
                     newY,
                     sf::Color::Green,
@@ -600,7 +595,6 @@ inline void processHumanType(
                     TerrainType::Mountain);
 
                 renderer.addToDirtyBuffer(
-                    world,
                     newX,
                     newY,
                     sf::Color(120, 120, 120),

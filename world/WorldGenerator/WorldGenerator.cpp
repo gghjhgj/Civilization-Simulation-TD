@@ -108,8 +108,7 @@ void WorldGenerator::generate(
               << std::endl;
 
     food.createFood(
-        world,
-        renderer
+        world
     );
 
     loadingScreen.update(

@@ -120,49 +120,38 @@ include(FetchContent)
 include(CheckIPOSupported)
 
 # ============================================================
-# PROJECT SOURCES
+# PROJECT SOURCES (Auto-discovery bez skanowania build/)
 # ============================================================
 
 file(
-    GLOB_RECURSE PROJECT_SOURCES
+    GLOB ROOT_SOURCES
     CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
 )
 
-# ------------------------------------------------------------
-# Exclusions
-# ------------------------------------------------------------
-
-list(
-    FILTER PROJECT_SOURCES
-    EXCLUDE REGEX
-    "^${CMAKE_CURRENT_SOURCE_DIR}/build/.*"
+file(
+    GLOB ALL_PROJECT_DIRS
+    RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*"
 )
 
-list(
-    FILTER PROJECT_SOURCES
-    EXCLUDE REGEX
-    "^${CMAKE_CURRENT_SOURCE_DIR}/notUsed/.*"
-)
+set(PROJECT_SOURCES ${ROOT_SOURCES})
 
-list(
-    FILTER PROJECT_SOURCES
-    EXCLUDE REGEX
-    "^${CMAKE_CURRENT_SOURCE_DIR}/_deps/.*"
-)
-
-list(
-    FILTER PROJECT_SOURCES
-    EXCLUDE REGEX
-    "^${CMAKE_CURRENT_SOURCE_DIR}/tests/.*"
-)
-
-list(
-    FILTER PROJECT_SOURCES
-    EXCLUDE REGEX
-    "^${CMAKE_CURRENT_SOURCE_DIR}/assembly/.*"
-)
+foreach(DIR ${ALL_PROJECT_DIRS})
+    if(
+        IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${DIR}"
+        AND NOT DIR MATCHES "^(build|notUsed|_deps|tests|assembly|profiles|cmake|\\.git|\\.vscode)$"
+    )
+        file(
+            GLOB_RECURSE DIR_SOURCES
+            CONFIGURE_DEPENDS
+            "${CMAKE_CURRENT_SOURCE_DIR}/${DIR}/*.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/${DIR}/*.c"
+        )
+        list(APPEND PROJECT_SOURCES ${DIR_SOURCES})
+    endif()
+endforeach()
 
 # ------------------------------------------------------------
 # main.cpp
@@ -184,24 +173,20 @@ list(
 # ------------------------------------------------------------
 
 if(NOT PROJECT_SOURCES)
-
     message(
         FATAL_ERROR
         "[CMake] No .cpp/.c project files found."
     )
-
 endif()
 
 message(STATUS "")
 message(STATUS "[CMake] simulation_core files:")
 
 foreach(SOURCE_FILE IN LISTS PROJECT_SOURCES)
-
     message(
         STATUS
         "  ${SOURCE_FILE}"
     )
-
 endforeach()
 
 # ============================================================
@@ -1464,6 +1449,7 @@ foreach(SOURCE_FILE IN LISTS PROJECT_SOURCES)
 
     add_custom_command(
         TARGET assembler
+        POST_BUILD
 
         COMMAND
             ${CMAKE_COMMAND}

@@ -23,8 +23,6 @@ RendererSFML::RendererSFML(
           static_cast<unsigned>(
               h * cellSize)),
 
-      cellSize(cellSize),
-
       pixelImage(
           {static_cast<unsigned>(
                w * cellSize),
@@ -40,7 +38,9 @@ RendererSFML::RendererSFML(
            static_cast<unsigned>(
                h * cellSize)}),
 
-      sprite(texture)
+      sprite(texture),
+      
+      cellSize(cellSize)
 {
     const float viewWidth =
         static_cast<float>(
@@ -76,11 +76,11 @@ RendererSFML::RendererSFML(
 
     humanLayer.vertices.reserve(Config::humans.count + 500000);
 
-    humanLayer.buffer.create(Config::humans.count + 500000);
+    (void)humanLayer.buffer.create(Config::humans.count + 500000);
 
     updateSpritePosition();
 
-    ImGui::SFML::Init(window);
+    (void)ImGui::SFML::Init(window);
 }
 RendererSFML::~RendererSFML()
 {
@@ -737,7 +737,7 @@ void RendererSFML::updateHumanLayer(
 
     if (!humanLayer.vertices.empty())
     {
-        humanLayer.buffer.update(
+        (void)humanLayer.buffer.update(
             humanLayer.vertices.data(),
             humanLayer.vertices.size(),
             0);
@@ -773,7 +773,6 @@ void RendererSFML::mergeDirtyBuffersToDirtyCells()
 }
 
 void RendererSFML::addToDirtyBuffer(
-    World &world,
     uint16_t x,
     uint16_t y,
     sf::Color color,
@@ -801,7 +800,6 @@ void RendererSFML::addChunkToDirtyBuffer(
     for (auto &cell : cells)
     {
         addToDirtyBuffer(
-            world,
             cell.x,
             cell.y,
             color,

@@ -176,10 +176,7 @@ int main()
             civilization.buildingDecision(
                 world,
                 renderer,
-                human,
-                food,
-                stone,
-                tree);
+                human);
         }
 
         if (allTicksCount %

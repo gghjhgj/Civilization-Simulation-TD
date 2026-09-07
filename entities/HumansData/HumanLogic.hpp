@@ -36,7 +36,7 @@ inline void addHuman(Human &human, HumanBase &vec, BuildingType data, uint16_t x
 }
 
 template <typename T>
-void eraseHuman(Human &human, T &vec, int id)
+void eraseHuman(T &vec, int id)
 {
     int last = static_cast<int>(vec.posX.size()) - 1;
 
@@ -64,7 +64,7 @@ void eraseHuman(Human &human, T &vec, int id)
     vec.targetBuilding.pop_back();
 }
 
-inline void switchProf(Human &human, HumanBase &fromVec, int id, HumanBase &toVec, BuildingType newData)
+inline void switchProf(HumanBase &fromVec, int id, HumanBase &toVec, BuildingType newData)
 {
     toVec.posX.push_back(fromVec.posX[id]);
     toVec.posY.push_back(fromVec.posY[id]);
@@ -76,10 +76,10 @@ inline void switchProf(Human &human, HumanBase &fromVec, int id, HumanBase &toVe
 
     toVec.targetBuilding.push_back(newData);
 
-    eraseHuman(human, fromVec, id);
+    eraseHuman(fromVec, id);
 }
 
-inline void switchProfLast(Human &human, HumanBase &fromVec, HumanBase &toVec, BuildingType newData)
+inline void switchProfLast(HumanBase &fromVec, HumanBase &toVec, BuildingType newData)
 {
     if (fromVec.posX.empty())
         return;
@@ -96,7 +96,7 @@ inline void switchProfLast(Human &human, HumanBase &fromVec, HumanBase &toVec, B
 
     toVec.targetBuilding.push_back(newData);
 
-    eraseHuman(human, fromVec, id);
+    eraseHuman(fromVec, id);
 }
 
 template <typename Func>
@@ -119,5 +119,7 @@ void dispatchToVector(HumanType type, Human &human, Func &&func)
     case HumanType::Assigned:
         func(human.assigned);
         break;
+    case HumanType::COUNT: break;
+    default: break;
     }
 }

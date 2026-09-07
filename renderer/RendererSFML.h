@@ -117,7 +117,6 @@ public:
         uint16_t y);
 
     void addToDirtyBuffer(
-        World &world,
         uint16_t x,
         uint16_t y,
         sf::Color color,

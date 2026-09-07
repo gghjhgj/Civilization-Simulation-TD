@@ -86,7 +86,7 @@ public:
         HumanType targetType,
         int count);
 
-    void civilizationDecision(Human& human, Food& food, Stone& stone, Tree& tree);
+    void civilizationDecision(Human& human);
 
     void markCloseAsCivZone(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks);
     void addChunksToPossibleVillage(World& world, uint16_t chunkX, uint16_t chunkY, int rInChunks);
@@ -96,9 +96,9 @@ public:
     void assignHumansToBuilding(Human& human, Type type);
     void getBuildingsGains();
 
-    void buildingDecision(World& world, RendererSFML &renderer, Human& human, Food& food, Stone& stone, Tree& tree);
+    void buildingDecision(World& world, RendererSFML &renderer, Human& human);
     void startConstruction(World& world, RendererSFML &renderer, uint16_t chunkX, uint16_t chunkY, Type type);
-    void endConstruction(World& world, RendererSFML &renderer, Human& human, uint16_t chunkX, uint16_t chunkY, Type type);
+    void endConstruction(World& world, RendererSFML &renderer, uint16_t chunkX, uint16_t chunkY, Type type);
 
     int64_t getFoodAte(Human &human);
     void updateHunger(Human &human);

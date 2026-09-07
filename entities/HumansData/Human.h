@@ -168,7 +168,6 @@ public:
     );
 
     void humanRespawn(
-        World& world,
         Civilization& civilization
     );
 

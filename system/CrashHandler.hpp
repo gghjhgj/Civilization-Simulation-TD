@@ -9,7 +9,9 @@
 #include <sstream>
 #include <string>
 
+#if defined(_MSC_VER)
 #pragma comment(lib, "dbghelp.lib")
+#endif
 
 namespace CrashHandler
 {

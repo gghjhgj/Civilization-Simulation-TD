@@ -7,7 +7,7 @@ void Food::addFood(World& world, RendererSFML &renderer, uint16_t x, uint16_t y)
     foodsCount++;
 }
 
-void Food::createFood(World& world, RendererSFML &renderer)
+void Food::createFood(World& world)
 {
     std::mt19937 rng(std::random_device{}());
 
