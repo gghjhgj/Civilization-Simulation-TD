@@ -42,6 +42,7 @@
 ![](docs/benchmark-10m.png)
 ![](docs/benchmark-baseStats.png)
 ![](docs/statsSS.png)
+![](docs/threadControllerOutInfo.png)
 
 ### AMDuProf:
 ![](docs/AMDuProf1.png)
