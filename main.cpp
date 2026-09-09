@@ -55,6 +55,12 @@ int main()
     std::cout << "hardware_concurrency = "
               << std::thread::hardware_concurrency()
               << '\n';
+    
+    std::cout
+    << "If your CPU does not work well with the detected thread count,\n"
+    << "you may need to adjust threadsForHumanLoop in the config.\n"
+    << "Recommended value: logicalThreads - logical CPUs per physical core."
+    << std::endl;
 
 #ifdef _WIN32
     SetPriorityClass(
