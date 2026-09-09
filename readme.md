@@ -41,6 +41,7 @@
 ![](docs/benchmark-1m.png)
 ![](docs/benchmark-10m.png)
 ![](docs/benchmark-baseStats.png)
+![](docs/benchmark-statsSS.png)
 
 ### AMDuProf:
 ![](docs/AMDuProf1.png)
